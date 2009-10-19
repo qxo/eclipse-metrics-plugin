@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?NLS TYPE="org.eclipse.help.toc"?>
-
-<toc label="Programmers Guide" link_to="toc.xml#tocapi"> 
-	<topic label="API Reference"  href="apidocs/index.html"/> 
-	<topic label="Metrics extension"  href="net.sourceforge.metrics.html"/> 
-	<topic label="Exporter extension"  href="net.sourceforge.exporters.html"/> 
-</toc>
