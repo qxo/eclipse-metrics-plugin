@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HEAD><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</HEAD>
+<HTML>
+<BODY>
+<H1><CENTER>metrics</CENTER></H1>
+<H2>Identifier</H2>
+net.sourceforge.metrics.metrics<H2>Description</H2>
+Use this extension point to add new metrics to the Metrics framework<H2>Markup</H2>
+<p><samp>&nbsp;&nbsp; &lt;!ELEMENT extension (calculator | metric)*&gt;</samp>
+<br><samp>&nbsp;&nbsp; &lt;!ATTLIST extension</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;point&nbsp;CDATA #REQUIRED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;CDATA #IMPLIED</samp>
+<br><samp>&nbsp;&nbsp; &gt;</samp>
+<ul>
+<li><b>point</b> - </li><li><b>id</b> - </li><li><b>name</b> - </li></ul>
+<p><samp>&nbsp;&nbsp; &lt;!ELEMENT metric EMPTY&gt;</samp>
+<br><samp>&nbsp;&nbsp; &lt;!ATTLIST metric</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;propagateSum&nbsp;(true | false) "false""true"</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;propagateAvg&nbsp;(true | false) "false""true"</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;propagateMax&nbsp;(true | false) "false""true"</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sumOf&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #IMPLIED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(method|type|compilationUnit|packageFragment|packageFragmentRoot|project) #REQUIRED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;newAvgMaxAt&nbsp;&nbsp;(compilationUnit|packageFragment|packageFragmentRoot|project) #IMPLIED</samp>
+<br><samp>&nbsp;&nbsp; &gt;</samp>
+<ul>
+<li><b>id</b> - Short one-word name of the metric for example LCOM, NOM, etc. Used as the key for persistence and propagation</li><li><b>name</b> - A slightly more human readable name used by the Metrics View for example Lines of Code</li><li><b>propagateSum</b> - specifies if the sum has to be calculated and if it has to be
+propagated. Default is true.
+The id of the sum will be the same as the id of this metric.
+To create a sum with a new name, use a sum element</li><li><b>propagateAvg</b> - specifies if the average has to be calculated and propagated. Default is true</li><li><b>propagateMax</b> - specifies if the Max has to be calculated and propagated. Default is true</li><li><b>sumOf</b> - optionally specifies that this metric is the sum of a child metric.
+No calculator is needed for these metrics</li><li><b>level</b> - </li><li><b>newAvgMaxAt</b> - Use this when an average does not make sense at all levels but has to be 
+introduced at a higher level (for example, number of classes per package)</li></ul>
+<p><samp>&nbsp;&nbsp; &lt;!ELEMENT calculator EMPTY&gt;</samp>
+<br><samp>&nbsp;&nbsp; &lt;!ATTLIST calculator</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calculatorClass&nbsp;CDATA #REQUIRED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(method|type|compilationUnit|packageFragment|packageFragmentRoot|project) #REQUIRED</samp>
+<br><samp>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CDATA #REQUIRED</samp>
+<br><samp>&nbsp;&nbsp; &gt;</samp>
+<ul>
+<li><b>calculatorClass</b> - Identifies the Calculator class that computes the metric. Must be a subclass of net.sourceforge.metrics.calculators.Calculator</li><li><b>level</b> - specifies at which source level the metric is calculated. Must be one of method, type, compilationUnit, packageFragment, packageFragmentRoot or project.</li><li><b>name</b> - name of the calculator. Not used in code. For human consumption only.</li></ul>
+<H2>Example</H2>
+<H3>Calculator</H3>
+The following specifies a calculator that has to run at the type level and is implemented by the class net.sourceforge.metrics.calculators.SpecializationIndex<p/>
+<pre>
+      &lt;calculator
+            name="SpecializationIndex"
+            calculatorClass="net.sourceforge.metrics.calculators.SpecializationIndex"
+            level="type"&gt;
+      &lt;/calculator&gt;
+</pre>
+The following specifies a metric that propagates its average and maximum all the way from the method level to the project level (the default)<p/>
+<pre>
+      &lt;metric
+            propagateSum="false"
+            name="McCabe Cyclomatic Complexity"
+            level="method"
+            id="VG"&gt;
+      &lt;/metric&gt;
+</pre>
+The following specifies a metric for which propagating the sum does not make sense<p/>
+<pre>
+      &lt;metric
+            propagateSum="false"
+            name="Depth of Inheritance Tree"
+            level="type"
+            id="DIT"&gt;
+      &lt;/metric&gt;	
+</pre>
+The following metric LOCC at the type level is specified to be the sum of the LOC metrics at the method level (one level below type)<p/>
+<pre>
+      &lt;metric
+            sumOf="LOC"
+            name="Lines of Code"
+            level="type"
+            id="LOCC"&gt;
+      &lt;/metric&gt;	
+</pre>
+Finally, the last metric states that the average and maximum number of classes should not be propagated,
+but that a a new average and maximum have to be introduced at the packageFragmentRoot level, resulting in a
+average and maximum number of classes per packageFragment:<p/>
+<pre>
+      &lt;metric
+            propagateAvg="false"
+            name="Number of Classes"
+            newAvgMaxAt="packageFragmentRoot"
+            propagateMax="false"
+            level="compilationUnit"
+            id="NOC"&gt;
+      &lt;/metric&gt;
+</pre>
+
+Note that in addition to adding metrics, you can add preference pages to the metrics category named net.sourceforge.metrics.ui.MetricsPreferencePage, 
+for example:
+<pre>
+   &lt;extension
+         point="org.eclipse.ui.preferencePages"&gt;
+      &lt;page
+            name="NORM"
+            category="net.sourceforge.metrics.ui.MetricsPreferencePage"
+            class="net.sourceforge.metrics.ui.preferences.NORMPreferencePage"
+            id="net.sourceforge.metrics.norm"&gt;
+      &lt;/page&gt;
+   &lt;/extension&gt;
+</pre>
+<H2>API Information</H2>
+<h3>Example Calculator</h3>
+<pre>
+public class SpecializationIndex extends Calculator implements Constants {
+
+	/**
+	 * Must have a default constructor!
+	 */
+	public SpecializationIndex() {
+		super("SIX");
+	}
+
+	/**
+	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
+	 */
+	public void calculate(AbstractMetricSource source) throws InvalidSourceException {
+		if (source.getLevel() != TYPE) 
+			throw new InvalidSourceException("SpecializationIndex only applicable to types");
+		double norm = source.getValue("NORM").doubleValue();
+		double dit  = source.getValue("DIT").doubleValue();
+		double nom  = source.getValue("NOM").doubleValue();
+		source.setValue(new Metric("SIX", div(norm * dit , nom)));
+	}
+}
+</pre>
+<h3>Preference Pages</h3>
+To add a preference page for a metrics, simple use the standard emchanism for preference pages, but use the correct
+category as specified in the previous section. At the code level, I like to use the following mechanism to keep the preferences
+static and still receive property change events when they change. Add a static inner class to the calculator that needs preferences,
+as follows (example from NORM Calculator, adapt to your purpose):<p/>
+<pre>
+	/**
+	 * Statically cache preference values, yet register for change events so they
+	 * get updated when they change.
+	 */
+	public static class Preferences implements IPropertyChangeListener {
+
+		private boolean countStaticMethods;
+		private boolean countStaticAttributes;
+
+		
+		public Preferences() {
+			init();
+			getPreferences().addPropertyChangeListener(this);
+		}
+		
+		protected void init() {
+			countStaticMethods = getPreferences().getBoolean("LCOM.StaticMethods");
+			countStaticAttributes = getPreferences().getBoolean("LCOM.StaticAttributes");
+		}
+		
+		public boolean countStaticMethods() {
+			return countStaticMethods;
+		}
+		
+		public boolean countStaticAttributes() {
+			return countStaticAttributes;
+		}
+		
+		/**
+		 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+		 */
+		public void propertyChange(PropertyChangeEvent event) {
+			if (event.getProperty().startsWith("LCOM")) {
+				init();
+			}
+		}
+	}	
+	
+	public static Preferences getPrefs() {
+		if (prefs == null) {
+			prefs = new Preferences();
+		}
+		return prefs;
+	}
+	
+</pre>
+
+The calculator itself can then use this:<p/>
+<pre>
+		boolean countStatics = getPrefs().countStaticAttributes();	
+</pre>
+Which will always return the currently set value in the preference page. Note that the inherited getPreferences() method returns
+the preference store of the core metrics plugin. Even if you add preference pages to your own metrics, make sure it uses
+MetricsPlugin.getDefault().getPreferenceStore() to get/set its preferences.
+</BODY>
+</HTML>
