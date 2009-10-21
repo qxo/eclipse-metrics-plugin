@@ -24,7 +24,6 @@ import net.sourceforge.metrics.core.ExportDescriptor;
 import net.sourceforge.metrics.core.MetricsPlugin;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;

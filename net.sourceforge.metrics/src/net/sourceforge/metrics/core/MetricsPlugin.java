@@ -20,7 +20,7 @@
  */
 package net.sourceforge.metrics.core;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,24 +35,23 @@ import net.sourceforge.metrics.core.sources.Cache;
 import net.sourceforge.metrics.propagators.Propagator;
 import net.sourceforge.metrics.propagators.Sum;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
-import org.eclipse.core.runtime.IPluginDescriptor;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.ListenerList;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.BundleContext;
 
 /**
  * The main plugin class providing access to the metrics framework.
  * 
  * @author Frank Sauer
  */
-public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeListener, Constants {
+public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IPropertyChangeListener, Constants {
 
 	
 	private HashMap metricsDependencies;
@@ -75,38 +74,26 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	}
 
 	private static URL makeImageURL(String name) {
-		String path = "icons/" + name;
-		URL url = null;
-
 		try {
-			url = new URL(MetricsPlugin.getDefault().getDescriptor().getInstallURL(), path);
-		} catch (MalformedURLException e) {
-			Log.logError("Image not found", e);
-
+			return Platform.resolve(Platform.find(getDefault().getBundle(), new Path("icons/" + name)));
+		} catch (IOException e) {
+			Log.logError("Can't find image with name " + name, e);
 			return null;
 		}
-
-		return url;
 	}	
-	/**
-	 * Creates the plugin instance and installs metrics and calculators
-	 * specified in the manifest(s).
-	 */
-	public MetricsPlugin(IPluginDescriptor descriptor) {
-		super(descriptor);
-		plugin = this;
-		try {
-			resourceBundle= ResourceBundle.getBundle("net.sourceforge.metrics.core.MetricsPluginResources");
-		} catch (MissingResourceException x) {
-			resourceBundle = null;
-		}
-		try {
-			installExtensions();
-		} catch (Throwable t) {
-			t.printStackTrace();
+
+	public MetricsPlugin() {
+		super();
+		if (plugin == null) {
+			plugin = this;
+			try {
+				resourceBundle= ResourceBundle.getBundle("net.sourceforge.metrics.core.MetricsPluginResources");
+			} catch (MissingResourceException x) {
+				resourceBundle = null;
+			}
 		}
 	}
-
+	
 	/**
 	 * Returns the shared instance.
 	 */
@@ -141,7 +128,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	}
 	
 	private String[] parsePrefString(boolean description) {
-		String stringList = getPreferenceStore().getString("METRICS.displayOrder");
+		String stringList = getPluginPreferences().getString("METRICS.displayOrder");
 		StringTokenizer t = new StringTokenizer(stringList, ",");
 		int length = t.countTokens();
 		String[] items = new String[length];
@@ -178,7 +165,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	}
 	
 	public static long lastTimePreferencesChanged() {
-		return getDefault().getPreferenceStore().getLong("METRICS.lastPrefChange");
+		return getDefault().getPluginPreferences().getLong("METRICS.lastPrefChange");
 	}
 	
 	/**
@@ -187,37 +174,19 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	 */
 	public static void recordTimeAndClearCache() {
 		//System.err.println("Recording preference change timestamp.");
-		getDefault().getPreferenceStore().putValue("METRICS.lastPrefChange", String.valueOf(new Date().getTime()));
+		getDefault().getPluginPreferences().setValue("METRICS.lastPrefChange", String.valueOf(new Date().getTime()));
 		//Cache.singleton.clear();
 	}
 	
-	/**
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#getPreferenceStore()
-	 */
-	public IPreferenceStore getPreferenceStore() {
-		if (!listenerAdded) {
-			super.getPreferenceStore().setDefault("METRICS.decimals", FRACTION_DIGITS);
-			super.getPreferenceStore().setDefault("METRICS.xmlformat", "net.sourceforge.metrics.internal.xml.MetricsFirstExporter");
-			super.getPreferenceStore().setDefault("METRICS.enablewarnings", false);
-			super.getPreferenceStore().setDefault("METRICS.defaultColor", "0,0,0");
-			super.getPreferenceStore().setDefault("METRICS.linkedColor", "0,0,255");
-			super.getPreferenceStore().setDefault("METRICS.outOfRangeColor", "255,0,0");
-			super.getPreferenceStore().setDefault("METRICS.depGR_background", "1,17,68");
-			super.getPreferenceStore().setDefault("METRICS.showProject", true);
-			super.getPreferenceStore().addPropertyChangeListener(this);
-			listenerAdded = true;
-		}
-		return super.getPreferenceStore();
-	}
-	
+
 	public static boolean isWarningsEnabled() {
-		return getDefault().getPreferenceStore().getBoolean("METRICS.enablewarnings");
+		return getDefault().getPluginPreferences().getBoolean("METRICS.enablewarnings");
 	}
 	
 	/**
 	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
 	 */
-	public void propertyChange(PropertyChangeEvent event) {
+	public void propertyChange(Preferences.PropertyChangeEvent event) {
 		if (!event.getProperty().startsWith("METRICS")) {
 			recordTimeAndClearCache();
 		} else {
@@ -226,8 +195,8 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 		}
 		Object[] l = listeners.getListeners();
 		for (int i = 0; i < l.length; i++) {
-			if (l[i] instanceof IPropertyChangeListener)
-			((IPropertyChangeListener)l[i]).propertyChange(event);
+			if (l[i] instanceof Preferences.IPropertyChangeListener)
+			((Preferences.IPropertyChangeListener)l[i]).propertyChange(event);
 		}
 	}
 
@@ -241,7 +210,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	 */
 	private void installMetrics() {
 		//System.err.println("Discovering and installing metrics");
-		IExtensionPoint p = getDescriptor().getExtensionPoint("metrics");
+		IExtensionPoint p = Platform.getExtensionRegistry().getExtensionPoint(pluginId + ".metrics");
 		if (p != null) {
 			IExtension[] x = p.getExtensions();
 			for (int i = 0; i < x.length;i++) {
@@ -262,7 +231,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	
 	private void installExporters() {
 		//System.err.println("Discovering and installing metrics");
-		IExtensionPoint p = getDescriptor().getExtensionPoint("exporters");
+		IExtensionPoint p = Platform.getExtensionRegistry().getExtensionPoint(pluginId + ".exporters");
 		if (p != null) {
 			IExtension[] x = p.getExtensions();
 			for (int i = 0; i < x.length;i++) {
@@ -294,12 +263,12 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	}
 	
 	public IExporter getCurrentExporter() {
-		String format = getPreferenceStore().getString("METRICS.xmlformat");
+		String format = getPluginPreferences().getString("METRICS.xmlformat");
 		return createExporter(format);
 	}
 	
 	public boolean showProjectOnCompletion() {
-		return getPreferenceStore().getBoolean("METRICS.showProject");
+		return getPluginPreferences().getBoolean("METRICS.showProject");
 	}
 	
 	public IExporter createExporter(String className) {
@@ -321,10 +290,10 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 			list.append(id).append(" - ").append(desc).append(',');
 		}
 		String def = list.substring(0,list.length()-1);
-		getPreferenceStore().setDefault("METRICS.displayOrder", def);
+		getPluginPreferences().setDefault("METRICS.displayOrder", def);
 		// if metrics were added/removed, reset the value
 		if (getMetricIds().length != metrics.size()) {
-			getPreferenceStore().setToDefault("METRICS.displayOrder");
+			getPluginPreferences().setToDefault("METRICS.displayOrder");
 		}
 	}
 	
@@ -433,11 +402,19 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	}
 	
 	/**
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#shutdown()
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop()
 	 */
-	public void shutdown() throws CoreException {
-		super.shutdown();
+	public void stop(BundleContext context) throws Exception {
 		Cache.singleton.close();
+		super.stop(context);
+	}
+	
+	/**
+	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start()
+	 */
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		installExtensions();
 	}
 
 	/**
@@ -451,14 +428,14 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	/**
 	 * @param listener
 	 */
-	public void addPropertyChangeListener(IPropertyChangeListener listener) {
+	public void addPropertyChangeListener(Preferences.IPropertyChangeListener listener) {
 		listeners.add(listener);		
 	}
 
 	/**
 	 * @param listener
 	 */
-	public void removePropertyChangeListener(IPropertyChangeListener listener) {
+	public void removePropertyChangeListener(Preferences.IPropertyChangeListener listener) {
 		listeners.remove(listener);		
 	}
 

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import junit.framework.TestCase;
 import net.sourceforge.metrics.core.Max;
 import net.sourceforge.metrics.core.Metric;
-import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
 /**
  * @author Frank Sauer
@@ -33,10 +32,8 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 public class MaxTests extends TestCase {
 	
 	private static String name1 = "NAME1";
-	private static String name2 = "NAME2";
 	private ArrayList metrics;
 	private ArrayList maxes;
-	private AbstractMetricSource source;
 
 	/**
 	 * Constructor for MaxTests.

@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
@@ -61,11 +62,11 @@ public class CompilationUnitMetrics extends AbstractMetricSource {
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#initializeNewInstance(net.sourceforge.metrics.core.sources.AbstractMetricSource, org.eclipse.jdt.core.IJavaElement)
 	 */
 	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map data) {
-		((TypeMetrics)newSource).setAstNode((TypeDeclaration)data.get("type"));
+		((TypeMetrics)newSource).setAstNode((ASTNode)data.get("type"));
 		super.initializeNewInstance(newSource, element, data);
 	}		
 	
-	protected void initializeChildren() {		
+	protected void initializeChildren(AbstractMetricSource parentMetric) {		
 		ICompilationUnit unit = (ICompilationUnit) getJavaElement();	
 		try {
 			unit.getUnderlyingResource().deleteMarkers("net.sourceforge.metrics.outofrangemarker", true, IResource.DEPTH_INFINITE);	
@@ -75,40 +76,31 @@ public class CompilationUnitMetrics extends AbstractMetricSource {
 		astNode = getAST();
 		if (metricsInterruptus()) return;
 		List types = astNode.types();
-		int interfaces = 0;
+		int interfaces=0;
 		for (Iterator i = types.iterator(); i.hasNext();) {
 			if (metricsInterruptus()) return;
-			TypeDeclaration lastType = (TypeDeclaration)i.next();
-			if (!lastType.isInterface()) {
-				IType type = unit.getType(lastType.getName().getIdentifier());
+			AbstractTypeDeclaration abstractType = (AbstractTypeDeclaration)i.next();
+			boolean isInterface = false;
+			if(abstractType instanceof TypeDeclaration){
+				TypeDeclaration lastType = (TypeDeclaration) abstractType;
+				if(lastType.isInterface()){
+					isInterface= true;
+				}
+			}
+				IType type = unit.getType(abstractType.getName().getIdentifier());
 				HashMap data = new HashMap();
-				data.put("type", lastType);
+				data.put("type", abstractType);
 				TypeMetrics tm = (TypeMetrics) Dispatcher.calculateAbstractMetricSource(type, this, data);
 				addChild(tm);
-				interfaces += addInnerClasses(lastType, type);
-			} else interfaces++;
+				Metric subNumOfInterface = tm.getValue(NUM_INTERFACES);
+				interfaces += subNumOfInterface == null ? 0 : subNumOfInterface.intValue();
+			if (isInterface) {
+				interfaces++;
+			}
 		}
-		setValue(new Metric(NUM_INTERFACES,interfaces));	
+		setValue(new Metric(NUM_INTERFACES,interfaces));
 	}
 
-	private int addInnerClasses(TypeDeclaration t, IType type) {
-		int interfaces = 0;
-		try {
-			IType[] members = type.getTypes();
-			TypeDeclaration[] memberDeclarations = t.getTypes();
-			for (int j = 0; j < members.length;j++) {
-				if (!memberDeclarations[j].isInterface()) {
-					HashMap data = new HashMap();
-					data.put("type", memberDeclarations[j]);
-					TypeMetrics inner = (TypeMetrics) Dispatcher.calculateAbstractMetricSource(members[j], this, data);
-					addChild(inner);
-				} else interfaces++;
-			}
-		} catch (Throwable e) {
-			Log.logError("CompilationUnitMetrics::addInnerClasses", e);
-		}
-		return interfaces;
-	}
 
 	/**
 	 * @see metrics.core.IMetric#calculate(org.eclipse.jdt.core.IJavaElement)
@@ -120,7 +112,7 @@ public class CompilationUnitMetrics extends AbstractMetricSource {
 	
 	private CompilationUnit getAST() {
 		try {
-			ASTParser parser = ASTParser.newParser(AST.JLS2);
+			ASTParser parser = ASTParser.newParser(AST.JLS3);
 			parser.setSource((ICompilationUnit)getJavaElement());
 			return (CompilationUnit) parser.createAST(null);
 			//return AST.parseCompilationUnit((ICompilationUnit)getJavaElement(), false);

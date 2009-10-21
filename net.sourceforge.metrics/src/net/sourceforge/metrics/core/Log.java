@@ -7,7 +7,6 @@
 package net.sourceforge.metrics.core;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 
 /**
@@ -20,12 +19,12 @@ public class Log {
 	public final static String pluginId = "net.sourceforge.metrics";
 	
 	public static void logError(String message, Throwable t) {
-		Platform.getPlugin(pluginId).getLog().log(new Status(IStatus.ERROR, pluginId,
+		MetricsPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, pluginId,
 				IStatus.ERROR, message, t));
 	}
 	
 	public static void logMessage(String message) {
-		Platform.getPlugin(pluginId).getLog().log(
+		MetricsPlugin.getDefault().getLog().log(
 			new Status(IStatus.INFO, pluginId, IStatus.INFO, message, null));
 	}
 

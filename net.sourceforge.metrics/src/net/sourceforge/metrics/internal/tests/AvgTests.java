@@ -32,7 +32,6 @@ import net.sourceforge.metrics.core.Metric;
 public class AvgTests extends TestCase {
 
 	private static String name1 = "NAME1";
-	private static String name2 = "NAME2";
 	private ArrayList metrics1;
 	private ArrayList metrics2;
 

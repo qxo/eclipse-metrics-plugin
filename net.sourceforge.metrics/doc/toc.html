@@ -3,18 +3,37 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>Metrics 1.3.5</title>
+	<title>Metrics 1.3.6</title>
 </head>
 
 <body>
 
 <a name="gettingstarted"/>
 <h1> <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=70202&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>
-	Metrics 1.3.5 - Getting started</h1>
-<h2><strong>Note: This version requires 3.0M8 (or higher?)</strong>	</h2>
-<h2>Download it <a href="http://www.sourceforge.net/projects/metrics">here</a>.</h2>
-After downloading, unzip the zip file into the eclipse/plugins directory of your eclipse installation.<P/>
+	Metrics 1.3.6 - Getting started</h1>
+<h2><strong>Note: This version requires <a href="http://www.eclipse.org/downloads">Eclipse 3.1</a> </strong>	</h2>
+To access the sourceforge project page click <a href="http://www.sourceforge.net/projects/metrics">here</a>.</h2>
+<P/>
+What's new:<br>
+<UL>
+	<LI>Updated to work with eclipse 3.1</LI>
+	<LI>Bug in VG computation fixed</LI>
+	<LI>Bug in lines of code computation fixed</LI>
+	<LI>Bug in CE Computation fixed</LI>
+	<LI>Bug in I Computation fixed</LI>
+	<LI>Batch execution fixed</LI>
+	<LI>Several other minor bugfixes</LI>
+</UL>
 
+I want to thank Guillaume Boissier for doing most of the work on this release. Thanks!
+I also want to thank Uwe Kubosch for contributing the layered package view. Thanks!
+
+<h2>Installation procedure</h2>
+Run Eclipse, go to Help menu -&gt; Software Updates -&gt; Find and Install ... 
+On the opening dialog choose Search for new features to install.
+Add a new Remote site with the following url 
+<B>http://metrics.sourceforge.net/update</B> and follow the instructions for installation.
+<P/>
 
 To use the metrics plugin you have to be in a Java or Java Browsing perspective or any other perspective that shows java resources as source folders,
 packages and compilation units. The simple resource perspective won't do. This makes sense since the metrics are all about counting aspects of your 
@@ -52,9 +71,6 @@ toplevel preference page serves as a category for individual metric's preference
 	<img src="preferences.gif"/>
 </center>
 <a name="ranges"/>
-The main preference page contains a button labeled "Clear Cache" used to clear out all 
-cached metric values. This is sometimes needed after drasting refactorings moving classes
-abd packages around to different locations.<P/>
 
 As of version 1.0.9 of the plugin, the metrics can now trigger warnings that show
 up in the task view as well as the editors, indicating methods and types for which metrics
@@ -146,6 +162,7 @@ The tangle popup menu has a "Find Shortest Path" entry that shows the following 
 
 <a name="headless"/>
 <h1>Headless operation from Ant</h1>
+<b>Warning : since version 1.3.6 the anttask.jar as been renamed ant-metricstask.jar</b>
 As of version 1.3.2 the metrics plugin contains some ant tasks that can be used for headless
 operations as part of a nightly build for example. This section describes how to do this.
 <h2>Running eclipse without ui on an Ant build file</h2>
@@ -155,8 +172,7 @@ edit to match your environment:
 echo off
 setlocal
 
-set JAVA_HOME="c:\program files\jdk131_08" 
-@remset JAVA_HOME="c:\program files\jdk141_03"
+set JAVA_HOME="c:\program files\jdk141_07" 
 
 set VMARGS="-Xmx256m"
 
@@ -164,7 +180,7 @@ REM The JRE java.exe to be used
 set JAVAEXE=%JAVA_HOME%\jre\bin\java.exe"
 
 REM The Eclipse startup.jar
-set STARTUPJAR="C:\usr\Eclipse2.1\eclipse\startup.jar"
+set STARTUPJAR="C:\usr\Eclipse3.1\eclipse\startup.jar"
 
 REM The location of your workspace (does not need to exist)
 set WORKSPACE=C:\usr\ecworkspace
@@ -306,7 +322,10 @@ Total number of methods defined in the selected scope
 <h3>Number of Fields</h3>
 Total number of fields defined in the selected scope
 <h3>Lines of Code</h3>
-Total lines of code in the selected scope. Only counts non-blank and non-comment lines <em>inside</em> method bodies
+since version 1.3.6 Lines of code has been changed and separated into:<br>
+<ui><li>TLOC: Total lines of code that will counts non-blank and non-comment lines in a compilation unit. usefull for thoses interested in computed KLOC.</li>
+<li>MLOC: Method lines of code will counts and sum non-blank and non-comment lines <em>inside</em> method bodies</li>
+</ui>
 <h3>Specialization Index</h3>
 Average of the specialization index, defined as NORM * DIT / NOM. This is a class level metric
 <h3>McCabe Cyclomatic Complexity</h3>

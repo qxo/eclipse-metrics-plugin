@@ -31,7 +31,6 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -80,7 +79,6 @@ public class TopoSortDialog extends TitleAreaDialog {
 	protected Control createDialogArea(Composite parent) {
 		Composite composite = (Composite)super.createDialogArea(parent);
 		Composite c = new Composite(composite, SWT.NONE);
-		Font font = parent.getFont();
 		c.setLayout(new GridLayout());
 		VertexLabelProvider vlp = new VertexLabelProvider();
 		sortedV = createListViewer(parent, c);

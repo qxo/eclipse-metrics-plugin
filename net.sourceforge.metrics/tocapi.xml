@@ -2,7 +2,7 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="Programmers Guide" link_to="toc.xml#tocapi"> 
-	<topic label="API Reference"  href="apidocs/index.html"/> 
-	<topic label="Metrics extension"  href="net.sourceforge.metrics.html"/> 
-	<topic label="Exporter extension"  href="net.sourceforge.exporters.html"/> 
+	<topic label="API Reference"  href="doc/apidocs/index.html"/> 
+	<topic label="Metrics extension"  href="doc/net.sourceforge.metrics.html"/> 
+	<topic label="Exporter extension"  href="doc/net.sourceforge.exporters.html"/> 
 </toc>

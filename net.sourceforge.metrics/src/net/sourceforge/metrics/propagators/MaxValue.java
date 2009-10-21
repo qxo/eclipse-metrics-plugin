@@ -20,8 +20,6 @@
  */
 package net.sourceforge.metrics.propagators;
 
-import java.util.List;
-
 import net.sourceforge.metrics.core.Constants;
 import net.sourceforge.metrics.core.Max;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
@@ -55,7 +53,7 @@ public class MaxValue extends Propagator implements Constants {
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
 	public void calculate(AbstractMetricSource source) {
-		List values = source.getMetricsFromChildren(x);
+		//List values = source.getMetricsFromChildren(x);
 		Max m = Max.createFromChildMetrics(name, per, x, source);
 		if (m != null) source.setMaximum(m);
 	}

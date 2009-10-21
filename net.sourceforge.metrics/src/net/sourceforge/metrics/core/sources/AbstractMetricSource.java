@@ -59,12 +59,11 @@ public abstract class AbstractMetricSource implements Constants, Serializable {
 	
 	protected String handle = null;
 	transient private AbstractMetricSource parent = null;
-	transient private List childrenAA = null;
+	transient private List children = null;
 	private Map values = new HashMap();
 	private Map averages = new HashMap();
 	private Map maxima = new HashMap();
 	private List childHandles = new ArrayList();
-	private long lastCalculated;
 	
 	private boolean doRecurse = true;
 	
@@ -130,15 +129,15 @@ public abstract class AbstractMetricSource implements Constants, Serializable {
 	}
 	
 	public List getChildren() {
-		if (childrenAA == null) {
-			childrenAA = new ArrayList();
+		if (children == null) {
+			children = new ArrayList();
 		}
-		return childrenAA;
+		return children;
 	}
 	
 	public int getSize() {
-		if (childrenAA == null) return 0;
-		return childrenAA.size();
+		if (children == null) return 0;
+		return children.size();
 	}
 	
 	/**
@@ -180,7 +179,7 @@ public abstract class AbstractMetricSource implements Constants, Serializable {
 		this.handle = handle;
 	}
 	
-	protected abstract void initializeChildren();
+	protected abstract void initializeChildren(AbstractMetricSource parentMetric);
 	
 	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map data) {
 		newSource.childHandles.clear();
@@ -293,14 +292,14 @@ public abstract class AbstractMetricSource implements Constants, Serializable {
 	/**
 	 * not meant for public use
 	 */
-	public void recurse() {
+	public void recurse(AbstractMetricSource parent) {
 		if (doRecurse) {
-			initializeChildren();
-			if (childrenAA != null) {
-				for (Iterator i = childrenAA.iterator(); i.hasNext();) {
+			initializeChildren(parent);
+			if (children != null) {
+				for (Iterator i = children.iterator(); i.hasNext();) {
 					if (metricsInterruptus()) return;
 					AbstractMetricSource next = (AbstractMetricSource)i.next();
-					next.recurse();
+					next.recurse(parent);
 				}
 			}
 			calculate();
@@ -318,13 +317,13 @@ public abstract class AbstractMetricSource implements Constants, Serializable {
 	 * 
 	 */
 	private void detachChildren() {
-		if (childrenAA == null) return;
-		for (Iterator i = childrenAA.iterator(); i.hasNext();) {
+		if (children == null) return;
+		for (Iterator i = children.iterator(); i.hasNext();) {
 			AbstractMetricSource next = (AbstractMetricSource) i.next();
 			next.dispose();
 			i.remove();
 		}
-		childrenAA = null;
+		children = null;
 	}
 
 	protected void dispose() {

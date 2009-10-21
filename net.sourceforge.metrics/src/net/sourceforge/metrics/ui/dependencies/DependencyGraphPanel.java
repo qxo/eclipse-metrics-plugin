@@ -16,7 +16,7 @@
  * HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
  *
  *
- * $Id: DependencyGraphPanel.java,v 1.19 2004/05/01 19:23:18 sauerf Exp $
+ * $Id: DependencyGraphPanel.java,v 1.21 2004/06/05 14:48:27 sauerf Exp $
  */
 package net.sourceforge.metrics.ui.dependencies;
 
@@ -50,6 +50,7 @@ import com.touchgraph.graphlayout.Edge;
 import com.touchgraph.graphlayout.GLPanel;
 import com.touchgraph.graphlayout.Node;
 import com.touchgraph.graphlayout.TGException;
+import com.touchgraph.graphlayout.TGPanel;
 
 /**
  * @author Frank Sauer
@@ -126,7 +127,7 @@ public class DependencyGraphPanel extends GLPanel {
 		tgPanel.clearSelect();
 		tgPanel.clearAll();
 		tgPanel.setBackColor(getGraphBackground());
-		tgPanel.setBackground(tgPanel.BACK_COLOR);
+		tgPanel.setBackground(TGPanel.BACK_COLOR);
 		tgPanel.repaint();		
 	}
 	
@@ -245,7 +246,6 @@ public class DependencyGraphPanel extends GLPanel {
 	private void addEdge(Node from, Node to, StrongComponent[] comps) {
 		Edge e = tgPanel.findEdge(from, to);
 		if (e == null) {
-			int distance = Edge.DEFAULT_LENGTH;
 			e = new Edge(from, to);
 			int strong = isStrong(from, to, comps);
 			if ( strong >= 0 ) {

@@ -83,22 +83,7 @@ protected ListUpDownEditor(String name, String labelText, Composite parent) {
 	init(name, labelText);
 	createControl(parent);
 }
-/**
- * Notifies that the Add button has been pressed.
- */
-private void addPressed() {
-	setPresentsDefaultValue(false);
-	String input = getNewInputObject();
 
-	if (input != null) {
-		int index = list.getSelectionIndex();
-		if (index >= 0)
-			list.add(input, index + 1);
-		else
-			list.add(input, 0);
-		selectionChanged();
-	}
-}
 /* (non-Javadoc)
  * Method declared on FieldEditor.
  */
@@ -327,17 +312,7 @@ protected Shell getShell() {
  * @see #createList
  */
 protected abstract String[] parseString(String stringList);
-/**
- * Notifies that the Remove button has been pressed.
- */
-private void removePressed() {
-	setPresentsDefaultValue(false);
-	int index = list.getSelectionIndex();
-	if (index >= 0) {
-		list.remove(index);
-		selectionChanged();
-	}
-}
+
 /**
  * Notifies that the list selection has changed.
  */

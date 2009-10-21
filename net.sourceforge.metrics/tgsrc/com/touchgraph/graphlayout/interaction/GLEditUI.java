@@ -67,7 +67,7 @@ import com.touchgraph.graphlayout.TGPanel;
 /** GLEditUI:  User Interface for editing the graph.
   *
   * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: GLEditUI.java,v 1.2 2003/05/09 03:48:41 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: GLEditUI.java,v 1.3 2004/05/05 03:42:31 sauerf Exp $
   */
 public class GLEditUI extends TGUserInterface {
 
@@ -241,7 +241,6 @@ public class GLEditUI extends TGUserInterface {
         menuItem = new MenuItem("Hide Node");
         ActionListener hideAction = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    Node select = tgPanel.getSelect();
                     if(popupNode!=null) {
                         tgPanel.hideNode(popupNode);
                     }

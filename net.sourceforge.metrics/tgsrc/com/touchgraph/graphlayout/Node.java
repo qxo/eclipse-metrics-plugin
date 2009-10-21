@@ -65,13 +65,9 @@ import java.util.Vector;
   *  @author   Alexander Shapiro
   *  @author   Murray Altheim (2001-11-06; added support for round rects and alternate Node colors)
   *  @author   Frank Sauer (2003-05-16) added support for multi-line labels and customizable popupmenus (aboutToShow method)
-  *  @version  1.22-jre1.1  $Id: Node.java,v 1.8 2003/05/16 18:11:47 sauerf Exp $
+  *  @version  1.22-jre1.1  $Id: Node.java,v 1.10 2004/10/24 10:39:00 donv70 Exp $
   */
 public class Node {
-
-	private int labelLineCount = -1;
-
-	private String maxLabelLine = null;
 
 	/** This Node's type is a Rectangle. */
     public final static int TYPE_RECTANGLE = 1;
@@ -127,10 +123,10 @@ public class Node {
     public double y;
 	public double massfade=1; //Used by layout
 	
-    protected double dx; //Used by layout
-    protected double dy; //Used by layout
+    public double dx; //Used by layout
+    public double dy; //Used by layout
 
-    protected boolean fixed;
+    public boolean fixed;
     protected int repulsion; //Used by layout
 
     public boolean justMadeLocal = false;

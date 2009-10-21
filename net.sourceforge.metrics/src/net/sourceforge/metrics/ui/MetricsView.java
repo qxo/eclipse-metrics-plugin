@@ -22,7 +22,6 @@ package net.sourceforge.metrics.ui;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Map;
 
 import net.sourceforge.metrics.builder.IMetricsProgressListener;
@@ -34,20 +33,20 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 import net.sourceforge.metrics.core.sources.Dispatcher;
 import net.sourceforge.metrics.core.sources.IGraphContributor;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.custom.TableTreeItem;
 import org.eclipse.swt.events.ArmListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -60,6 +59,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.ISelectionListener;
@@ -77,7 +77,10 @@ import org.eclipse.ui.part.ViewPart;
  * 
  * @author Frank Sauer
  */
-public class MetricsView extends ViewPart implements ISelectionListener, IMetricsProgressListener, IPropertyChangeListener {
+public class MetricsView extends ViewPart implements ISelectionListener, IMetricsProgressListener, Preferences.IPropertyChangeListener {
+	
+//	 FIXME GB 04/15/2005 move that const to the approriate place
+	private static String pluginId = MetricsPlugin.getDefault().getBundle().getSymbolicName();
 
 	private final static String[] EXPLANATION = {
 		"No metrics available for selection. To calculate and display metrics:",
@@ -101,7 +104,6 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	private int queued;
 	private ProgressBar progressBar;
 	private Label progressText;
-	private List pending;
 	private static ArmListener armListener;
 	private static Map currentDependencies;
 	private IMemento memento;
@@ -178,7 +180,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		table.addSelectionListener(new SelectionListener() {
 		
 			public void widgetSelected(SelectionEvent e) {
-				TableTreeItem item = (TableTreeItem) e.item;
+				TreeItem item = (TreeItem) e.item;
 				if (item != null) {
 					supplementTitle(item);
 				}
@@ -203,12 +205,12 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	 * Add the metric desciption to the titlebar
 	 * @param item
 	 */
-	private void supplementTitle(TableTreeItem item) {
+	private void supplementTitle(TreeItem item) {
 		StringBuffer b = getTitlePrefix(selection);
-		TableTreeItem root = item; // fix submitted by Jacob Eckel 5/27/03
+		TreeItem root = item; // fix submitted by Jacob Eckel 5/27/03
 		while (root.getParentItem() != null) root = root.getParentItem();
 		b.append(" - ").append(root.getText(0));
-		setTitle(b.toString());
+		setPartName(b.toString());
 	}
 	
 	private Cursor getWaitCursor(Display d) {
@@ -231,17 +233,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 			setSelection(elm);
 		}		
 	}
-	
-
-	private void removeAll() {
-		final Display display = table.getDisplay();
-		display.asyncExec(new Runnable () {
-			public void run() {
-				if (!table.isDisposed()) table.removeAll();
-			}
-		});
-	}
-	
+		
 	private void setStatus(final String title, final boolean busy) {
 		final Display display = Display.getDefault();
 		display.asyncExec(new Runnable () {
@@ -267,7 +259,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 				if (!table.isDisposed()) {
 					table.setMetrics(ms);
 					table.setCursor(getNormalCursor(table.getDisplay()));
-					setTitle(getTitlePrefix(selection).toString());
+					setPartName(getTitlePrefix(selection).toString());
 				}
 			}
 		});
@@ -294,12 +286,28 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	 * @see org.eclipse.ui.ISelectionListener#selectionChanged(org.eclipse.ui.IWorkbenchPart, org.eclipse.jface.viewers.ISelection)
 	 */
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if (selection instanceof IStructuredSelection) {
-			Object first = ((IStructuredSelection)selection).getFirstElement();
-			if (first instanceof IJavaElement) {
-				IJavaElement jElem = (IJavaElement)first;
-				if (canDoMetrics(jElem))
-					setJavaElement(jElem, false);
+		if(!selection.isEmpty()){
+			if (selection instanceof IStructuredSelection) {
+				IStructuredSelection l_structSelection = (IStructuredSelection) selection;
+				if(l_structSelection.size() == 1){ //only one element allowed
+					Object l_first = ((IStructuredSelection)l_structSelection).getFirstElement();
+					IJavaElement l_jElem = null;
+					if (l_first instanceof IJavaElement) {
+						l_jElem = (IJavaElement)l_first;
+					}else if(l_first instanceof IResource){
+						l_jElem = (IJavaElement) ((IResource) l_first).getAdapter(IJavaElement.class);
+					}
+					if (l_jElem != null && canDoMetrics(l_jElem)){
+						try{
+							if(l_jElem.getJavaProject().getProject().hasNature(pluginId + ".nature")){
+								setJavaElement(l_jElem, false);
+							}
+						}catch(CoreException l_ce){
+//							 TODO GB 04/15/2005 ? what to do in such case
+							Log.logError("project nature does not exist",l_ce);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -383,15 +391,17 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	 * As of 4/30/04, only 3.0M8+ and embedded style on all platforms
 	 */
 	public void displayDependencyGraph() {
-/*		if (selection.getElementType() <= IJavaElement.PACKAGE_FRAGMENT_ROOT) {
+		/*
+		if (selection.getElementType() <= IJavaElement.PACKAGE_FRAGMENT_ROOT) {
 			IGraphContributor source = (IGraphContributor) Dispatcher.getAbstractMetricSource(selection);
-			if ("win32".equals(BootLoader.getWS())) {
+			if (Platform.OS_WIN32.equals(Platform.getOS())) {
 				displayDependencyGraphSWT(source.getEfferent());
 			} else {
 				displayDependencyGraphAWT(source.getEfferent());
 			}
 		}
-*/		// now works the same on all platforms
+		*/
+		// now works the same on all platforms
 		IGraphContributor source = (IGraphContributor) Dispatcher.getAbstractMetricSource(selection);
 		displayDependencyGraphSWT(source.getEfferent());
 	}
@@ -415,7 +425,8 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 
 	/*
 	private void displayDependencyGraphAWT(final Map graph) {
-		Thread awt = new Thread(new Runnable() {
+		Display.getCurrent().asyncExec(new Runnable() {
+		//Thread awt = new Thread(new Runnable() {
 			public void run() {
 				final Frame frame = new Frame("Dependencies");
 				final DependencyGraphPanel glPanel = new DependencyGraphPanel();
@@ -435,7 +446,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 				frame.setVisible(true);
 			}
 		});
-		awt.start();
+		//awt.start();
 	}	
 	*/
 	
@@ -509,7 +520,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
 	 */
-	public void propertyChange(PropertyChangeEvent event) {
+	public void propertyChange(Preferences.PropertyChangeEvent event) {
 		if (selection != null) setJavaElement(selection, true);
 	}
 

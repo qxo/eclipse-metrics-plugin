@@ -32,8 +32,6 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 
 /**
  * Calculates number of overridden methods for a class.
@@ -127,7 +125,7 @@ public class Norm extends Calculator implements Constants {
 	 * Statically cache preference values, yet register for change events so they
 	 * get updated when they change.
 	 */
-	public static class Preferences implements IPropertyChangeListener {
+	public static class Preferences implements org.eclipse.core.runtime.Preferences.IPropertyChangeListener {
 
 		private boolean countAbstract;
 		private boolean supers;
@@ -164,7 +162,7 @@ public class Norm extends Calculator implements Constants {
 		/**
 		 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
 		 */
-		public void propertyChange(PropertyChangeEvent event) {
+		public void propertyChange(org.eclipse.core.runtime.Preferences.PropertyChangeEvent event) {
 			//System.err.println("NORM.prefs resetting!!!");
 			if (event.getProperty().startsWith("NORM")) {
 				init();

@@ -52,7 +52,7 @@ public class ProjectMetrics extends AbstractMetricSource implements IGraphContri
 		super();
 	}
 
-	protected void initializeChildren() {
+	protected void initializeChildren(AbstractMetricSource parentMetric) {
 		IJavaProject pack = (IJavaProject)getJavaElement();
 		try {
 			IJavaElement[] children = pack.getChildren();
@@ -70,8 +70,8 @@ public class ProjectMetrics extends AbstractMetricSource implements IGraphContri
 	
 	}
 	
-	public void recurse() {
-		initializeChildren();
+	public void recurse(AbstractMetricSource parentMetric) {
+		initializeChildren(parentMetric);
 		calculate();
 		save();
 	}

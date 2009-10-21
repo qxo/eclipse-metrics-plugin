@@ -2,6 +2,6 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="Concepts" link_to="toc.xml#concepts"> 
-	<topic label="Explanation of Metrics"  href="toc.html#concepts"> 
+	<topic label="Explanation of Metrics"  href="doc/toc.html#concepts"> 
 	</topic>
 </toc>

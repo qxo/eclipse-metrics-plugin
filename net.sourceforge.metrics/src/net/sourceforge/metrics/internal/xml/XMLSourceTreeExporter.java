@@ -42,8 +42,6 @@ import org.eclipse.jdt.core.IJavaElement;
  */
 public class XMLSourceTreeExporter implements IExporter {
 	
-	private File outputFile;
-
 	private String handle;
 
 	public XMLSourceTreeExporter() {
@@ -55,7 +53,6 @@ public class XMLSourceTreeExporter implements IExporter {
 	public void export(IJavaElement element, File outputFile, IProgressMonitor monitor) throws InvocationTargetException {
 		try {
 			this.handle = element.getHandleIdentifier();
-			this.outputFile = outputFile;
 			FileOutputStream out = new FileOutputStream(outputFile);
 			XMLPrintStream pOut = new XMLPrintStream(out);
 			pOut.printXMLHeader();

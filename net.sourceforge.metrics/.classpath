@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="anttasks"/>
 	<classpathentry kind="src" path="classycle"/>
 	<classpathentry kind="src" path="tgsrc"/>
-	<classpathentry kind="lib" path="jdbm.jar"/>
+	<classpathentry sourcepath="jdbm.jar" kind="lib" path="jdbm.jar"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="classes"/>

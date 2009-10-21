@@ -42,25 +42,27 @@ public class Max extends Metric implements Serializable {
 	private String handle ;
 	
 	public static Max createFromMetrics(String name, String per, List values) {
-		double max = 0;
+		double max = 0; //will be initialized with first max (if any)
+		boolean found = false;
 		for (Iterator i = values.iterator(); i.hasNext();) {
 			Metric next = (Metric)i.next();
-			if (next.doubleValue() > max) {
+			if (!found || (next.doubleValue() > max)) {
 				max = next.doubleValue();
+				found = true;
 			}
 
 		}
-		return new Max(name, per, max);
+		return (found) ? new Max(name, per, max) : null;
 	}
 
 	public static Max createFromChildMetrics(String name, String per, String childName, AbstractMetricSource source) {
-		double max = 0;
+		double max = 0; //will be initialized with first max (if any)
 		IJavaElement element = null;
 		for (Iterator i = source.getChildren().iterator(); i.hasNext();) {
 			AbstractMetricSource next = (AbstractMetricSource)i.next();
 			Metric nm = next.getValue(childName);
 			// BUG #716717 temporary fix until reason for null can be determined
-			if ((nm != null)&&(nm.doubleValue() > max)) {
+			if ((nm != null) && ((element == null) || (nm.doubleValue() > max))) {
 				max = nm.doubleValue();
 				element = next.getJavaElement();
 			} else {
@@ -72,16 +74,15 @@ public class Max extends Metric implements Serializable {
 	}
 	
 	public static Max createFromMaxes(String name, String per, List values) {
-		Max max = new Max(name, per, 0);
-		Max first = max;
+		Max max = null;
 		for (Iterator i = values.iterator(); i.hasNext();) {
 			Max next = (Max)i.next();
-			if (next.doubleValue() > max.doubleValue()) {
+			if ((max == null) || (next.doubleValue() > max.doubleValue())) {
 				max = next;
 			}
 
 		}
-		return (max == first)?null:max;
+		return max; //may be null
 	}
 	
 	/**

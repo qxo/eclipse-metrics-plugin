@@ -64,7 +64,7 @@ import com.touchgraph.graphlayout.TGPoint2D;
   * Demonstrates the usefulness of Lenses.
   *
   * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: HyperScroll.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: HyperScroll.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
   */
 public class HyperScroll implements GraphListener {
 
@@ -156,21 +156,21 @@ public class HyperScroll implements GraphListener {
 
      class HyperLens extends TGAbstractLens {
         protected void applyLens(TGPoint2D p) {
-            double dist=Math.sqrt(p.x*p.x+p.y*p.y);
+            double dist=Math.sqrt(p.getX()*p.getX()+p.getY()*p.getY());
             if(dist>0) {
-                p.x=p.x/dist*hyperDist(dist);
-                p.y=p.y/dist*hyperDist(dist);
+                p.setX(p.getX()/dist*hyperDist(dist));
+                p.setY(p.getY()/dist*hyperDist(dist));
             }
-            else { p.x =0; p.y=0;}
+            else { p.setX(0); p.setY(0);}
         }
         
         protected void undoLens(TGPoint2D p) {
-            double dist=Math.sqrt(p.x*p.x+p.y*p.y);
+            double dist=Math.sqrt(p.getX()*p.getX()+p.getY()*p.getY());
             if(dist>0) {
-                p.x=p.x/dist*invHyperDist(dist);
-                p.y=p.y/dist*invHyperDist(dist);
+                p.setX(p.getX()/dist*invHyperDist(dist));
+                p.setY(p.getY()/dist*invHyperDist(dist));
             }
-            else { p.x =0; p.y=0;}
+            else { p.setX(0); p.setY(0);}
         }
     }
 

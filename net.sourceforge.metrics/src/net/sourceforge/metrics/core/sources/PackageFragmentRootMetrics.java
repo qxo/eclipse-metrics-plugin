@@ -52,7 +52,7 @@ public class PackageFragmentRootMetrics extends AbstractMetricSource implements 
 		super();
 	}
 
-	protected void initializeChildren() {
+	protected void initializeChildren(AbstractMetricSource parentMetric) {
 		IPackageFragmentRoot pack = (IPackageFragmentRoot)getJavaElement();
 		try {
 			IJavaElement[] children = pack.getChildren();
@@ -71,8 +71,8 @@ public class PackageFragmentRootMetrics extends AbstractMetricSource implements 
 	
 	}
 
-	public void recurse() {
-		initializeChildren();
+	public void recurse(AbstractMetricSource parentMetric) {
+		initializeChildren(parentMetric);
 		calculate();
 		save();
 	}

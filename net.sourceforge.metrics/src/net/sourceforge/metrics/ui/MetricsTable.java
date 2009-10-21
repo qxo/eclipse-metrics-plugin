@@ -16,14 +16,13 @@
  * HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
  *
  *
- * $Id: MetricsTable.java,v 1.36 2003/06/14 03:45:13 sauerf Exp $
+ * $Id: MetricsTable.java,v 1.39 2005/02/28 03:07:53 sauerf Exp $
  */
 package net.sourceforge.metrics.ui;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 
 import net.sourceforge.metrics.core.Avg;
 import net.sourceforge.metrics.core.Constants;
@@ -34,19 +33,14 @@ import net.sourceforge.metrics.core.MetricDescriptor;
 import net.sourceforge.metrics.core.MetricsPlugin;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TableTree;
-import org.eclipse.swt.custom.TableTreeItem;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.TreeEvent;
@@ -54,7 +48,9 @@ import org.eclipse.swt.events.TreeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.PartInitException;
@@ -65,21 +61,18 @@ import org.eclipse.ui.PartInitException;
  * 
  * @author Frank Sauer
  */
-public class MetricsTable extends TableTree implements Constants, SelectionListener, TreeListener {
+public class MetricsTable extends Tree implements Constants, SelectionListener, TreeListener {
 
 	private Color lastDefaultColor;
 	private Color lastInRangeColor;
-	private Color lastOutofRangeColor;
-
-	private static HashMap descriptions = new HashMap();
-	
-	private TableColumn description;
-	private TableColumn value;
-	private TableColumn average;
-	private TableColumn variance;
-	private TableColumn max;
-	private TableColumn path;
-	private TableColumn method;
+	private Color lastOutofRangeColor;	
+	private TreeColumn description;
+	private TreeColumn value;
+	private TreeColumn average;
+	private TreeColumn variance;
+	private TreeColumn max;
+	private TreeColumn path;
+	private TreeColumn method;
 
 	/**
 	 * Constructor for MetricsTable.
@@ -88,21 +81,21 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	 */
 	public MetricsTable(Composite parent, int style) {
 		super(parent, style);
-		getTable().setLinesVisible(true);
-		getTable().setHeaderVisible(true);
-		description = new TableColumn(getTable(), SWT.LEFT);
+		setLinesVisible(true);
+		setHeaderVisible(true);
+		description = new TreeColumn(this, SWT.LEFT);
 		description.setText("Metric");
-		value = new TableColumn(getTable(), SWT.RIGHT);
+		value = new TreeColumn(this, SWT.RIGHT);
 		value.setText("Total");
-		average = new TableColumn(getTable(), SWT.RIGHT);
+		average = new TreeColumn(this, SWT.RIGHT);
 		average.setText("Mean");
-		variance = new TableColumn(getTable(), SWT.RIGHT);
+		variance = new TreeColumn(this, SWT.RIGHT);
 		variance.setText("Std. Dev.");
-		max = new TableColumn(getTable(), SWT.RIGHT);
+		max = new TreeColumn(this, SWT.RIGHT);
 		max.setText("Maximum");
-		path = new TableColumn(getTable(), SWT.LEFT);
+		path = new TreeColumn(this, SWT.LEFT);
 		path.setText("Resource causing Maximum");
-		method = new TableColumn(getTable(), SWT.LEFT);
+		method = new TreeColumn(this, SWT.LEFT);
 		method.setText("Method");	
 		addSelectionListener(this);
 		addTreeListener(this);
@@ -133,7 +126,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 					Avg avg = ms.getAverage(name, pers[j]);
 					Max max = ms.getMaximum(name, pers[j]);
 					if ((avg != null)||(max != null)) {
-						TableTreeItem row = createNewRow();
+						TreeItem row = createNewRow();
 						cols[0] = descriptions[i] + " (avg/max per " + pers[j] + ")";
 						if (avg != null) {
 							cols[2] = format(avg.doubleValue());
@@ -157,7 +150,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 					}
 				}
 				if (rowNeeded) {
-					TableTreeItem row = createNewRow();
+					TreeItem row = createNewRow();
 					setForeground(m, row);
 					setText(row,cols); 
 					addChildren(row, ms, name, "");
@@ -168,7 +161,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 		}
 	}
 
-	private void setForeground(Metric metric, TableTreeItem row) {
+	private void setForeground(Metric metric, TreeItem row) {
 		if (metric == null) {
 			row.setForeground(getDefaultForeground());
 		} else {
@@ -182,8 +175,8 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	 * create a new root row
 	 * @return
 	 */
-	private TableTreeItem createNewRow() {
-		TableTreeItem item = new TableTreeItem(this, SWT.NONE);
+	private TreeItem createNewRow() {
+		TreeItem item = new TreeItem(this, SWT.NONE);
 		item.setForeground(getDefaultForeground());
 		return item;
 	}
@@ -193,8 +186,8 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	 * @param parent
 	 * @return
 	 */
-	private TableTreeItem createNewRow(TableTreeItem parent) {
-		TableTreeItem item = new TableTreeItem(parent, SWT.NONE);
+	private TreeItem createNewRow(TreeItem parent) {
+		TreeItem item = new TreeItem(parent, SWT.NONE);
 		item.setForeground(getDefaultForeground());
 		return item;
 	}
@@ -249,12 +242,12 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	 * When such a dummy child is already rpesent, replaces it with the real children.
 	 * This spreads the work load across expansion events instead of constructing the
 	 * entire tree up front, which could be very time consuming in large projects.
-	 * @param row	parent TableTreeItem
+	 * @param row	parent TreeItem
 	 * @param ms	AbstractMetricSource containing the metrics
 	 * @param metric 	Name of the Metric
 	 * @param per		name of the avg/max type
 	 */
-	private void addChildren(TableTreeItem row, AbstractMetricSource ms, String metric, String per) {
+	private void addChildren(TreeItem row, AbstractMetricSource ms, String metric, String per) {
 		AbstractMetricSource[] children = ms.getChildrenHaving(per, metric);
 		// don't have to do anything if there are no child metrics
 		if ((children != null)&&(children.length>0)) {
@@ -264,7 +257,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 				row.getItems()[0].dispose();
 				sort(children, metric, per);
 				for (int i = 0; i < children.length; i++) {
-					TableTreeItem child = createNewRow(row);
+					TreeItem child = createNewRow(row);
 					child.setText(getElementName(children[i].getJavaElement()));
 					Metric val = children[i].getValue(metric);
 					child.setText(1, (val != null)?format(val.doubleValue()):"");
@@ -289,7 +282,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 					addChildren(child, children[i], metric, per);
 				}
 			} else { // add dummy
-				TableTreeItem child = createNewRow(row);
+				createNewRow(row);
 				row.setData("metric", metric);
 				row.setData("per", per);
 				row.setData("source", ms);								
@@ -306,7 +299,12 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	
 	private String getElementName(IJavaElement element) {
 		String candidate = element.getElementName();
-		if ("".equals(candidate)) return "(default package)";
+		if ("".equals(candidate)){
+			if(element instanceof IType){
+				return "anonymous";
+			}
+			return "(default package)";
+		}
 		return candidate;
 	}
 	
@@ -344,7 +342,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 		Arrays.sort(children, c);
 	}
 
-	private void setText(TableTreeItem row, String[] columns) {
+	private void setText(TreeItem row, String[] columns) {
 		row.setText(columns[0]);
 		for (int i = 1; i < columns.length; i++) {
 			row.setText(i, columns[i]);
@@ -365,19 +363,6 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	 */
 	private String getPath(IJavaElement element) {
 		return element.getPath().toString();
-	}
-
-	/**
-	 * Method getCompilationUnit.
-	 * @param source
-	 * @return Object
-	 */
-	private ICompilationUnit getCompilationUnit(String path) {
-		IResource source = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
-		if (source.getType() == IResource.FILE) {
-			return JavaCore.createCompilationUnitFrom((IFile)source);
-		}
-		return null;
 	}
 	
 	private String format(double value) {
@@ -403,7 +388,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(SelectionEvent)
 	 */
 	public void widgetDefaultSelected(SelectionEvent e) {
-		TableTreeItem row =  (TableTreeItem)e.item;
+		TreeItem row =  (TreeItem)e.item;
 		IJavaElement element = (IJavaElement)row.getData("element");
 		String handle = (String)row.getData("handle");
 		try {
@@ -463,7 +448,7 @@ public class MetricsTable extends TableTree implements Constants, SelectionListe
 	 * replaces dummy child nodes with the real children if needed
 	 */
 	public void treeExpanded(TreeEvent e) {
-		TableTreeItem item = (TableTreeItem) e.item;
+		TreeItem item = (TreeItem) e.item;
 		if (item.getData("source") != null) {
 			AbstractMetricSource source = (AbstractMetricSource) item.getData("source");
 			String metric = (String) item.getData("metric");
