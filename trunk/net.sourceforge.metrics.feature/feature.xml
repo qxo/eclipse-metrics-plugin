@@ -2,7 +2,7 @@
 <feature
       id="net.sourceforge.metrics"
       label="Metrics plugin for Eclipse"
-      version="1.3.7.20091015-001"
+      version="1.3.8.20091015-001"
       provider-name="Frank Sauer">
 
    <description url="http://metrics.sourceforge.net">
