@@ -24,75 +24,63 @@
  */
 package classycle.graph;
 
+public class LongestWalkProcessor extends GraphProcessor {
+	@Override
+	protected void initializeProcessing(Vertex[] graph) {
+	}
 
+	@Override
+	protected void processBefore(Vertex vertex) {
+		StrongComponent component = castAsStrongComponent(vertex);
+		component.setActive(true);
+		component.setLongestWalk(0);
+	}
 
-public class LongestWalkProcessor extends GraphProcessor
-{
-  protected void initializeProcessing(Vertex[] graph)
-  {
-  }
+	@Override
+	protected void processArc(Vertex tail, Vertex head) {
+		StrongComponent t = castAsStrongComponent(tail);
+		StrongComponent h = castAsStrongComponent(head);
+		if (!h.isVisited()) {
+			process(h);
+		} else if (h.isActive()) {
+			// Oops! should never be happen if the graph has been created
+			// with StrongComponentProcessor
+			throw new IllegalArgumentException(h + " is not a strong component.");
+		}
+		t.setLongestWalk(Math.max(t.getLongestWalk(), 1 + h.getLongestWalk()));
+	}
 
-  protected void processBefore(Vertex vertex)
-  {
-    StrongComponent component = castAsStrongComponent(vertex);
-    component.setActive(true);
-    component.setLongestWalk(0);
-  }
+	@Override
+	protected void processAfter(Vertex vertex) {
+		castAsStrongComponent(vertex).setActive(false);
+	}
 
-  protected void processArc(Vertex tail, Vertex head)
-  {
-    StrongComponent t = castAsStrongComponent(tail);
-    StrongComponent h = castAsStrongComponent(head);
-    if (!h.isVisited())
-    {
-      process(h);
-    }
-    else if (h.isActive())
-    {
-      // Oops! should never be happen if the graph has been created
-      // with StrongComponentProcessor
-      throw new IllegalArgumentException(h + " is not a strong component.");
-    }
-    t.setLongestWalk(Math.max(t.getLongestWalk(), 1 + h.getLongestWalk()));
-  }
+	@Override
+	protected void finishProcessing(Vertex[] graph) {
+		// Sort in increasing walk lengths
+		StrongComponent[] components = (StrongComponent[]) graph;
+		for (int i = 0; i < graph.length; i++) {
+			for (int j = i + 1; j < graph.length; j++) {
+				if (components[j].getLongestWalk() < components[i].getLongestWalk()) {
+					StrongComponent c = components[i];
+					components[i] = components[j];
+					components[j] = c;
+				}
+			}
+		}
+	}
 
-  protected void processAfter(Vertex vertex)
-  {
-    castAsStrongComponent(vertex).setActive(false);
-  }
-
-  protected void finishProcessing(Vertex[] graph)
-  {
-    // Sort in increasing walk lengths
-    StrongComponent[] components = (StrongComponent[]) graph;
-    for (int i = 0; i < graph.length; i++)
-    {
-      for (int j = i + 1; j < graph.length; j++)
-      {
-        if (components[j].getLongestWalk() < components[i].getLongestWalk())
-        {
-          StrongComponent c = components[i];
-          components[i] = components[j];
-          components[j] = c;
-        }
-      }
-    }
-  }
-
-  /**
-   *  Casts the specified vertex as an {@link StrongComponent}.
-   *  @throws IllegalArgumentException if <tt>vertex</tt> is not an instance
-   *          of {@link StrongComponent}.
-   */
-  private StrongComponent castAsStrongComponent(Vertex vertex)
-  {
-    if (vertex instanceof StrongComponent)
-    {
-      return (StrongComponent) vertex;
-    }
-    else
-    {
-      throw new IllegalArgumentException(vertex
-                                 + " is not an instance of StrongComponent");
-    }
-  }} //class
+	/**
+	 * Casts the specified vertex as an {@link StrongComponent}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if <tt>vertex</tt> is not an instance of {@link StrongComponent}.
+	 */
+	private StrongComponent castAsStrongComponent(Vertex vertex) {
+		if (vertex instanceof StrongComponent) {
+			return (StrongComponent) vertex;
+		} /* else { */
+		throw new IllegalArgumentException(vertex + " is not an instance of StrongComponent");
+		/* } */
+	}
+} // class

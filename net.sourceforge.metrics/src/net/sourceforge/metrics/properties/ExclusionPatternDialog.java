@@ -41,15 +41,14 @@ import org.eclipse.swt.widgets.Shell;
  * 
  * @author Frank Sauer
  */
-public class ExclusionPatternDialog extends TitleAreaDialog implements SelectionListener{
-
+public class ExclusionPatternDialog extends TitleAreaDialog implements SelectionListener {
 
 	private List patternList;
 	private String[] patterns;
-	private static int ADD_BUTTONID    = 100;
-	private static int EDIT_BUTTONID   = 101;
+	private static int ADD_BUTTONID = 100;
+	private static int EDIT_BUTTONID = 101;
 	private static int REMOVE_BUTTONID = 102;
-	
+
 	private Button removeButton;
 
 	private Button editButton;
@@ -57,7 +56,7 @@ public class ExclusionPatternDialog extends TitleAreaDialog implements Selection
 	private Button addButton;
 
 	private MetricDescriptor descriptor;
-	
+
 	/**
 	 * @param parentShell
 	 */
@@ -70,10 +69,13 @@ public class ExclusionPatternDialog extends TitleAreaDialog implements Selection
 	public String[] getPatterns() {
 		return patterns;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets .Composite)
 	 */
+	@Override
 	protected Control createDialogArea(Composite parent) {
 		setTitle("Edit Exclusion Patterns");
 		setMessage("Use this dialog to add, edit or remove exclusion patterns for " + descriptor.getName(), IMessageProvider.INFORMATION);
@@ -92,9 +94,12 @@ public class ExclusionPatternDialog extends TitleAreaDialog implements Selection
 		return super.createDialogArea(parent);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse .swt.widgets.Composite)
 	 */
+	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
 		addButton = createButton(parent, ADD_BUTTONID, "Add", false);
 		addButton.addSelectionListener(new SelectionListener() {
@@ -115,19 +120,22 @@ public class ExclusionPatternDialog extends TitleAreaDialog implements Selection
 		createButton(parent, IDialogConstants.CANCEL_ID, "Cancel", false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt .events.SelectionEvent)
 	 */
 	public void widgetSelected(SelectionEvent e) {
 		editButton.setEnabled(true);
 		removeButton.setEnabled(true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse .swt.events.SelectionEvent)
 	 */
 	public void widgetDefaultSelected(SelectionEvent e) {
 	}
-
 
 }

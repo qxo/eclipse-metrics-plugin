@@ -32,48 +32,53 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 
-
 /**
- * initialize package fragment metrics (my children) and collect all results
- * from the calculators for the package level
+ * initialize package fragment metrics (my children) and collect all results from the calculators for the package level
+ * 
  * @author Frank Sauer
  */
 public class PackageFragmentMetrics extends AbstractMetricSource {
-	
-	static final long serialVersionUID = 552400421568822970L;	
 
-	private Set efferent;
+	static final long serialVersionUID = 552400421568822970L;
+
+	private Set<String> efferent;
 
 	public PackageFragmentMetrics() {
 		super();
 	}
-	
+
+	@Override
 	protected void initializeChildren(AbstractMetricSource parentMetric) {
-		IPackageFragment pack = (IPackageFragment)getJavaElement();
+		IPackageFragment pack = (IPackageFragment) getJavaElement();
 		try {
 			IJavaElement[] children = pack.getChildren();
-			for (int i = 0; i < children.length; i++) {
-				if (children[i] instanceof ICompilationUnit) {
+			for (IJavaElement element : children) {
+				if (element instanceof ICompilationUnit) {
 					// bug 737542
-					AbstractMetricSource next = Dispatcher.getAbstractMetricSource( children[i]);
-					if (next != null) addChild(next);
-					else Log.logError("Can't initialize AbstractMetricSource for " + children[i].getElementName(), null);
+					AbstractMetricSource next = Dispatcher.getAbstractMetricSource(element);
+					if (next != null) {
+						addChild(next);
+					} else {
+						Log.logError("Can't initialize AbstractMetricSource for " + element.getElementName(), null);
+					}
 				}
 			}
 		} catch (JavaModelException e) {
 			Log.logError("PackageFragmentMetrics.initializeChildren", e);
-		}	
+		}
 	}
-	
+
+	@Override
 	public void recurse(AbstractMetricSource parentMetric) {
 		initializeChildren(parentMetric);
 		calculate();
 		save();
 	}
-		
+
 	/**
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getLevel()
 	 */
+	@Override
 	public int getLevel() {
 		return PACKAGEFRAGMENT;
 	}
@@ -81,13 +86,17 @@ public class PackageFragmentMetrics extends AbstractMetricSource {
 	/**
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getCalculators()
 	 */
+	@Override
 	protected List getCalculators() {
 		return MetricsPlugin.getDefault().getCalculators("packageFragment");
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getExporter()
 	 */
+	@Override
 	public IXMLExporter getExporter() {
 		return IXMLExporter.PACKAGEFRAGMENT_EXPORTER;
 	}
@@ -95,14 +104,14 @@ public class PackageFragmentMetrics extends AbstractMetricSource {
 	/**
 	 * @param packages
 	 */
-	public void setEfferentDependencies(Set packages) {
+	public void setEfferentDependencies(Set<String> packages) {
 		this.efferent = packages;
 	}
 
 	/**
 	 * @return
 	 */
-	public Set getEfferentDependencies() {
+	public Set<String> getEfferentDependencies() {
 		return efferent;
 	}
 

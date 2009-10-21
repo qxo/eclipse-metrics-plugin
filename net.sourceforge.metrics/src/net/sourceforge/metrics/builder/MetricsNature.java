@@ -18,7 +18,7 @@
  *
  * $Id: MetricsNature.java,v 1.2 2004/05/01 17:21:35 sauerf Exp $
  */
- 
+
 package net.sourceforge.metrics.builder;
 
 import java.util.ArrayList;
@@ -41,13 +41,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
  * @see IProjectNature
  */
 public class MetricsNature implements IProjectNature, Constants {
-	
+
 	private IProject project = null;
 
 	/**
 	 * enable the metrics builder
-     * @param project
-     * @param monitor
+	 * 
+	 * @param project
+	 * @param monitor
 	 * @throws CoreException
 	 */
 	public static void addNatureToProject(IProject project, IProgressMonitor monitor) throws CoreException {
@@ -59,43 +60,47 @@ public class MetricsNature implements IProjectNature, Constants {
 		description.setNatureIds(newNatures);
 		project.setDescription(description, monitor);
 	}
-	
-    /**
-     * @deprecated  use <code>addNatureToProject(project, null)</code>
-     * @see #addNatureToProject(IProject, IProgressMonitor)
-     */
-    public static void addNatureToProject(IProject project) throws CoreException {
-        addNatureToProject(project, null);
-    }
-    
+
+	/**
+	 * @deprecated use <code>addNatureToProject(project, null)</code>
+	 * @see #addNatureToProject(IProject, IProgressMonitor)
+	 */
+	@Deprecated
+	public static void addNatureToProject(IProject project) throws CoreException {
+		addNatureToProject(project, null);
+	}
+
 	/**
 	 * disable (remove) the metrics builder
+	 * 
 	 * @param project
-     * @param monitor
+	 * @param monitor
 	 * @throws CoreException
 	 */
 	public static void removeNatureFromProject(IProject project, IProgressMonitor monitor) throws CoreException {
 		IProjectDescription description = project.getDescription();
 		String[] natures = description.getNatureIds();
-		List lNatures = new ArrayList(Arrays.asList(natures));
+		List<String> lNatures = new ArrayList<String>(Arrays.asList(natures));
 		lNatures.remove(pluginId + ".nature");
-		String[] newNatures = (String[])lNatures.toArray(new String[]{});
+		String[] newNatures = lNatures.toArray(new String[] {});
 		if (newNatures.length < natures.length) {
 			description.setNatureIds(newNatures);
 			project.setDescription(description, monitor);
 		}
 	}
-	
-    /**
-     * @deprecated  use <code>removeNatureFromProject(project, null)</code>
-     * @see #removeNatureFromProject(IProject, IProgressMonitor)
-     */
-    public static void removeNatureFromProject(IProject project) throws CoreException {
-        removeNatureFromProject(project, null);
-    }
-    
+
+	/**
+	 * @deprecated use <code>removeNatureFromProject(project, null)</code>
+	 * @see #removeNatureFromProject(IProject, IProgressMonitor)
+	 */
+	@Deprecated
+	public static void removeNatureFromProject(IProject project) throws CoreException {
+		removeNatureFromProject(project, null);
+	}
+
 	/**
 	 * add metrics builder to project description
+	 * 
 	 * @see IProjectNature#configure
 	 */
 	public void configure() throws CoreException {
@@ -104,28 +109,29 @@ public class MetricsNature implements IProjectNature, Constants {
 		boolean found = false;
 
 		for (int i = 0; i < commands.length; ++i) {
-		  if (commands[i].getBuilderName().equals(pluginId + ".builder")) {
-			 found = true;
-			 break;
-		  }
+			if (commands[i].getBuilderName().equals(pluginId + ".builder")) {
+				found = true;
+				break;
+			}
 		}
 		if (!found) {
-		  //add builder to project
-		  ICommand command = description.newCommand();
-		  command.setBuilderName(pluginId + ".builder");
-		  ICommand[] newCommands = new ICommand[commands.length + 1];
+			// add builder to project
+			ICommand command = description.newCommand();
+			command.setBuilderName(pluginId + ".builder");
+			ICommand[] newCommands = new ICommand[commands.length + 1];
 
-		  // Add it before other builders.
-		  System.arraycopy(commands, 0, newCommands, 0, commands.length);
-		  newCommands[commands.length] = command;
-		  description.setBuildSpec(newCommands);
-		  project.setDescription(description, null);
+			// Add it before other builders.
+			System.arraycopy(commands, 0, newCommands, 0, commands.length);
+			newCommands[commands.length] = command;
+			description.setBuildSpec(newCommands);
+			project.setDescription(description, null);
 		}
 
 	}
 
 	/**
 	 * remove metrics builder from project description
+	 * 
 	 * @see IProjectNature#deconfigure
 	 */
 	public void deconfigure() throws CoreException {
@@ -144,11 +150,11 @@ public class MetricsNature implements IProjectNature, Constants {
 		}
 	}
 
-	public IProject getProject()  {
+	public IProject getProject() {
 		return project;
 	}
 
-	public void setProject(IProject project)  {
+	public void setProject(IProject project) {
 		this.project = project;
 	}
 }

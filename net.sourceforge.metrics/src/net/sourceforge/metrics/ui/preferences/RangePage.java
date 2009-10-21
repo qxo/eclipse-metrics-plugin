@@ -44,13 +44,11 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 /**
- * preference page allowing the user to set safe ranges for the metrics
- * and the corresponding tip to solve out-of-range problems.
+ * preference page allowing the user to set safe ranges for the metrics and the corresponding tip to solve out-of-range problems.
  * 
  * @author Frank Sauer
  */
 public class RangePage extends PreferencePage implements IWorkbenchPreferencePage {
-
 
 	private static class MetricDescriptorLabelProvider extends LabelProvider implements ITableLabelProvider {
 
@@ -59,88 +57,91 @@ public class RangePage extends PreferencePage implements IWorkbenchPreferencePag
 		}
 
 		public String getColumnText(Object element, int columnIndex) {
-			if (element == null) return "";
-			MetricDescriptor md = (MetricDescriptor)element;
-			switch(columnIndex) {
-				case 0: {
-					return md.getName();
-				}
-				case 1: {
-					return md.getLevel();
-				}
-				case 2: {
-					Double min = md.getMin();
-					return (min==null)?"":min.toString();
-				}
-				case 3: {
-					Double max = md.getMax();
-					return (max==null)?"":max.toString();
-				}
-				case 4: {
-					String hint = md.getHint();
-					return (hint==null)?"":md.getHint();
-				}
-				default: return "";
+			if (element == null) {
+				return "";
+			}
+			MetricDescriptor md = (MetricDescriptor) element;
+			switch (columnIndex) {
+			case 0: {
+				return md.getName();
+			}
+			case 1: {
+				return md.getLevel();
+			}
+			case 2: {
+				Double min = md.getMin();
+				return (min == null) ? "" : min.toString();
+			}
+			case 3: {
+				Double max = md.getMax();
+				return (max == null) ? "" : max.toString();
+			}
+			case 4: {
+				String hint = md.getHint();
+				return (hint == null) ? "" : md.getHint();
+			}
+			default:
+				return "";
 			}
 		}
 
 	}
-	
+
 	private static class RangeCellModifier implements ICellModifier {
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see org.eclipse.jface.viewers.ICellModifier#canModify(java.lang.Object, java.lang.String)
 		 */
 		public boolean canModify(Object element, String property) {
 			return !property.equals("NAME") && !property.equals("LEVEL");
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see org.eclipse.jface.viewers.ICellModifier#getValue(java.lang.Object, java.lang.String)
 		 */
 		public Object getValue(Object element, String property) {
-			MetricDescriptor md = (MetricDescriptor)element;
+			MetricDescriptor md = (MetricDescriptor) element;
 			if (property.equals("MIN")) {
 				Double min = md.getMin();
-				return (min==null)?"":min.toString();				
+				return (min == null) ? "" : min.toString();
 			} else if (property.equals("MAX")) {
 				Double max = md.getMax();
-				return (max==null)?"":max.toString();				
+				return (max == null) ? "" : max.toString();
 			} else if (property.equals("HINT")) {
 				String hint = md.getHint();
-				return (hint==null)?"":md.getHint();
+				return (hint == null) ? "" : md.getHint();
 			}
 			return "";
 		}
 
-		/* (non-Javadoc)
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see org.eclipse.jface.viewers.ICellModifier#modify(java.lang.Object, java.lang.String, java.lang.Object)
 		 */
 		public void modify(Object element, String property, Object value) {
-			TableItem item = (TableItem)element;
-			MetricDescriptor md = (MetricDescriptor)item.getData();
-			String values[] = new String[]{
-				item.getText(0),
-				item.getText(1),
-				item.getText(2),
-				item.getText(3),
-				item.getText(4)
-			};
+			TableItem item = (TableItem) element;
+			MetricDescriptor md = (MetricDescriptor) item.getData();
+			String values[] = new String[] { item.getText(0), item.getText(1), item.getText(2), item.getText(3), item.getText(4) };
 			if (property.equals("MIN")) {
-				String minStr = (String)value;
+				String minStr = (String) value;
 				try {
-					Double min =new Double(minStr);
+					Double min = new Double(minStr);
 					md.setMin(min);
-					values[2] = minStr;			
+					values[2] = minStr;
 				} catch (NumberFormatException e) {
-					values[2] = "";			
+					values[2] = "";
 				}
 			} else if (property.equals("MAX")) {
-				String maxStr = (String)value;
+				String maxStr = (String) value;
 				try {
-					Double max =new Double(maxStr);
+					Double max = new Double(maxStr);
 					md.setMax(max);
-					values[3] = maxStr;			
+					values[3] = maxStr;
 				} catch (NumberFormatException e) {
 					values[3] = "";
 				}
@@ -151,70 +152,65 @@ public class RangePage extends PreferencePage implements IWorkbenchPreferencePag
 			item.setText(values);
 		}
 	}
-	
-	private String[] properties = new String[]{"NAME", "LEVEL", "MIN", "MAX", "HINT"};
+
+	private String[] properties = new String[] { "NAME", "LEVEL", "MIN", "MAX", "HINT" };
 	private TableViewer tv;
 	private ITableLabelProvider lp = new MetricDescriptorLabelProvider();
 	private ICellModifier modifier = new RangeCellModifier();
-	
+
 	/**
 	 * 
 	 */
 	public RangePage() {
 		super();
-		setTitle("Safe Metrics Ranges");		
+		setTitle("Safe Metrics Ranges");
 		setDescription("Here you can set the safe range for each metric.\nMetric values outside these ranges result in warnings if warnings are enabled.");
 	}
 
+	@Override
 	protected Control createContents(Composite ancestor) {
-		
-		Composite parent= new Composite(ancestor, SWT.NULL);
-		GridLayout layout= new GridLayout();
-		layout.numColumns= 1;
+
+		Composite parent = new Composite(ancestor, SWT.NULL);
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 1;
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
-		parent.setLayout(layout);	
+		parent.setLayout(layout);
 		GridData data;
-				
-		Table table= new Table(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
-		data= new GridData(GridData.FILL_BOTH);
+
+		Table table = new Table(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
+		data = new GridData(GridData.FILL_BOTH);
 		data.widthHint = 400;
 		table.setLayoutData(data);
-				
+
 		table.setHeaderVisible(true);
-		table.setLinesVisible(true);		
-		
-		TableColumn column1= new TableColumn(table, SWT.NULL);
+		table.setLinesVisible(true);
+
+		TableColumn column1 = new TableColumn(table, SWT.NULL);
 		column1.setText("Metric");
-		TableColumn column2= new TableColumn(table, SWT.NULL);
+		TableColumn column2 = new TableColumn(table, SWT.NULL);
 		column2.setText("Level");
-		TableColumn column3= new TableColumn(table, SWT.NULL);
+		TableColumn column3 = new TableColumn(table, SWT.NULL);
 		column3.setText("Min");
 		column3.setAlignment(SWT.RIGHT);
-		TableColumn column4= new TableColumn(table, SWT.NULL);
+		TableColumn column4 = new TableColumn(table, SWT.NULL);
 		column4.setText("Max");
 		column4.setAlignment(SWT.RIGHT);
-		TableColumn column5= new TableColumn(table, SWT.NULL);
+		TableColumn column5 = new TableColumn(table, SWT.NULL);
 		column5.setText("Hint for fix");
 		tv = new TableViewer(table);
 		tv.setLabelProvider(lp);
 		tv.setCellModifier(modifier);
 		tv.setColumnProperties(properties);
-		tv.setCellEditors(new CellEditor[] {
-			null,
-			null,
-			new TextCellEditor(table /*BUG822672, SWT.NONE*/),
-			new TextCellEditor(table /*BUG822672, SWT.NONE*/),
-			new TextCellEditor(table /*BUG822672, SWT.NONE*/)
-		});
+		tv.setCellEditors(new CellEditor[] { null, null, new TextCellEditor(table /* BUG822672, SWT.NONE */), new TextCellEditor(table /* BUG822672, SWT.NONE */), new TextCellEditor(table /* BUG822672, SWT.NONE */) });
 		populateTable();
 		column1.pack();
 		column2.pack();
 		column3.pack();
 		column4.pack();
 		column5.pack();
-		
-		return parent;	
+
+		return parent;
 	}
 
 	/**
@@ -222,27 +218,32 @@ public class RangePage extends PreferencePage implements IWorkbenchPreferencePag
 	 */
 	private void populateTable() {
 		String[] ids = MetricsPlugin.getDefault().getMetricIds();
-		for (int i = 0; i < ids.length; i++) {
-			MetricDescriptor md = MetricsPlugin.getDefault().getMetricDescriptor(ids[i]);
+		for (String id : ids) {
+			MetricDescriptor md = MetricsPlugin.getDefault().getMetricDescriptor(id);
 			tv.add(md);
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.preference.PreferencePage#performDefaults()
 	 */
+	@Override
 	protected void performDefaults() {
 		if (MessageDialog.openConfirm(getShell(), "Please Confirm", "Resets all values to those specified in manifests.\nCancel will not undo this.\nAre you Sure?")) {
 			TableItem[] items = tv.getTable().getItems();
 			if (items != null) {
-				for (int i = 0; i < items.length;i++) {
-					MetricDescriptor md = (MetricDescriptor)items[i].getData();
+				for (TableItem item : items) {
+					MetricDescriptor md = (MetricDescriptor) item.getData();
 					if (md != null) {
 						md.resetToDefaults();
 					}
@@ -254,14 +255,17 @@ public class RangePage extends PreferencePage implements IWorkbenchPreferencePag
 		super.performDefaults();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.preference.IPreferencePage#performOk()
 	 */
+	@Override
 	public boolean performOk() {
 		TableItem[] items = tv.getTable().getItems();
 		if (items != null) {
-			for (int i = 0; i < items.length;i++) {
-				MetricDescriptor md = (MetricDescriptor)items[i].getData();
+			for (TableItem item : items) {
+				MetricDescriptor md = (MetricDescriptor) item.getData();
 				if (md != null) {
 					md.copyToPreferences();
 				}
@@ -269,5 +273,5 @@ public class RangePage extends PreferencePage implements IWorkbenchPreferencePag
 		}
 		return super.performOk();
 	}
-    
+
 }

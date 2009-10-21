@@ -51,69 +51,81 @@ package com.touchgraph.graphlayout.interaction;
 
 import java.util.Vector;
 
-/** TGUIManager switches between major user interfaces, and allows
-  * them to be referred to by name.  This will probably come in handy
-  * when switching user interfaces from menus.
-  *
-  * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: TGUIManager.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
-  */
+/**
+ * TGUIManager switches between major user interfaces, and allows them to be referred to by name. This will probably come in handy when switching user interfaces from menus.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: TGUIManager.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+ */
 public class TGUIManager {
 
-    Vector userInterfaces;
+	Vector<NamedUI> userInterfaces;
 
-  // ............
+	// ............
 
-   /** Default constructor.
-     */
-    public TGUIManager() {
-        userInterfaces = new Vector();
-    }
+	/**
+	 * Default constructor.
+	 */
+	public TGUIManager() {
+		userInterfaces = new Vector<NamedUI>();
+	}
 
-    class NamedUI {
-        TGUserInterface ui;
-        String name;
+	class NamedUI {
+		TGUserInterface ui;
+		String name;
 
-        NamedUI( TGUserInterface ui, String n ) {
-            this.ui = ui;
-            name = n;
-        }
-    }
+		NamedUI(TGUserInterface ui, String n) {
+			this.ui = ui;
+			name = n;
+		}
+	}
 
-    public void addUI( TGUserInterface ui, String name ) {
-        userInterfaces.addElement(new NamedUI(ui,name));
-    }
+	public void addUI(TGUserInterface ui, String name) {
+		userInterfaces.addElement(new NamedUI(ui, name));
+	}
 
-    public void addUI( TGUserInterface ui ) {
-        addUI(ui,null);
-    }
+	public void addUI(TGUserInterface ui) {
+		addUI(ui, null);
+	}
 
-    public void removeUI( String name ) {
-        for (int i=0;i<userInterfaces.size();i++)
-            if (((NamedUI) userInterfaces.elementAt(i)).name.equals(name)) userInterfaces.removeElementAt(i);
+	public void removeUI(String name) {
+		for (int i = 0; i < userInterfaces.size(); i++) {
+			if ((userInterfaces.elementAt(i)).name.equals(name)) {
+				userInterfaces.removeElementAt(i);
+			}
+		}
 
-    }
+	}
 
-    public void removeUI( TGUserInterface ui ) {
-        for (int i=0;i<userInterfaces.size();i++)
-            if (((NamedUI) userInterfaces.elementAt(i)).ui==ui) userInterfaces.removeElementAt(i);
+	public void removeUI(TGUserInterface ui) {
+		for (int i = 0; i < userInterfaces.size(); i++) {
+			if ((userInterfaces.elementAt(i)).ui == ui) {
+				userInterfaces.removeElementAt(i);
+			}
+		}
 
-    }
+	}
 
-    public void activate( String name ) {
-        for (int i=0;i<userInterfaces.size();i++) {
-            NamedUI namedInterf = (NamedUI) userInterfaces.elementAt(i);
-            TGUserInterface ui=namedInterf.ui;
-            if (((NamedUI) userInterfaces.elementAt(i)).name.equals(name)) ui.activate();
-            else ui.deactivate();
-        }
-    }
+	public void activate(String name) {
+		for (int i = 0; i < userInterfaces.size(); i++) {
+			NamedUI namedInterf = userInterfaces.elementAt(i);
+			TGUserInterface ui = namedInterf.ui;
+			if ((userInterfaces.elementAt(i)).name.equals(name)) {
+				ui.activate();
+			} else {
+				ui.deactivate();
+			}
+		}
+	}
 
-    public void activate( TGUserInterface ui ) {
-        for (int i=0;i<userInterfaces.size();i++) {
-            if (((NamedUI) userInterfaces.elementAt(i)).ui==ui) ui.activate();
-            else ui.deactivate();
-        }
-    }
+	public void activate(TGUserInterface ui) {
+		for (int i = 0; i < userInterfaces.size(); i++) {
+			if ((userInterfaces.elementAt(i)).ui == ui) {
+				ui.activate();
+			} else {
+				ui.deactivate();
+			}
+		}
+	}
 
 } // end com.touchgraph.graphlayout.interaction.TGUIManager

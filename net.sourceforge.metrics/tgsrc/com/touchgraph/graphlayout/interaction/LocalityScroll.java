@@ -58,62 +58,70 @@ import com.touchgraph.graphlayout.LocalityUtils;
 import com.touchgraph.graphlayout.Node;
 import com.touchgraph.graphlayout.TGException;
 import com.touchgraph.graphlayout.TGPanel;
-//import  javax.swing.*;
 
-/** LocalityScroll.
-  *
-  * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: LocalityScroll.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
-  */
+/**
+ * LocalityScroll.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: LocalityScroll.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+ */
 public class LocalityScroll implements GraphListener {
 
-    private Scrollbar localitySB;
+	private Scrollbar localitySB;
 
-    private TGPanel tgPanel;
+	private TGPanel tgPanel;
 
-    public LocalityScroll(TGPanel tgp) {
-        tgPanel=tgp;
-        localitySB = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 0, 7);
-        localitySB.setBlockIncrement(1);
-        localitySB.setUnitIncrement(1);
-        localitySB.addAdjustmentListener(new localityAdjustmentListener());
-        tgPanel.addGraphListener(this);
-    }
+	public LocalityScroll(TGPanel tgp) {
+		tgPanel = tgp;
+		localitySB = new Scrollbar(Scrollbar.HORIZONTAL, 1, 1, 0, 7);
+		localitySB.setBlockIncrement(1);
+		localitySB.setUnitIncrement(1);
+		localitySB.addAdjustmentListener(new localityAdjustmentListener());
+		tgPanel.addGraphListener(this);
+	}
 
-    public Scrollbar getLocalitySB() {
-        return localitySB;
-    }
+	public Scrollbar getLocalitySB() {
+		return localitySB;
+	}
 
-    public int getLocalityRadius() {
-        int locVal = localitySB.getValue();
-        if(locVal>=6) return LocalityUtils.INFINITE_LOCALITY_RADIUS;
-        else return locVal;
-    }
+	public int getLocalityRadius() {
+		int locVal = localitySB.getValue();
+		if (locVal >= 6) {
+			return LocalityUtils.INFINITE_LOCALITY_RADIUS;
+		} /* else { */
+		return locVal;
+		/* } */
+	}
 
-    public void setLocalityRadius(int radius) {
-        if (radius <= 0 ) 
-            localitySB.setValue(0);
-        else if (radius <= 5) //and > 0
-            localitySB.setValue(radius);
-        else // radius > 5
-            localitySB.setValue(6);        
-    }
+	public void setLocalityRadius(int radius) {
+		if (radius <= 0) {
+			localitySB.setValue(0);
+		} else if (radius <= 5) {
+			localitySB.setValue(radius);
+		} else {
+			localitySB.setValue(6);
+		}
+	}
 
-    public void graphMoved() {} //From GraphListener interface
-    public void graphReset() { localitySB.setValue(1); } //From GraphListener interface
+	public void graphMoved() {
+	} // From GraphListener interface
 
-    private class localityAdjustmentListener implements AdjustmentListener {
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-            Node select = tgPanel.getSelect();                        
-            if (select!=null || getLocalityRadius() == LocalityUtils.INFINITE_LOCALITY_RADIUS)
-                try {
-                    tgPanel.setLocale(select, getLocalityRadius());
-                }
-                catch (TGException ex) {
-                    System.out.println("Error setting locale");
-                    ex.printStackTrace();
-                }
-        }
-    }
+	public void graphReset() {
+		localitySB.setValue(1);
+	} // From GraphListener interface
+
+	private class localityAdjustmentListener implements AdjustmentListener {
+		public void adjustmentValueChanged(AdjustmentEvent e) {
+			Node select = tgPanel.getSelect();
+			if (select != null || getLocalityRadius() == LocalityUtils.INFINITE_LOCALITY_RADIUS) {
+				try {
+					tgPanel.setLocale(select, getLocalityRadius());
+				} catch (TGException ex) {
+					System.out.println("Error setting locale");
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
 
 } // end com.touchgraph.graphlayout.interaction.LocalityScroll

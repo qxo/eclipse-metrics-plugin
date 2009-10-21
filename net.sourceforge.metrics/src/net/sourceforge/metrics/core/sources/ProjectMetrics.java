@@ -22,7 +22,6 @@ package net.sourceforge.metrics.core.sources;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,69 +35,82 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
-
 /**
- * initialize package fragment root metrics (my children) and collect all results
- * from the calculators for the project root level
+ * initialize package fragment root metrics (my children) and collect all results from the calculators for the project root level
+ * 
  * @author Frank Sauer
  */
 public class ProjectMetrics extends AbstractMetricSource implements IGraphContributor {
 
-	static final long serialVersionUID = 7999821409641083884L;	
-	
-	private Map efferent;
+	static final long serialVersionUID = 7999821409641083884L;
+
+	private Map<String, Set<String>> efferent;
 
 	public ProjectMetrics() {
 		super();
 	}
 
+	@Override
 	protected void initializeChildren(AbstractMetricSource parentMetric) {
-		IJavaProject pack = (IJavaProject)getJavaElement();
+		IJavaProject pack = (IJavaProject) getJavaElement();
 		try {
 			IJavaElement[] children = pack.getChildren();
 			for (int i = 0; i < children.length; i++) {
 				if (children[i] instanceof IPackageFragmentRoot) {
-					if (!((IPackageFragmentRoot)children[i]).isArchive()) {
+					if (!((IPackageFragmentRoot) children[i]).isArchive()) {
 						AbstractMetricSource next = Dispatcher.getAbstractMetricSource(children[i]);
-						if (next != null) addChild(next);
-						else Log.logMessage("Package " + children[i].getHandleIdentifier() + " not found.");
+						if (next != null) {
+							addChild(next);
+						} else {
+							Log.logMessage("Package " + children[i].getHandleIdentifier() + " not found.");
+						}
 					}
-				} 
+				}
 			}
 		} catch (JavaModelException e) {
 		}
-	
+
 	}
-	
+
+	@Override
 	public void recurse(AbstractMetricSource parentMetric) {
 		initializeChildren(parentMetric);
 		calculate();
 		save();
 	}
-		
+
 	/**
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getCalculators()
 	 */
+	@Override
 	protected List getCalculators() {
 		return MetricsPlugin.getDefault().getCalculators("project");
-	}	
-	
+	}
+
 	/**
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getLevel()
 	 */
+	@Override
 	public int getLevel() {
 		return PROJECT;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getExporter()
 	 */
+	@Override
 	public IXMLExporter getExporter() {
 		return IXMLExporter.PROJECT_EXPORTER;
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#calculate()
 	 */
+	@Override
 	public void calculate() {
 		super.calculate();
 		mergeEfferentCouplings();
@@ -108,25 +120,25 @@ public class ProjectMetrics extends AbstractMetricSource implements IGraphContri
 	 * merge the efferent dependency graphs of my child sourcefolders into one
 	 */
 	private void mergeEfferentCouplings() {
-		efferent = new HashMap();
-		for (Iterator c = getChildren().iterator();c.hasNext();) {
-			PackageFragmentRootMetrics next = (PackageFragmentRootMetrics) c.next();
-			Map eff = next.getEfferent();
+		efferent = new HashMap<String, Set<String>>();
+		for (Object element : getChildren()) {
+			PackageFragmentRootMetrics next = (PackageFragmentRootMetrics) element;
+			Map<String, Set<String>> eff = next.getEfferent();
 			addEfferent(eff);
 		}
 	}
 
 	/**
-	 * @param eff dependencies of a single source folder
+	 * @param eff
+	 *            dependencies of a single source folder
 	 */
-	private void addEfferent(Map eff) {
-		for (Iterator i = eff.keySet().iterator(); i.hasNext();) {
-			String key = (String)i.next();
-			Set deps = (Set)eff.get(key);
+	private void addEfferent(Map<String, Set<String>> eff) {
+		for (String key : eff.keySet()) {
+			Set<String> deps = eff.get(key);
 			if (deps != null) {
-				Set total = (Set)efferent.get(key);
+				Set<String> total = efferent.get(key);
 				if (total == null) {
-					total = new HashSet();
+					total = new HashSet<String>();
 					efferent.put(key, total);
 				}
 				total.addAll(deps);
@@ -134,10 +146,12 @@ public class ProjectMetrics extends AbstractMetricSource implements IGraphContri
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.core.sources.GraphContributor#getEfferent()
 	 */
-	public Map getEfferent() {
+	public Map<String, Set<String>> getEfferent() {
 		return efferent;
 	}
 

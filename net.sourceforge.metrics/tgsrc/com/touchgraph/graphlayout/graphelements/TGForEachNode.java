@@ -51,13 +51,14 @@ package com.touchgraph.graphlayout.graphelements;
 
 import com.touchgraph.graphlayout.Node;
 
-/** TGForEachNode: A dummy object for iterating through nodes
-  *   
-  * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: TGForEachNode.java,v 1.1 2003/05/05 01:25:44 sauerf Exp $
-  */
+/**
+ * TGForEachNode: A dummy object for iterating through nodes
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: TGForEachNode.java,v 1.1 2003/05/05 01:25:44 sauerf Exp $
+ */
 public abstract class TGForEachNode {
 
-    public abstract void forEachNode( Node n );
+	public abstract void forEachNode(Node n);
 
 } // end com.touchgraph.graphlayout.graphelements.TGForEachNode

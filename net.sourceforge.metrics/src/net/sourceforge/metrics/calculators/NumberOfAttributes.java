@@ -30,9 +30,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
 /**
- * Counts the number of attributes in a class.
- * Distinguishes between statics and instance fields, 
- * sets NUM_FIELDS and NUM_STAT_FIELDS
+ * Counts the number of attributes in a class. Distinguishes between statics and instance fields, sets NUM_FIELDS and NUM_STAT_FIELDS
  * 
  * @author Frank Sauer
  */
@@ -48,24 +46,27 @@ public class NumberOfAttributes extends Calculator implements Constants {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) throws InvalidSourceException {
-		if (source.getLevel() != TYPE) throw new InvalidSourceException("NumberOfAttributes is only applicable to types");
+		if (source.getLevel() != TYPE) {
+			throw new InvalidSourceException("NumberOfAttributes is only applicable to types");
+		}
 		try {
-			IField[] fields = ((IType)source.getJavaElement()).getFields();
+			IField[] fields = ((IType) source.getJavaElement()).getFields();
 			int stats = 0;
-			int inst  = 0;
-			for (int i = 0; i < fields.length; i++) {
-				if ((fields[i].getFlags() & Flags.AccStatic) != 0) {
+			int inst = 0;
+			for (IField field : fields) {
+				if ((field.getFlags() & Flags.AccStatic) != 0) {
 					stats++;
 				} else {
 					inst++;
 				}
 			}
-			source.setValue(new Metric(NUM_FIELDS,inst));
-			source.setValue(new Metric(NUM_STAT_FIELDS,stats));
+			source.setValue(new Metric(NUM_FIELDS, inst));
+			source.setValue(new Metric(NUM_STAT_FIELDS, stats));
 		} catch (JavaModelException e) {
-			source.setValue(new Metric(NUM_FIELDS,0));
-			source.setValue(new Metric(NUM_STAT_FIELDS,0));
+			source.setValue(new Metric(NUM_FIELDS, 0));
+			source.setValue(new Metric(NUM_STAT_FIELDS, 0));
 		}
 	}
 

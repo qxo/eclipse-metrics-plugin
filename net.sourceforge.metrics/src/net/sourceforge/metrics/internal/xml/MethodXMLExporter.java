@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * Export method metrics to an XML report
+ * 
  * @author Frank Sauer
  */
 public class MethodXMLExporter extends MetricsExporter implements IXMLExporter {
@@ -33,18 +34,23 @@ public class MethodXMLExporter extends MetricsExporter implements IXMLExporter {
 	public MethodXMLExporter() {
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.metrics.export.xml.IExporter#export(net.sourceforge.metrics.core.sources.AbstractMetricSource, net.sourceforge.metrics.export.xml.XMLPrintStream, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sourceforge.metrics.export.xml.IExporter#export(net.sourceforge.metrics .core.sources.AbstractMetricSource, net.sourceforge.metrics.export.xml.XMLPrintStream, int)
 	 */
 	public void export(AbstractMetricSource source, XMLPrintStream out, int level, IProgressMonitor monitor) {
 		printOpeningTag(source, out, level);
-		printMetrics(source, out, level+1);
+		printMetrics(source, out, level + 1);
 		printClosingTag(out, level);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.internal.xml.MetricsExporter#getTagName()
 	 */
+	@Override
 	public String getTagName() {
 		return "Method";
 	}

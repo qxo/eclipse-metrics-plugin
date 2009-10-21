@@ -57,88 +57,94 @@ import com.touchgraph.graphlayout.TGPaintListener;
 import com.touchgraph.graphlayout.TGPanel;
 import com.touchgraph.graphlayout.TGPoint2D;
 
-/** DragMultiselectUI contains code for selecting a group on nodes
-  * by enclosing them in a dotted box.
-  *   
-  * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: DragMultiselectUI.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
-  */
+/**
+ * DragMultiselectUI contains code for selecting a group on nodes by enclosing them in a dotted box.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: DragMultiselectUI.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
+ */
 public class DragMultiselectUI extends TGAbstractDragUI implements TGPaintListener {
-        
-    TGPoint2D mousePos=null;
-    TGPoint2D startPos = null;
-    
-    DragMultiselectUI( TGPanel tgp ) {
-        super(tgp); 
-    }
-    
-    public void preActivate() {    
-        startPos = null;
-        mousePos = null;
-        tgPanel.addPaintListener(this);
-    }
-    
-    public void preDeactivate() {
-        tgPanel.removePaintListener(this);
-        tgPanel.repaint();
-    };
-        
-          
-    public void mousePressed(MouseEvent e) {
-        startPos = new TGPoint2D(e.getX(), e.getY());
-        mousePos = new TGPoint2D(startPos);
-    }    
-    
-        
-    public void mouseReleased(MouseEvent e) {}    
 
-    public void mouseDragged(MouseEvent e) {    
-        mousePos.setLocation(e.getX(), e.getY());
-        tgPanel.multiSelect(startPos,mousePos);
-        tgPanel.repaint();
-    }
-    
+	TGPoint2D mousePos = null;
+	TGPoint2D startPos = null;
 
-    
-    public void paintFirst(Graphics g) {};
-    public void paintAfterEdges(Graphics g) {};
-    
-    public void paintLast(Graphics g) {
+	DragMultiselectUI(TGPanel tgp) {
+		super(tgp);
+	}
 
-        if(mousePos==null) return;
+	@Override
+	public void preActivate() {
+		startPos = null;
+		mousePos = null;
+		tgPanel.addPaintListener(this);
+	}
 
-        g.setColor(Color.black);
-        
-        int x,y,w,h;
-        
-        if (startPos.getX()<mousePos.getX()) {
-            x=(int) startPos.getX();
-            w=(int) (mousePos.getX()-startPos.getX());
-        }
-        else {
-            x=(int) mousePos.getX();
-            w=(int) (startPos.getX()-mousePos.getX());
-        }
+	@Override
+	public void preDeactivate() {
+		tgPanel.removePaintListener(this);
+		tgPanel.repaint();
+	};
 
-        if (startPos.getY()<mousePos.getY()) {
-            y=(int) startPos.getY();
-            h=(int) (mousePos.getY()-startPos.getY());
-        }
-        else {
-            y=(int) mousePos.getY();
-            h=(int) (startPos.getY()-mousePos.getY());
-        }
-        
-        //God, where are the line styles when you need them
-        for(int horiz = x;horiz<x+w;horiz+=2){
-            g.drawLine(horiz,y,horiz,y);      //Drawing lines because there is no way
-            g.drawLine(horiz,y+h,horiz,y+h);  //to draw a single pixel.
-        }
-        for(int vert = y;vert<y+h;vert+=2){
-            g.drawLine(x,vert,x,vert);
-            g.drawLine(x+w,vert,x+w,vert);
-        }  
-        
-    }
+	@Override
+	public void mousePressed(MouseEvent e) {
+		startPos = new TGPoint2D(e.getX(), e.getY());
+		mousePos = new TGPoint2D(startPos);
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		mousePos.setLocation(e.getX(), e.getY());
+		tgPanel.multiSelect(startPos, mousePos);
+		tgPanel.repaint();
+	}
+
+	public void paintFirst(Graphics g) {
+	};
+
+	public void paintAfterEdges(Graphics g) {
+	};
+
+	public void paintLast(Graphics g) {
+
+		if (mousePos == null) {
+			return;
+		}
+
+		g.setColor(Color.black);
+
+		int x, y, w, h;
+
+		if (startPos.getX() < mousePos.getX()) {
+			x = (int) startPos.getX();
+			w = (int) (mousePos.getX() - startPos.getX());
+		} else {
+			x = (int) mousePos.getX();
+			w = (int) (startPos.getX() - mousePos.getX());
+		}
+
+		if (startPos.getY() < mousePos.getY()) {
+			y = (int) startPos.getY();
+			h = (int) (mousePos.getY() - startPos.getY());
+		} else {
+			y = (int) mousePos.getY();
+			h = (int) (startPos.getY() - mousePos.getY());
+		}
+
+		// God, where are the line styles when you need them
+		for (int horiz = x; horiz < x + w; horiz += 2) {
+			g.drawLine(horiz, y, horiz, y); // Drawing lines because there is no
+			// way
+			g.drawLine(horiz, y + h, horiz, y + h); // to draw a single pixel.
+		}
+		for (int vert = y; vert < y + h; vert += 2) {
+			g.drawLine(x, vert, x, vert);
+			g.drawLine(x + w, vert, x + w, vert);
+		}
+
+	}
 
 } // end

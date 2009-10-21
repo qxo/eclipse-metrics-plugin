@@ -1,19 +1,19 @@
 /**
-  * (C) Copyright IBM Corp. 2002 - All Rights Reserved.
-  *
-  * DISCLAIMER:
-  * The following code is sample code created by IBM Corporation.
-  * This sample code is not part of any standard IBM product and is
-  * provided to you solely for the purpose of assisting you in the
-  * development of your applications.  The code is provided 'AS IS',
-  * without warranty or condition of any kind.  IBM shall not be liable 
-  * for any damages arising out of your use of the sample code, even 
-  * if it has been advised of the possibility of such damages.
-  *
-  *
-  * Modified by Frank Sauer to export compile errors to text or xml file
-  * combining the ProjectBuild and GetJavaErrorCount tasks into one
-  */
+ * (C) Copyright IBM Corp. 2002 - All Rights Reserved.
+ *
+ * DISCLAIMER:
+ * The following code is sample code created by IBM Corporation.
+ * This sample code is not part of any standard IBM product and is
+ * provided to you solely for the purpose of assisting you in the
+ * development of your applications.  The code is provided 'AS IS',
+ * without warranty or condition of any kind.  IBM shall not be liable 
+ * for any damages arising out of your use of the sample code, even 
+ * if it has been advised of the possibility of such damages.
+ *
+ *
+ * Modified by Frank Sauer to export compile errors to text or xml file
+ * combining the ProjectBuild and GetJavaErrorCount tasks into one
+ */
 
 package net.sourceforge.metrics.ant;
 
@@ -38,11 +38,11 @@ import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.jdt.core.JavaCore;
 
 public class ProjectBuild extends Task {
-	
+
 	private static final String TASKNAME = "eclipse.build: ";
 	private static final int UNKNOWN_ERRORS = -1;
 	private static final String FAIL_MSG = "Compile failed; see the compiler error output file or this log for details.";
-	
+
 	private IProject project = null;
 	private String projectName;
 	private String buildTypeString = "INCREMENTAL";
@@ -56,6 +56,7 @@ public class ProjectBuild extends Task {
 	/**
 	 * Execute this Ant task. Builds the given project according to the given parameters
 	 */
+	@Override
 	public void execute() throws BuildException {
 		validateAttributes();
 		project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
@@ -72,15 +73,17 @@ public class ProjectBuild extends Task {
 			return;
 		}
 
-		try { 
-			AntConsoleProgressMonitor monitor =	new AntConsoleProgressMonitor(this);
+		try {
+			AntConsoleProgressMonitor monitor = new AntConsoleProgressMonitor(this);
 			monitor.beginTask(projectName, 1);
 			setDebugOptions(debugcompilation);
 			ProjectBuildWorkspaceModifyOperation op = new ProjectBuildWorkspaceModifyOperation(project, buildTypeInt);
 			op.execute(monitor);
 			// get/export errors and fail if needed
 			int errors = getJavacErrorCount(project, monitor);
-			if (errors >0) displayError(FAIL_MSG);
+			if (errors > 0) {
+				displayError(FAIL_MSG);
+			}
 			monitor.done();
 		} catch (BuildException x) {
 			throw x;
@@ -88,10 +91,10 @@ public class ProjectBuild extends Task {
 			displayError(TASKNAME + projectName + " Exception=" + e.getMessage());
 		}
 	}
-	
+
 	/**
-	 * return the number of compilation errors and as a side effect, write the errors
-	 * to the specified output file or to the build log if none specified.
+	 * return the number of compilation errors and as a side effect, write the errors to the specified output file or to the build log if none specified.
+	 * 
 	 * @param project
 	 * @param monitor
 	 * @return
@@ -99,23 +102,25 @@ public class ProjectBuild extends Task {
 	private int getJavacErrorCount(IProject project, AntConsoleProgressMonitor monitor) {
 		try {
 			IMarker[] markerList = project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE);
-			if (markerList == null || markerList.length == 0)	return 0;
+			if (markerList == null || markerList.length == 0) {
+				return 0;
+			}
 			IMarker marker = null;
 			int numErrors = 0;
 			XMLPrintStream out = getErrorOutputStream(project.getName());
-			for (int i = 0; i < markerList.length; i++) {
-				marker = markerList[i];
-				int severity =	marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+			for (IMarker element : markerList) {
+				marker = element;
+				int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 				// default severity = ERROR
 				if (severity == IMarker.SEVERITY_ERROR) {
 					numErrors++;
-					Integer lineNum = (Integer)marker.getAttribute(IMarker.LINE_NUMBER);
-					String resourceName = (String) marker.getResource().getName();
+					Integer lineNum = (Integer) marker.getAttribute(IMarker.LINE_NUMBER);
+					String resourceName = marker.getResource().getName();
 					String message = (String) marker.getAttribute(IMarker.MESSAGE);
 					if (out != null) {
 						appendError(out, marker.getResource(), message, lineNum);
 					} else {
-						monitor.displayMsg(resourceName+":"+lineNum+": "+message);
+						monitor.displayMsg(resourceName + ":" + lineNum + ": " + message);
 					}
 				}
 			}
@@ -128,7 +133,7 @@ public class ProjectBuild extends Task {
 		}
 		return UNKNOWN_ERRORS;
 	}
-	
+
 	/**
 	 * @param out
 	 */
@@ -160,12 +165,15 @@ public class ProjectBuild extends Task {
 				displayError("Could not open error outputfile " + compileErrorsOut.getAbsolutePath());
 				return null;
 			}
-			
-		} else return null;
+
+		} /* else { */
+		return null;
+		/* } */
 	}
 
 	/**
 	 * Append a compilation error to the correct output file if it was specified
+	 * 
 	 * @param resource
 	 * @param message
 	 * @param lineNum
@@ -183,97 +191,92 @@ public class ProjectBuild extends Task {
 			out.print(message);
 			out.println("</Error>");
 		} else {
-			out.println(resource.getFullPath() + ":"+lineNum+": "+message);
+			out.println(resource.getFullPath() + ":" + lineNum + ": " + message);
 		}
 	}
 
 	public void setDebugOptions(String str) {
-		if (str == null || str.equals(""))
+		if (str == null || str.equals("")) {
 			return;
+		}
 
 		Hashtable options = JavaCore.getOptions();
 		if (str.equalsIgnoreCase("true")) {
-			options.put(
-				"org.eclipse.jdt.core.compiler.debug.localVariable",
-				"generate");
-			options.put(
-				"org.eclipse.jdt.core.compiler.debug.lineNumber",
-				"generate");
-			options.put(
-				"org.eclipse.jdt.core.compiler.debug.sourceFile",
-				"generate");
+			options.put("org.eclipse.jdt.core.compiler.debug.localVariable", "generate");
+			options.put("org.eclipse.jdt.core.compiler.debug.lineNumber", "generate");
+			options.put("org.eclipse.jdt.core.compiler.debug.sourceFile", "generate");
 		} else if (str.equalsIgnoreCase("false")) {
-			options.put(
-				"org.eclipse.jdt.core.compiler.debug.localVariable",
-				"do not generate");
-			options.put(
-				"org.eclipse.jdt.core.compiler.debug.lineNumber",
-				"do not generate");
-			options.put(
-				"org.eclipse.jdt.core.compiler.debug.sourceFile",
-				"do not generate");
+			options.put("org.eclipse.jdt.core.compiler.debug.localVariable", "do not generate");
+			options.put("org.eclipse.jdt.core.compiler.debug.lineNumber", "do not generate");
+			options.put("org.eclipse.jdt.core.compiler.debug.sourceFile", "do not generate");
 		}
 		JavaCore.setOptions(options);
 	}
 
 	protected void displayError(String msg) throws BuildException {
 		System.out.println(msg);
-		if (failOnError) throw new BuildException(msg, getLocation());
+		if (failOnError) {
+			throw new BuildException(msg, getLocation());
+		}
 	}
-	
+
 	public void setProjectName(String name) {
 		projectName = name;
 	}
-	
+
 	public void setBuildType(String type) {
 		buildTypeString = type;
 	}
-	
+
 	public void setFailonerror(String str) {
 		failonerror = str;
 	}
-	
+
 	public void setDebugCompilation(String str) {
 		debugcompilation = str;
 	}
-	
+
 	public void setCompileErrorsOut(File outFile) {
-		if (outFile != null) compileErrorsOut = outFile;
+		if (outFile != null) {
+			compileErrorsOut = outFile;
+		}
 	}
-	
+
 	public void setErrorOut(File outFile) {
-		if (outFile != null) compileErrorsOut = outFile;
+		if (outFile != null) {
+			compileErrorsOut = outFile;
+		}
 	}
-	
+
 	public void setCompileErrorsFormat(String outFormat) {
 		compileErrorsFormat = outFormat;
 	}
-	
+
 	public void setErrorFormat(String outFormat) {
 		compileErrorsFormat = outFormat;
 	}
-	
+
 	protected void validateAttributes() throws BuildException {
-		if (failonerror.equals("true"))
+		if (failonerror.equals("true")) {
 			failOnError = true;
-		else if (failonerror.equals("false"))
+		} else if (failonerror.equals("false")) {
 			failOnError = false;
-		else {
-			displayError("Invalid failonerror="	+ failonerror + ", must be \"true\" or \"false\" ");
+		} else {
+			displayError("Invalid failonerror=" + failonerror + ", must be \"true\" or \"false\" ");
 			return;
 		}
 		if (projectName == null) {
 			displayError("Must supply ProjectName");
 			return;
 		}
-		if (buildTypeString.equalsIgnoreCase("INCREMENTAL"))
+		if (buildTypeString.equalsIgnoreCase("INCREMENTAL")) {
 			buildTypeInt = IncrementalProjectBuilder.INCREMENTAL_BUILD;
-		else if (buildTypeString.equalsIgnoreCase("FULL"))
+		} else if (buildTypeString.equalsIgnoreCase("FULL")) {
 			buildTypeInt = IncrementalProjectBuilder.FULL_BUILD;
-		else if (buildTypeString.equalsIgnoreCase("AUTO"))
+		} else if (buildTypeString.equalsIgnoreCase("AUTO")) {
 			buildTypeInt = IncrementalProjectBuilder.AUTO_BUILD;
-		else {
-			displayError("Invalid BuildType="+ buildTypeString + ", must be INCREMENTAL or FULL or AUTO");
+		} else {
+			displayError("Invalid BuildType=" + buildTypeString + ", must be INCREMENTAL or FULL or AUTO");
 			return;
 		}
 		if (compileErrorsOut != null) {
@@ -288,10 +291,9 @@ public class ProjectBuild extends Task {
 			}
 		}
 		if (compileErrorsFormat != null) {
-			if (!compileErrorsFormat.equalsIgnoreCase("XML") &&
-				 !compileErrorsFormat.equalsIgnoreCase("TXT")) {
-				 displayError("error output format must be txt or xml");
-				 return;
+			if (!compileErrorsFormat.equalsIgnoreCase("XML") && !compileErrorsFormat.equalsIgnoreCase("TXT")) {
+				displayError("error output format must be txt or xml");
+				return;
 			}
 		}
 	}

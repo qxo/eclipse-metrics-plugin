@@ -45,6 +45,7 @@ import classycle.graph.Vertex;
 
 /**
  * Dialog to show from/to lists and a resulting shortest (reverse) path
+ * 
  * @author Frank Sauer
  */
 public class PathFinderDialog extends TitleAreaDialog {
@@ -52,7 +53,7 @@ public class PathFinderDialog extends TitleAreaDialog {
 	private Button exportButton;
 
 	private static final int COLUMN_WIDTH = 40;
-	
+
 	private ListViewer revV;
 	private boolean showReverse;
 	private Vertex from;
@@ -64,34 +65,41 @@ public class PathFinderDialog extends TitleAreaDialog {
 	private PathFinder finder;
 
 	/**
-	 * Open a dialog to determine the shortest path from one node to another
-	 * and optionally the reverse path as well. The nodes are obtained from
-	 * the PathFinder
-	 * @param parent		parent shell for this dialog
-	 * @param pf			Pathfinder with knowledge of the graph
-	 * @param showReverse	boolean indicating whether reverse must be shown
+	 * Open a dialog to determine the shortest path from one node to another and optionally the reverse path as well. The nodes are obtained from the PathFinder
+	 * 
+	 * @param parent
+	 *            parent shell for this dialog
+	 * @param pf
+	 *            Pathfinder with knowledge of the graph
+	 * @param showReverse
+	 *            boolean indicating whether reverse must be shown
 	 */
 	public PathFinderDialog(Shell parent, PathFinder pf, boolean showReverse) {
 		super(parent);
 		this.finder = pf;
 		this.showReverse = showReverse;
 	}
-	
+
 	/**
-	 * Open a dialog to determine the shortest path from one node to another
-	 * and no reverse path. The nodes are obtained from the PathFinder
-	 * @param parent		parent shell for this dialog
-	 * @param pf			Pathfinder with knowledge of the graph
+	 * Open a dialog to determine the shortest path from one node to another and no reverse path. The nodes are obtained from the PathFinder
+	 * 
+	 * @param parent
+	 *            parent shell for this dialog
+	 * @param pf
+	 *            Pathfinder with knowledge of the graph
 	 */
 	public PathFinderDialog(Shell parent, PathFinder pf) {
 		this(parent, pf, false);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets .Composite)
 	 */
+	@Override
 	protected Control createDialogArea(Composite parent) {
-		Composite composite = (Composite)super.createDialogArea(parent);
+		Composite composite = (Composite) super.createDialogArea(parent);
 		Composite c = new Composite(composite, SWT.NONE);
 		Font font = parent.getFont();
 		GridLayout gl = new GridLayout();
@@ -104,8 +112,8 @@ public class PathFinderDialog extends TitleAreaDialog {
 		l.setText("To");
 
 		fromV = createListViewer(parent, c);
-		toV = createListViewer(parent,c);
-		
+		toV = createListViewer(parent, c);
+
 		l = new Label(c, SWT.NONE);
 		l.setText("Shortest Path");
 		if (showReverse) {
@@ -149,7 +157,7 @@ public class PathFinderDialog extends TitleAreaDialog {
 		v.setSorter(new VertexSorter());
 		return v;
 	}
-	
+
 	/**
 	 * @param fromList
 	 * @param toList
@@ -178,17 +186,19 @@ public class PathFinderDialog extends TitleAreaDialog {
 			revV.setLabelProvider(vlp);
 		}
 	}
-	
+
 	/**
 	 * @param selection
 	 */
 	protected void toSelected(ISelection selection) {
-		if ((selection != null)&& !(selection.isEmpty())) {
-			to = (Vertex)((IStructuredSelection)selection).getFirstElement();
-		} else to = null;
+		if ((selection != null) && !(selection.isEmpty())) {
+			to = (Vertex) ((IStructuredSelection) selection).getFirstElement();
+		} else {
+			to = null;
+		}
 		updateFindButton();
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -196,22 +206,29 @@ public class PathFinderDialog extends TitleAreaDialog {
 		if ((to != null) && (from != null)) {
 			setErrorMessage(null);
 			findButton.setEnabled(true);
-		} else findButton.setEnabled(false);
+		} else {
+			findButton.setEnabled(false);
+		}
 	}
-	
+
 	/**
 	 * @param selection
 	 */
 	protected void fromSelected(ISelection selection) {
-		if ((selection != null)&& !(selection.isEmpty())) {
-			from = (Vertex)((IStructuredSelection)selection).getFirstElement();
-		} else from = null;
+		if ((selection != null) && !(selection.isEmpty())) {
+			from = (Vertex) ((IStructuredSelection) selection).getFirstElement();
+		} else {
+			from = null;
+		}
 		updateFindButton();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets .Shell)
 	 */
+	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		newShell.setText("Shortest Paths");
@@ -232,7 +249,7 @@ public class PathFinderDialog extends TitleAreaDialog {
 			setErrorMessage("No path found.");
 		}
 	}
-	
+
 	private void exportButtonClicked() {
 		FileDialog d = new FileDialog(getShell(), SWT.SAVE);
 		String fileName = d.open();
@@ -242,7 +259,7 @@ public class PathFinderDialog extends TitleAreaDialog {
 				FileOutputStream out = new FileOutputStream(f);
 				final XMLPrintStream x = new XMLPrintStream(out);
 				IRunnableWithProgress op = new IRunnableWithProgress() {
-		
+
 					public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 						exportCycles(x, monitor);
 					}
@@ -250,22 +267,22 @@ public class PathFinderDialog extends TitleAreaDialog {
 				new ProgressMonitorDialog(getShell()).run(true, false, op);
 				x.close();
 			} catch (Throwable e) {
-				
+
 			}
-			
+
 		}
 	}
 
-	
 	/**
 	 * export all cycles consisting of shortest paths to the given xml stream
+	 * 
 	 * @param x
 	 */
 	private void exportCycles(XMLPrintStream x, IProgressMonitor monitor) {
 		x.printXMLHeader();
 		x.println("<cycles>");
 		Vertex[] from = finder.getVertices();
-		Vertex[] to   = finder.getVertices();
+		Vertex[] to = finder.getVertices();
 		monitor.beginTask("Exporting cycles to XML", from.length);
 		for (int f = 0; f < from.length; f++) {
 			for (int t = 0; t < to.length; t++) {
@@ -275,15 +292,15 @@ public class PathFinderDialog extends TitleAreaDialog {
 					x.print("<cycle length=\"");
 					x.print(path.length);
 					x.println("\">");
-					for (int p = 0; p < path.length; p++) {
-						PackageAttributes a = (PackageAttributes) path[p].getAttributes();
+					for (Vertex element : path) {
+						PackageAttributes a = (PackageAttributes) element.getAttributes();
 						IJavaElement elm = a.getJavaElement();
 						x.indent(2);
 						x.print("<element");
 						if (elm != null) {
 							x.print(" kind=\"type");
 							x.print("\">");
-							x.print(((IType)elm).getFullyQualifiedName());
+							x.print(((IType) elm).getFullyQualifiedName());
 						} else {
 							x.print(" kind=\"package");
 							x.print("\">");
@@ -303,8 +320,8 @@ public class PathFinderDialog extends TitleAreaDialog {
 	}
 
 	/**
-	 * Find a cycle by calculating the path from from to to and the
-	 * reverse path from to to from and appending them. 
+	 * Find a cycle by calculating the path from from to to and the reverse path from to to from and appending them.
+	 * 
 	 * @param vertex
 	 * @param vertex2
 	 * @return String[] containing a full walk from from to to and back to from
@@ -312,25 +329,30 @@ public class PathFinderDialog extends TitleAreaDialog {
 	private Vertex[] findCycle(Vertex from, Vertex to) {
 		Vertex[] forward = finder.findShortestPath(from, to);
 		Vertex[] reverse = finder.findShortestPath(to, from);
-		List result = new ArrayList();
-		for (int i = 0; i < forward.length;i++) 
-			result.add(forward[i]);
-		Vertex pivot = forward[forward.length-1];
+		List<Vertex> result = new ArrayList<Vertex>();
+		for (Vertex element : forward) {
+			result.add(element);
+		}
+		Vertex pivot = forward[forward.length - 1];
 		int index = -1;
-		for (int i = 0; i < reverse.length;i++) {
+		for (int i = 0; i < reverse.length; i++) {
 			if (reverse[i] == pivot) {
 				index = i;
 				break;
 			}
 		}
-		for (int i = index+1; i < reverse.length; i++)
+		for (int i = index + 1; i < reverse.length; i++) {
 			result.add(reverse[i]);
-		return (Vertex[])result.toArray(new Vertex[]{});
+		}
+		return result.toArray(new Vertex[] {});
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse .swt.widgets.Composite)
 	 */
+	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
 		findButton = createButton(parent, IDialogConstants.DETAILS_ID, "Find", false);
 		findButton.addSelectionListener(new SelectionListener() {
@@ -344,40 +366,42 @@ public class PathFinderDialog extends TitleAreaDialog {
 		});
 		findButton.setEnabled(false);
 		if (showReverse) {
-			exportButton = createButton(parent, IDialogConstants.INTERNAL_ID, "Export All", false);		
+			exportButton = createButton(parent, IDialogConstants.INTERNAL_ID, "Export All", false);
 			exportButton.addSelectionListener(new SelectionListener() {
-	
+
 				public void widgetSelected(SelectionEvent e) {
 					exportButtonClicked();
 				}
-	
+
 				public void widgetDefaultSelected(SelectionEvent e) {
 				}
 			});
 		}
 		createButton(parent, IDialogConstants.OK_ID, "OK", true);
 	}
-	
+
 	static class VertexSorter extends ViewerSorter {
 		VertexSorter() {
 			super();
 		}
 	}
-	
 
 	static class VertexLabelProvider extends LabelProvider {
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see org.eclipse.jface.viewers.ILabelProvider#getText(java.lang.Object)
 		 */
+		@Override
 		public String getText(Object element) {
 			if (element instanceof Vertex) {
-				Vertex v = (Vertex)element;
+				Vertex v = (Vertex) element;
 				PackageAttributes a = (PackageAttributes) v.getAttributes();
 				return a.getLabel();
-			} else {
-				return super.getText(element);
-			}
+			} /* else { */
+			return super.getText(element);
+			/* } */
 		}
 	}
 }

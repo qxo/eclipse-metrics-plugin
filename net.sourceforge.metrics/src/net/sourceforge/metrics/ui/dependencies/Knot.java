@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import classycle.graph.StrongComponent;
 
@@ -43,7 +44,7 @@ public class Knot extends Node {
 	private DependencyGraphPanel panel;
 
 	StrongComponent cycle = null;
-	
+
 	/**
 	 * 
 	 */
@@ -91,25 +92,28 @@ public class Knot extends Node {
 		cycle = component;
 	}
 
-	/* Add some items to node popup menu
+	/*
+	 * Add some items to node popup menu
+	 * 
 	 * @see com.touchgraph.graphlayout.Node#aboutToShow(java.awt.PopupMenu)
 	 */
+	@Override
 	public void aboutToShow(final PopupMenu nodePopup) {
 		super.aboutToShow(nodePopup);
 		final MenuItem path = new MenuItem("Find Shortest Path");
 		nodePopup.add(path);
 		path.addActionListener(new ActionListener() {
-	
+
 			public void actionPerformed(ActionEvent e) {
 				findShortestPath();
 			}
 		});
-		
+
 		if (showDetail) {
 			final MenuItem analyze = new MenuItem("Analyze Details");
 			nodePopup.add(analyze);
 			analyze.addActionListener(new ActionListener() {
-	
+
 				public void actionPerformed(ActionEvent e) {
 					analyze();
 				}
@@ -121,10 +125,10 @@ public class Knot extends Node {
 		Thread t = new Thread(new Runnable() {
 
 			public void run() {
-				Map dependencies = new HashMap();
-				Map packages = new HashMap();
+				Map<String, Set<String>> dependencies = new HashMap<String, Set<String>>();
+				Map<String, Set<String>> packages = new HashMap<String, Set<String>>();
 				new TangleAnalyzer(cycle, dependencies, packages).analyze();
-				if (dependencies.size()>0) { // 0 if cancelled by user
+				if (dependencies.size() > 0) { // 0 if cancelled by user
 					try {
 						panel.createDependencies(dependencies, packages);
 					} catch (TGException e) {
@@ -145,7 +149,7 @@ public class Knot extends Node {
 		});
 		t.start();
 	}
-	
+
 	/**
 	 * @param panel
 	 */

@@ -21,6 +21,7 @@
 package net.sourceforge.metrics.internal.tests;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.TestCase;
 import net.sourceforge.metrics.core.Max;
@@ -30,13 +31,14 @@ import net.sourceforge.metrics.core.Metric;
  * @author Frank Sauer
  */
 public class MaxTests extends TestCase {
-	
+
 	private static String name1 = "NAME1";
-	private ArrayList metrics;
-	private ArrayList maxes;
+	private List<Metric> metrics;
+	private List<Max> maxes;
 
 	/**
 	 * Constructor for MaxTests.
+	 * 
 	 * @param arg0
 	 */
 	public MaxTests(String arg0) {
@@ -50,14 +52,15 @@ public class MaxTests extends TestCase {
 	/**
 	 * @see junit.framework.TestCase#setUp()
 	 */
+	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		metrics = new ArrayList();
+		metrics = new ArrayList<Metric>();
 		metrics.add(new Metric(name1, 1));
 		metrics.add(new Metric(name1, 3));
 		metrics.add(new Metric(name1, 2));
 		metrics.add(new Metric(name1, 5));
-		maxes = new ArrayList();
+		maxes = new ArrayList<Max>();
 		maxes.add(new Max(name1, "per", 1));
 		maxes.add(new Max(name1, "per", 4));
 		maxes.add(new Max(name1, "per", 10));
@@ -69,7 +72,7 @@ public class MaxTests extends TestCase {
 		Max max = Max.createFromMetrics(name1, "per", metrics);
 		assertEquals("wrong expected max value", 5, max.intValue());
 	}
-	
+
 	public void testMaxFromMaxes() {
 		Max max = Max.createFromMaxes(name1, "per", maxes);
 		assertEquals("wrong expected max value", maxes.get(2), max);

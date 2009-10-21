@@ -19,6 +19,7 @@
  * created on Jan 13, 2003
  */
 package net.sourceforge.metrics.core;
+
 import net.sourceforge.metrics.calculators.InvalidSourceException;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
@@ -30,6 +31,8 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
  */
 public interface ICalculator {
 	String getName();
+
 	void setName(String name);
+
 	void calculate(AbstractMetricSource source) throws InvalidSourceException;
 }

@@ -29,17 +29,19 @@ import java.io.Serializable;
  */
 public class Sum extends Metric implements Serializable {
 
+	private static final long serialVersionUID = -3763122480771575457L;
 	boolean propagated = true;
-	
+
 	public Sum(String name, double value, boolean propagated) {
 		this(name, value);
 		this.propagated = propagated;
 	}
-	
+
 	public Sum(String name, double value) {
 		super(name, value);
 	}
-	
+
+	@Override
 	public boolean isPropagated() {
 		return propagated;
 	}
@@ -55,7 +57,9 @@ public class Sum extends Metric implements Serializable {
 
 	/**
 	 * Sets the propagated.
-	 * @param propagated The propagated to set
+	 * 
+	 * @param propagated
+	 *            The propagated to set
 	 */
 	public void setPropagated(boolean propagated) {
 		this.propagated = propagated;

@@ -45,30 +45,39 @@ public class NestedBlockDepth extends Calculator implements Constants {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) throws InvalidSourceException {
-		if (source.getLevel() != METHOD) throw new InvalidSourceException("NestedBlockDepth only applicable to methods");
-		MethodDeclaration astNode = (MethodDeclaration)source.getASTNode();
-		if (astNode == null) source.setValue(getZero());
+		if (source.getLevel() != METHOD) {
+			throw new InvalidSourceException("NestedBlockDepth only applicable to methods");
+		}
+		MethodDeclaration astNode = (MethodDeclaration) source.getASTNode();
+		if (astNode == null) {
+			source.setValue(getZero());
+		}
 		Block body = astNode.getBody();
-		if (body == null) source.setValue(getZero());
+		if (body == null) {
+			source.setValue(getZero());
+		}
 		LevelCounter lc = new LevelCounter();
 		astNode.accept(lc);
 		source.setValue(new Metric(getName(), lc.maxDepth));
 	}
-	
+
 	/**
 	 * counts the maximum block depth by visiting Blocks
 	 */
 	private class LevelCounter extends ASTVisitor {
-		
+
 		int maxDepth = 0;
 		int depth = 0;
-				
+
+		@Override
 		public boolean visit(Block node) {
 			depth++;
 			return true;
 		}
-		
+
+		@Override
 		public void endVisit(Block node) {
 			if (depth > maxDepth) {
 				maxDepth = depth;

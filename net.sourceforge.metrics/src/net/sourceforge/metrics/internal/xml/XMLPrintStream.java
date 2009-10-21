@@ -43,17 +43,19 @@ public class XMLPrintStream extends PrintStream {
 	public void printXMLHeader() {
 		println(XML);
 	}
-	
+
 	public void indent(int level) {
 		if (level > 0) {
 			StringBuffer b = new StringBuffer("");
-			for (int i = 0; i < level;i++) b.append("   ");
+			for (int i = 0; i < level; i++) {
+				b.append("   ");
+			}
 			print(b.toString());
 		}
 	}
-	
+
 	public String formatXSDDate(Date d) {
-		synchronized(df) {
+		synchronized (df) {
 			return df.format(d).toString();
 		}
 	}

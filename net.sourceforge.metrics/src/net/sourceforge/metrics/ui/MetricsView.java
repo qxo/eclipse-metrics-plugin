@@ -37,12 +37,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -72,30 +73,19 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * View that renders the metrica in a table and reacts to selection events
- * and resource change events from the environment
+ * View that renders the metrica in a table and reacts to selection events and resource change events from the environment
  * 
  * @author Frank Sauer
  */
-public class MetricsView extends ViewPart implements ISelectionListener, IMetricsProgressListener, Preferences.IPropertyChangeListener {
-	
-//	 FIXME GB 04/15/2005 move that const to the approriate place
+public class MetricsView extends ViewPart implements ISelectionListener, IMetricsProgressListener, IPropertyChangeListener {
+
+	// FIXME GB 04/15/2005 move that const to the approriate place
 	private static String pluginId = MetricsPlugin.getDefault().getBundle().getSymbolicName();
 
-	private final static String[] EXPLANATION = {
-		"No metrics available for selection. To calculate and display metrics:",
-		"",
-		"    1) ensure you are in a java perspective using the package explorer,",
-		"    2) select a project and enable the metrics from its context menu,",
-		"    3) perform a full rebuild on the project.",
-		"",
-		"After the above steps, selecting any java element in the project will result in metrics being shown here.",
-		"Automatic builds will keep the metrics up-to-date by re-calculating the metrics for changed elements only.",
-		"",
-		"To temporarily pause calculations, click the pause button. Click the resume button to resume.",
-		"To abort all current and pending calculations, click the stop button."
-	};
-	
+	private final static String[] EXPLANATION = { "No metrics available for selection. To calculate and display metrics:", "", "    1) ensure you are in a java perspective using the package explorer,",
+			"    2) select a project and enable the metrics from its context menu,", "    3) perform a full rebuild on the project.", "",
+			"After the above steps, selecting any java element in the project will result in metrics being shown here.", "Automatic builds will keep the metrics up-to-date by re-calculating the metrics for changed elements only.", "",
+			"To temporarily pause calculations, click the pause button. Click the resume button to resume.", "To abort all current and pending calculations, click the stop button." };
 
 	private Composite tablePage;
 	private Composite explanationPage;
@@ -112,7 +102,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	private Cursor wait;
 	private Cursor normal;
 	private IJavaElement selection;
-		
+
 	/**
 	 * The constructor.
 	 */
@@ -120,9 +110,9 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	}
 
 	/**
-	 * This is a callback that will allow us
-	 * to create the viewer and initialize it.
+	 * This is a callback that will allow us to create the viewer and initialize it.
 	 */
+	@Override
 	public void createPartControl(Composite parent) {
 		Composite c = new Composite(parent, SWT.NONE);
 		c.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -141,7 +131,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		getViewSite().getPage().addSelectionListener(this);
 		mActions = new MetricsActionGroup(this);
 		IActionBars actionBars = getViewSite().getActionBars();
-		mActions.fillActionBars(actionBars); 
+		mActions.fillActionBars(actionBars);
 		MetricsPlugin.getDefault().addPropertyChangeListener(this);
 		MetricsBuilder.addMetricsProgressListener(this);
 	}
@@ -178,83 +168,90 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		table.setLayoutData(data);
 		table.initWidths(memento);
 		table.addSelectionListener(new SelectionListener() {
-		
+
 			public void widgetSelected(SelectionEvent e) {
 				TreeItem item = (TreeItem) e.item;
 				if (item != null) {
 					supplementTitle(item);
 				}
 			}
-		
+
 			public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		});
 	}
-	
+
 	private Composite createExplanation(Composite stackC) {
 		Composite exp = new Composite(stackC, SWT.NONE);
 		exp.setLayout(new GridLayout(1, false));
-		for (int i = 0; i < EXPLANATION.length; i++) {
+		for (String element : EXPLANATION) {
 			Label l = new Label(exp, SWT.NONE);
-			l.setText(EXPLANATION[i]);
-		}		
+			l.setText(element);
+		}
 		return exp;
 	}
 
 	/**
 	 * Add the metric desciption to the titlebar
+	 * 
 	 * @param item
 	 */
 	private void supplementTitle(TreeItem item) {
 		StringBuffer b = getTitlePrefix(selection);
 		TreeItem root = item; // fix submitted by Jacob Eckel 5/27/03
-		while (root.getParentItem() != null) root = root.getParentItem();
+		while (root.getParentItem() != null) {
+			root = root.getParentItem();
+		}
 		b.append(" - ").append(root.getText(0));
 		setPartName(b.toString());
 	}
-	
+
 	private Cursor getWaitCursor(Display d) {
-		if (wait==null) {
+		if (wait == null) {
 			wait = new Cursor(d, SWT.CURSOR_WAIT);
 		}
 		return wait;
 	}
-	
+
 	private Cursor getNormalCursor(Display d) {
-		if (normal==null) {
+		if (normal == null) {
 			normal = new Cursor(d, SWT.CURSOR_ARROW);
 		}
 		return normal;
 	}
 
-	private void setJavaElement(final IJavaElement elm, boolean force) {		
-		if (elm == null) return; // BUG 676496
+	private void setJavaElement(final IJavaElement elm, boolean force) {
+		if (elm == null) {
+			return; // BUG 676496
+		}
 		if (force || (elm != getSelection())) {
 			setSelection(elm);
-		}		
+		}
 	}
-		
+
 	private void setStatus(final String title, final boolean busy) {
 		final Display display = Display.getDefault();
-		display.asyncExec(new Runnable () {
+		display.asyncExec(new Runnable() {
 			public void run() {
-				if (table.isDisposed()) return;
+				if (table.isDisposed()) {
+					return;
+				}
 				progressText.setText(title);
 				progressText.update();
 				if (busy) {
 					table.setCursor(getWaitCursor(display));
 					mActions.disable();
-				} else { 
+				} else {
 					table.setCursor(getNormalCursor(display));
 					mActions.enable();
 				}
 			}
 		});
 	}
-	
+
 	private void refreshTable(final AbstractMetricSource ms, final IJavaElement selection) {
 		final Display display = Display.getDefault();
-		display.asyncExec(new Runnable () {
+		display.asyncExec(new Runnable() {
 			public void run() {
 				if (!table.isDisposed()) {
 					table.setMetrics(ms);
@@ -267,81 +264,107 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 
 	private StringBuffer getTitlePrefix(IJavaElement element) {
 		StringBuffer b = new StringBuffer("Metrics - ");
-		if (element == null) return b;
+		if (element == null) {
+			return b;
+		}
 		String name = element.getElementName();
-		if ("".equals(name)) name = "(default package)";
+		if ("".equals(name)) {
+			name = "(default package)";
+		}
 		b.append(name);
-		return b;		
+		return b;
 	}
-	
+
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
+	@Override
 	public void setFocus() {
 		table.setFocus();
 	}
-	
+
 	/**
 	 * react to selections elsewhere in the workbench
+	 * 
 	 * @see org.eclipse.ui.ISelectionListener#selectionChanged(org.eclipse.ui.IWorkbenchPart, org.eclipse.jface.viewers.ISelection)
 	 */
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if(!selection.isEmpty()){
+		if (!selection.isEmpty()) {
 			if (selection instanceof IStructuredSelection) {
 				IStructuredSelection l_structSelection = (IStructuredSelection) selection;
-				if(l_structSelection.size() == 1){ //only one element allowed
-					Object l_first = ((IStructuredSelection)l_structSelection).getFirstElement();
+				if (l_structSelection.size() == 1) { // only one element allowed
+					Object l_first = (l_structSelection).getFirstElement();
 					IJavaElement l_jElem = null;
 					if (l_first instanceof IJavaElement) {
-						l_jElem = (IJavaElement)l_first;
-					}else if(l_first instanceof IResource){
+						l_jElem = (IJavaElement) l_first;
+					} else if (l_first instanceof IResource) {
 						l_jElem = (IJavaElement) ((IResource) l_first).getAdapter(IJavaElement.class);
 					}
-					if (l_jElem != null && canDoMetrics(l_jElem)){
-						try{
-							if(l_jElem.getJavaProject().getProject().hasNature(pluginId + ".nature")){
+					if (l_jElem != null && canDoMetrics(l_jElem)) {
+						try {
+							if (l_jElem.getJavaProject().getProject().hasNature(pluginId + ".nature")) {
 								setJavaElement(l_jElem, false);
 							}
-						}catch(CoreException l_ce){
-//							 TODO GB 04/15/2005 ? what to do in such case
-							Log.logError("project nature does not exist",l_ce);
+						} catch (CoreException l_ce) {
+							// TODO GB 04/15/2005 ? what to do in such case
+							Log.logError("project nature does not exist", l_ce);
 						}
 					}
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * @param type
 	 * @return true if acceptable type for metrics calculation
 	 */
 	private boolean canDoMetrics(IJavaElement element) {
 		int type = element.getElementType();
-		if (type == IJavaElement.CLASS_FILE) return false;
-		if (type == IJavaElement.FIELD) return false;
-		if (type == IJavaElement.IMPORT_CONTAINER) return false;
-		if (type == IJavaElement.IMPORT_DECLARATION) return false;
-		if (type == IJavaElement.INITIALIZER) return false;
-		if (type == IJavaElement.PACKAGE_DECLARATION) return false;
+		if (type == IJavaElement.CLASS_FILE) {
+			return false;
+		}
+		if (type == IJavaElement.FIELD) {
+			return false;
+		}
+		if (type == IJavaElement.IMPORT_CONTAINER) {
+			return false;
+		}
+		if (type == IJavaElement.IMPORT_DECLARATION) {
+			return false;
+		}
+		if (type == IJavaElement.INITIALIZER) {
+			return false;
+		}
+		if (type == IJavaElement.PACKAGE_DECLARATION) {
+			return false;
+		}
 		return true;
 	}
 
 	/**
 	 * @see org.eclipse.ui.IWorkbenchPart#dispose()
 	 */
+	@Override
 	public void dispose() {
 		getViewSite().getPage().removeSelectionListener(this);
 		MetricsBuilder.removeMetricsProgressListener(this);
-		if (wait != null) wait.dispose();
-		if (normal != null) normal.dispose();	
+		if (wait != null) {
+			wait.dispose();
+		}
+		if (normal != null) {
+			normal.dispose();
+		}
 		super.dispose();
 		// not sure if super does this, so check it
-		if (!table.isDisposed()) table.dispose();
+		if (!table.isDisposed()) {
+			table.dispose();
+		}
 	}
-	
+
 	/**
 	 * Returns the selection.
+	 * 
 	 * @return IJavaElement
 	 */
 	public IJavaElement getSelection() {
@@ -349,12 +372,16 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	}
 
 	protected void setSelection(IJavaElement elm) {
-		if (elm != null) selection = elm;
+		if (elm != null) {
+			selection = elm;
+		}
 		AbstractMetricSource ms = Dispatcher.getAbstractMetricSource(selection);
 		if (ms != null) {
 			refreshTable(ms, selection);
 			showTablePage();
-		} else showExplanationPage();
+		} else {
+			showExplanationPage();
+		}
 	}
 
 	/**
@@ -386,21 +413,13 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	}
 
 	/**
-	 * display dependency graph as embedded workbench view on Windows,
-	 * in a separate AWT frame on all other platforms.
-	 * As of 4/30/04, only 3.0M8+ and embedded style on all platforms
+	 * display dependency graph as embedded workbench view on Windows, in a separate AWT frame on all other platforms. As of 4/30/04, only 3.0M8+ and embedded style on all platforms
 	 */
 	public void displayDependencyGraph() {
 		/*
-		if (selection.getElementType() <= IJavaElement.PACKAGE_FRAGMENT_ROOT) {
-			IGraphContributor source = (IGraphContributor) Dispatcher.getAbstractMetricSource(selection);
-			if (Platform.OS_WIN32.equals(Platform.getOS())) {
-				displayDependencyGraphSWT(source.getEfferent());
-			} else {
-				displayDependencyGraphAWT(source.getEfferent());
-			}
-		}
-		*/
+		 * if (selection.getElementType() <= IJavaElement.PACKAGE_FRAGMENT_ROOT) { IGraphContributor source = (IGraphContributor) Dispatcher.getAbstractMetricSource(selection); if (Platform.OS_WIN32.equals(Platform.getOS())) {
+		 * displayDependencyGraphSWT(source.getEfferent()); } else { displayDependencyGraphAWT(source.getEfferent()); } }
+		 */
 		// now works the same on all platforms
 		IGraphContributor source = (IGraphContributor) Dispatcher.getAbstractMetricSource(selection);
 		displayDependencyGraphSWT(source.getEfferent());
@@ -417,39 +436,18 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 				} catch (PartInitException e) {
 					e.printStackTrace();
 				}
-			} 
+			}
 			currentDependencies = graph;
 			fireArmEvent();
-		} 
+		}
 	}
 
 	/*
-	private void displayDependencyGraphAWT(final Map graph) {
-		Display.getCurrent().asyncExec(new Runnable() {
-		//Thread awt = new Thread(new Runnable() {
-			public void run() {
-				final Frame frame = new Frame("Dependencies");
-				final DependencyGraphPanel glPanel = new DependencyGraphPanel();
-				try {
-					glPanel.createDependencies(graph);
-				} catch (TGException e1) {
-					Log.logError("Could not create DependencyGraphPanel", e1);
-				}
-				frame.addWindowListener(new WindowAdapter() {
-					public void windowClosing(WindowEvent e) {
-					  frame.remove(glPanel);
-					  frame.dispose();
-					}
-				});
-				frame.add("Center", glPanel);
-				frame.setSize(800,600);
-				frame.setVisible(true);
-			}
-		});
-		//awt.start();
-	}	
-	*/
-	
+	 * private void displayDependencyGraphAWT(final Map graph) { Display.getCurrent().asyncExec(new Runnable() { //Thread awt = new Thread(new Runnable() { public void run() { final Frame frame = new Frame("Dependencies"); final
+	 * DependencyGraphPanel glPanel = new DependencyGraphPanel(); try { glPanel.createDependencies(graph); } catch (TGException e1) { Log.logError("Could not create DependencyGraphPanel", e1); } frame.addWindowListener(new WindowAdapter() {
+	 * public void windowClosing(WindowEvent e) { frame.remove(glPanel); frame.dispose(); } }); frame.add("Center", glPanel); frame.setSize(800,600); frame.setVisible(true); } }); //awt.start(); }
+	 */
+
 	/**
 	 * 
 	 */
@@ -462,7 +460,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	public static Map getDependencies() {
 		return currentDependencies;
 	}
-	
+
 	/**
 	 * export the selected metrics to an XML report
 	 */
@@ -474,34 +472,38 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 			if (fileName != null) {
 				File outputFile = new File(fileName);
 				IExporter exporter = MetricsPlugin.getDefault().getCurrentExporter();
-				if (exporter != null) 
-					doExport(activeShell, outputFile, exporter);	
-				else {
+				if (exporter != null) {
+					doExport(activeShell, outputFile, exporter);
+				} else {
 					MessageDialog.openWarning(activeShell, "Warning", "Sorry, exporter is not available");
-				}			
+				}
 			}
 		}
 	}
 
 	private void doExport(Shell activeShell, final File outputFile, final IExporter exporter) {
 		try {
-			
+
 			IRunnableWithProgress op = new IRunnableWithProgress() {
-		
+
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					exporter.export(selection, outputFile, monitor);							
+					exporter.export(selection, outputFile, monitor);
 				}
 			};
 			new ProgressMonitorDialog(activeShell).run(true, true, op);
-		 } catch (InvocationTargetException e) {
+		} catch (InvocationTargetException e) {
 			Log.logError("MetricsView::doExport", e);
-		 } catch (InterruptedException e) {
+		} catch (InterruptedException e) {
 			outputFile.delete();
-		 }
+		}
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.ui.IViewPart#init(org.eclipse.ui.IViewSite, org.eclipse.ui.IMemento)
 	 */
+	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 		super.init(site, memento);
 		if (memento != null) {
@@ -509,19 +511,28 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.ui.IViewPart#saveState(org.eclipse.ui.IMemento)
 	 */
+	@Override
 	public void saveState(IMemento memento) {
-		if (table != null) table.updateWidths(memento);
+		if (table != null) {
+			table.updateWidths(memento);
+		}
 		super.saveState(memento);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse .jface.util.PropertyChangeEvent)
 	 */
-	public void propertyChange(Preferences.PropertyChangeEvent event) {
-		if (selection != null) setJavaElement(selection, true);
+	public void propertyChange(PropertyChangeEvent event) {
+		if (selection != null) {
+			setJavaElement(selection, true);
+		}
 	}
 
 	/**
@@ -531,44 +542,45 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		armListener = l;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.metrics.core.MetricsBuilder.MetricsProgressListener#pending(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sourceforge.metrics.core.MetricsBuilder.MetricsProgressListener#pending (java.lang.String)
 	 */
 	public void pending(IJavaElement current) {
-		setStatus(
-				"Queued: " + queued + "\tCalculating now: " + current.getElementName(), 
-				shouldBeBusy(current));		
+		setStatus("Queued: " + queued + "\tCalculating now: " + current.getElementName(), shouldBeBusy(current));
 	}
-	
+
 	private boolean shouldBeBusy(IJavaElement current) {
-		boolean busy = (selection != null)&&(selection.equals(current));
-		busy = busy || (selection != null)&&(current.getHandleIdentifier().startsWith(selection.getHandleIdentifier()));
+		boolean busy = (selection != null) && (selection.equals(current));
+		busy = busy || (selection != null) && (current.getHandleIdentifier().startsWith(selection.getHandleIdentifier()));
 		return busy;
 	}
-	
+
 	private void resetProgressBar() {
 		Display d = Display.getDefault();
 		d.asyncExec(new Runnable() {
 
 			public void run() {
-					progressBar.setMaximum(0);
-					progressBar.setSelection(0);
-					mActions.enable();
+				progressBar.setMaximum(0);
+				progressBar.setSelection(0);
+				mActions.enable();
 			}
 		});
 	}
-	
+
 	private void incProgressBar() {
 		Display d = Display.getDefault();
 		d.asyncExec(new Runnable() {
 
 			public void run() {
-				if (!progressBar.isDisposed())
-					progressBar.setSelection(progressBar.getSelection()+1);
+				if (!progressBar.isDisposed()) {
+					progressBar.setSelection(progressBar.getSelection() + 1);
+				}
 			}
 		});
 	}
-	
+
 	private void addWorkToProgressBar() {
 		Display d = Display.getDefault();
 		d.asyncExec(new Runnable() {
@@ -579,14 +591,16 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 			}
 		});
 	}
-		
-	/* (non-Javadoc)
-	 * @see net.sourceforge.metrics.core.MetricsBuilder.MetricsProgressListener#completed(java.lang.String)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sourceforge.metrics.core.MetricsBuilder.MetricsProgressListener#completed (java.lang.String)
 	 */
 	public void completed(IJavaElement element, Object data) {
 		setStatus("completed " + element.getElementName(), shouldBeBusy(element));
-		if ((selection != null)&&(selection.equals(element))) {
-			AbstractMetricSource ms = (AbstractMetricSource)data;
+		if ((selection != null) && (selection.equals(element))) {
+			AbstractMetricSource ms = (AbstractMetricSource) data;
 			refreshTable(ms, selection);
 		}
 		queued--;
@@ -597,29 +611,36 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		queued += count;
 		addWorkToProgressBar();
 	}
-	
+
 	public void projectComplete(IJavaProject project, boolean aborted) {
-		//Log.logMessage("Got projectComplete event.");
+		// Log.logMessage("Got projectComplete event.");
 		queued = 0;
 		setStatus("", false);
 		resetProgressBar();
 		// force rendering of completed project
 		boolean showProject = MetricsPlugin.getDefault().showProjectOnCompletion();
 
-		if (!aborted) setSelection(showProject?project:selection);
+		if (!aborted) {
+			setSelection(showProject ? project : selection);
+		}
 	}
-		
-	/* (non-Javadoc)
-	 * @see net.sourceforge.metrics.core.MetricsBuilder.MetricsProgressListener#moved(java.lang.String, org.eclipse.core.runtime.IPath)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sourceforge.metrics.core.MetricsBuilder.MetricsProgressListener#moved (java.lang.String, org.eclipse.core.runtime.IPath)
 	 */
 	public void moved(IJavaElement element, IPath fromPath) {
 		if ((selection != null) && (selection.getPath().equals(fromPath))) {
-			// this causes the view to refresh with new element when it completes
+			// this causes the view to refresh with new element when it
+			// completes
 			selection = element;
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.builder.IMetricsProgressListener#paused()
 	 */
 	public void paused() {

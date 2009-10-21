@@ -51,14 +51,14 @@ public class TopoSortDialog extends TitleAreaDialog {
 	private Vertex[] sorted;
 
 	private static final int COLUMN_WIDTH = 60;
-	
+
 	private ListViewer sortedV;
 	private Vertex[] graph;
 
 	public static void showUI(final Vertex[] graph) {
 		final Display d = Display.getDefault();
 		d.syncExec(new Runnable() {
-				
+
 			public void run() {
 				Shell shell = new Shell(d);
 				TopoSortDialog td = new TopoSortDialog(shell, graph);
@@ -67,17 +67,19 @@ public class TopoSortDialog extends TitleAreaDialog {
 		});
 	}
 
-
 	public TopoSortDialog(Shell parent, Vertex[] graph) {
 		super(parent);
 		this.graph = graph;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#createDialogArea(org.eclipse.swt.widgets .Composite)
 	 */
+	@Override
 	protected Control createDialogArea(Composite parent) {
-		Composite composite = (Composite)super.createDialogArea(parent);
+		Composite composite = (Composite) super.createDialogArea(parent);
 		Composite c = new Composite(composite, SWT.NONE);
 		c.setLayout(new GridLayout());
 		VertexLabelProvider vlp = new VertexLabelProvider();
@@ -103,18 +105,24 @@ public class TopoSortDialog extends TitleAreaDialog {
 		v.getList().setLayoutData(data);
 		return v;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets .Shell)
 	 */
+	@Override
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
 		newShell.setText("Topological Sort");
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse .swt.widgets.Composite)
 	 */
+	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
 		Button copyButton = createButton(parent, IDialogConstants.DETAILS_ID, "Copy to Clipboard", false);
 		createButton(parent, IDialogConstants.OK_ID, "OK", true);
@@ -129,40 +137,42 @@ public class TopoSortDialog extends TitleAreaDialog {
 		});
 		copyButton.setEnabled(sorted != null);
 	}
-	
+
 	protected void copyToClipboard() {
 		Clipboard clipboard = new Clipboard(getShell().getDisplay());
 		StringBuffer b = new StringBuffer();
 		VertexLabelProvider vlp = new VertexLabelProvider();
-		for (int i = 0; i < sorted.length; i++) {
-			String line = vlp.getText(sorted[i]);
+		for (Vertex element : sorted) {
+			String line = vlp.getText(element);
 			b.append(line).append("\n");
 		}
 		TextTransfer textTransfer = TextTransfer.getInstance();
-		clipboard.setContents(new Object[]{b.toString()}, new Transfer[]{textTransfer});
+		clipboard.setContents(new Object[] { b.toString() }, new Transfer[] { textTransfer });
 		clipboard.dispose();
 	}
-	
+
 	static class VertexSorter extends ViewerSorter {
 		VertexSorter() {
 			super();
 		}
 	}
-	
 
 	static class VertexLabelProvider extends LabelProvider {
-		
-		/* (non-Javadoc)
+
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see org.eclipse.jface.viewers.ILabelProvider#getText(java.lang.Object)
 		 */
+		@Override
 		public String getText(Object element) {
 			if (element instanceof Vertex) {
-				Vertex v = (Vertex)element;
+				Vertex v = (Vertex) element;
 				PackageAttributes a = (PackageAttributes) v.getAttributes();
 				return a.getLabel();
-			} else {
-				return super.getText(element);
-			}
+			} /* else { */
+			return super.getText(element);
+			/* } */
 		}
 	}
 }

@@ -61,338 +61,401 @@ import com.touchgraph.graphlayout.TGAbstractLens;
 import com.touchgraph.graphlayout.TGLensSet;
 import com.touchgraph.graphlayout.TGPanel;
 import com.touchgraph.graphlayout.TGPoint2D;
-//import  javax.swing.*;
 
-/** HVScroll:  Allows for scrolling horizontaly+vertically.  This can be
-  * done in all sorts of ways, for instance by using the scrollbars, or by
-  * dragging.
-  *
-  * <p>
-  * This code is more complex then it would seem it should be, because scrolling
-  * has to be independent of the screen being warped by lenses.  HVScroll needs
-  * to use the tgLensSet object because the offset is recorded in real coordinates, while
-  * the user interacts with the drawn coordinates.
-  *
-  * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: HVScroll.java,v 1.4 2004/10/25 06:57:32 donv70 Exp $
-  */
+/**
+ * HVScroll: Allows for scrolling horizontaly+vertically. This can be done in all sorts of ways, for instance by using the scrollbars, or by dragging.
+ * 
+ * <p>
+ * This code is more complex then it would seem it should be, because scrolling has to be independent of the screen being warped by lenses. HVScroll needs to use the tgLensSet object because the offset is recorded in real coordinates, while
+ * the user interacts with the drawn coordinates.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: HVScroll.java,v 1.4 2004/10/25 06:57:32 donv70 Exp $
+ */
 public class HVScroll implements GraphListener {
 
-    private DScrollbar horizontalSB;
-    private DScrollbar verticalSB;
+	private DScrollbar horizontalSB;
+	private DScrollbar verticalSB;
 
-    HVLens hvLens;
-    HVDragUI hvDragUI;
-    HVScrollToCenterUI hvScrollToCenterUI;
-    public boolean scrolling;
+	HVLens hvLens;
+	HVDragUI hvDragUI;
+	HVScrollToCenterUI hvScrollToCenterUI;
+	public boolean scrolling;
 
-    private boolean adjustmentIsInternal;
-    private TGPanel tgPanel;
-    private TGLensSet tgLensSet;
+	private boolean adjustmentIsInternal;
+	private TGPanel tgPanel;
+	private TGLensSet tgLensSet;
 
-    private TGPoint2D offset;
+	private TGPoint2D offset;
 
-  // ............
+	// ............
 
-   /** Constructor with a TGPanel <tt>tgp</tt> and TGLensSet <tt>tgls</tt>.
-     */
-    public HVScroll(TGPanel tgp, TGLensSet tgls) {
-        tgPanel=tgp;
-        tgLensSet=tgls;
+	/**
+	 * Constructor with a TGPanel <tt>tgp</tt> and TGLensSet <tt>tgls</tt>.
+	 */
+	public HVScroll(TGPanel tgp, TGLensSet tgls) {
+		tgPanel = tgp;
+		tgLensSet = tgls;
 
-        offset=new TGPoint2D(0,0);
-        scrolling = false;
-        adjustmentIsInternal = false;
+		offset = new TGPoint2D(0, 0);
+		scrolling = false;
+		adjustmentIsInternal = false;
 
-        horizontalSB = new DScrollbar(Scrollbar.HORIZONTAL, 0, 100, -1000, 1100);
-        horizontalSB.setBlockIncrement(100);
-        horizontalSB.setUnitIncrement(20);
+		horizontalSB = new DScrollbar(Scrollbar.HORIZONTAL, 0, 100, -1000, 1100);
+		horizontalSB.setBlockIncrement(100);
+		horizontalSB.setUnitIncrement(20);
 
-        horizontalSB.addAdjustmentListener(new horizAdjustmentListener());
+		horizontalSB.addAdjustmentListener(new horizAdjustmentListener());
 
-        verticalSB = new DScrollbar(Scrollbar.VERTICAL, 0, 100, -1000, 1100);
-        verticalSB.setBlockIncrement(100);
-        verticalSB.setUnitIncrement(20);
+		verticalSB = new DScrollbar(Scrollbar.VERTICAL, 0, 100, -1000, 1100);
+		verticalSB.setBlockIncrement(100);
+		verticalSB.setUnitIncrement(20);
 
-        verticalSB.addAdjustmentListener(new vertAdjustmentListener());
+		verticalSB.addAdjustmentListener(new vertAdjustmentListener());
 
-        hvLens=new HVLens();
-        hvDragUI = new HVDragUI(); //Hopefully this approach won't eat too much memory
-        hvScrollToCenterUI = new HVScrollToCenterUI();
+		hvLens = new HVLens();
+		hvDragUI = new HVDragUI(); // Hopefully this approach won't eat too much
+		// memory
+		hvScrollToCenterUI = new HVScrollToCenterUI();
 
-        tgPanel.addGraphListener(this);
-    }
+		tgPanel.addGraphListener(this);
+	}
 
-    public Scrollbar getHorizontalSB() { return horizontalSB; }
+	public Scrollbar getHorizontalSB() {
+		return horizontalSB;
+	}
 
-    public Scrollbar getVerticalSB() { return verticalSB; }
+	public Scrollbar getVerticalSB() {
+		return verticalSB;
+	}
 
-    public HVDragUI getHVDragUI() { return hvDragUI; }
+	public HVDragUI getHVDragUI() {
+		return hvDragUI;
+	}
 
-    public HVLens getLens() { return hvLens; }
+	public HVLens getLens() {
+		return hvLens;
+	}
 
-    public TGAbstractClickUI getHVScrollToCenterUI() { return hvScrollToCenterUI; }
+	public TGAbstractClickUI getHVScrollToCenterUI() {
+		return hvScrollToCenterUI;
+	}
 
-    public TGPoint2D getTopLeftDraw() {
-        TGPoint2D tld = tgPanel.getTopLeftDraw();
-        tld.setLocation(tld.getX()-tgPanel.getSize().width/4,tld.getY()-tgPanel.getSize().height/4);
-        return tld;
-    }
+	public TGPoint2D getTopLeftDraw() {
+		TGPoint2D tld = tgPanel.getTopLeftDraw();
+		tld.setLocation(tld.getX() - tgPanel.getSize().width / 4, tld.getY() - tgPanel.getSize().height / 4);
+		return tld;
+	}
 
-    public TGPoint2D getBottomRightDraw() {
-        TGPoint2D brd = tgPanel.getBottomRightDraw();
-        brd.setLocation(brd.getX()+tgPanel.getSize().width/4,brd.getY()+tgPanel.getSize().height/4);
-        return brd;
-    }
+	public TGPoint2D getBottomRightDraw() {
+		TGPoint2D brd = tgPanel.getBottomRightDraw();
+		brd.setLocation(brd.getX() + tgPanel.getSize().width / 4, brd.getY() + tgPanel.getSize().height / 4);
+		return brd;
+	}
 
-    public TGPoint2D getDrawCenter() { //Should probably be called from tgPanel
-        return new TGPoint2D(tgPanel.getSize().width/2,tgPanel.getSize().height/2);
-    }
+	public TGPoint2D getDrawCenter() { // Should probably be called from tgPanel
+		return new TGPoint2D(tgPanel.getSize().width / 2, tgPanel.getSize().height / 2);
+	}
 
 	Thread noRepaintThread;
-	
-    public void graphMoved() { //From GraphListener interface
-        if (tgPanel.getDragNode()==null && tgPanel.getSize().height>0)    {
-            TGPoint2D drawCenter = getDrawCenter();
 
-            TGPoint2D tld = getTopLeftDraw();
-            TGPoint2D brd = getBottomRightDraw();
+	public void graphMoved() { // From GraphListener interface
+		if (tgPanel.getDragNode() == null && tgPanel.getSize().height > 0) {
+			TGPoint2D drawCenter = getDrawCenter();
 
-            double newH = (-(tld.getX()-drawCenter.getX())/(brd.getX()-tld.getX())*2000-1000);
-            double newV = (-(tld.getY()-drawCenter.getY())/(brd.getY()-tld.getY())*2000-1000);
+			TGPoint2D tld = getTopLeftDraw();
+			TGPoint2D brd = getBottomRightDraw();
 
-            boolean beyondBorder;
-            beyondBorder = true;
+			double newH = (-(tld.getX() - drawCenter.getX()) / (brd.getX() - tld.getX()) * 2000 - 1000);
+			double newV = (-(tld.getY() - drawCenter.getY()) / (brd.getY() - tld.getY()) * 2000 - 1000);
 
-            if(newH<horizontalSB.getMaximum() && newH>horizontalSB.getMinimum() &&
-               newV<verticalSB.getMaximum()   && newV>verticalSB.getMinimum() ) beyondBorder=false;
+			boolean beyondBorder;
+			beyondBorder = true;
 
-            adjustmentIsInternal = true;
-            horizontalSB.setDValue(newH);
-            verticalSB.setDValue(newV);
-            adjustmentIsInternal = false;
+			if (newH < horizontalSB.getMaximum() && newH > horizontalSB.getMinimum() && newV < verticalSB.getMaximum() && newV > verticalSB.getMinimum()) {
+				beyondBorder = false;
+			}
 
-            if (beyondBorder) {
-                adjustHOffset();
-                adjustVOffset();
-                tgPanel.repaint();
-            }
-        }
-        
-        if (noRepaintThread!=null && noRepaintThread.isAlive()) noRepaintThread.interrupt();		
+			adjustmentIsInternal = true;
+			horizontalSB.setDValue(newH);
+			verticalSB.setDValue(newV);
+			adjustmentIsInternal = false;
+
+			if (beyondBorder) {
+				adjustHOffset();
+				adjustVOffset();
+				tgPanel.repaint();
+			}
+		}
+
+		if (noRepaintThread != null && noRepaintThread.isAlive()) {
+			noRepaintThread.interrupt();
+		}
 		noRepaintThread = new Thread() {
+			@Override
 			public void run() {
 				try {
-                	Thread.sleep(40); //Wait 40 milliseconds before repainting
-                } catch (InterruptedException ex) {}                    				
+					Thread.sleep(40); // Wait 40 milliseconds before repainting
+				} catch (InterruptedException ex) {
+				}
 			}
 		};
 		noRepaintThread.start();
-		
-    }
 
-    public void graphReset() { //From GraphListener interface
-        horizontalSB.setDValue(0);
-        verticalSB.setDValue(0);
+	}
 
-        adjustHOffset();
-        adjustVOffset();
-    }
+	public void graphReset() { // From GraphListener interface
+		horizontalSB.setDValue(0);
+		verticalSB.setDValue(0);
 
-    class DScrollbar extends Scrollbar {
-        private double doubleValue;
+		adjustHOffset();
+		adjustVOffset();
+	}
 
-        DScrollbar(int orient, int val, int vis, int min, int max){
-            super(orient, val, vis, min, max);
-            doubleValue=val;
-        }
-        public void setValue(int v) { doubleValue = v; super.setValue(v); }
-        public void setIValue(int v) { super.setValue(v); }
-        public void setDValue(double v) {
-            doubleValue = Math.max(getMinimum(),Math.min(getMaximum(),v));
-            setIValue((int) v);
-        }
-        public double getDValue() { return doubleValue;}
-    }
+	class DScrollbar extends Scrollbar {
 
-    private void adjustHOffset() { //The inverse of the "graphMoved" function.
-        //System.out.println(horizontalSB.getDValue());
-        for(int iterate=0;iterate<3;iterate++) { // Iteration needed to yeild cerrect results depite warping lenses
-            TGPoint2D center= tgPanel.getCenter();
-            TGPoint2D tld = getTopLeftDraw();
-            TGPoint2D brd = getBottomRightDraw();
+		private static final long serialVersionUID = -7831611860976424452L;
+		private double doubleValue;
 
-            double newx = ((horizontalSB.getDValue()+1000.0)/2000)*(brd.getX()-tld.getX())+tld.getX();
-            double newy = tgPanel.getSize().height/2;
-            TGPoint2D newCenter = tgLensSet.convDrawToReal(newx,newy);
+		DScrollbar(int orient, int val, int vis, int min, int max) {
+			super(orient, val, vis, min, max);
+			doubleValue = val;
+		}
 
-            offset.setX(offset.getX()+(newCenter.getX()-center.getX()));
-            offset.setY(offset.getY()+(newCenter.getY()-center.getY()));
-            
-            tgPanel.processGraphMove();
-        }
-    }
+		@Override
+		public void setValue(int v) {
+			doubleValue = v;
+			super.setValue(v);
+		}
 
-    private void adjustVOffset() { //The inverse of the "graphMoved" function.
-        for(int iterate=0;iterate<10;iterate++) { // Iteration needed to yeild cerrect results depite warping lenses
-            TGPoint2D center= tgPanel.getCenter();
-            TGPoint2D tld = getTopLeftDraw();
-            TGPoint2D brd = getBottomRightDraw();
+		public void setIValue(int v) {
+			super.setValue(v);
+		}
 
-            double newx = tgPanel.getSize().width/2;
-            double newy = ((verticalSB.getDValue()+1000.0)/2000)*(brd.getY()-tld.getY())+tld.getY();
+		public void setDValue(double v) {
+			doubleValue = Math.max(getMinimum(), Math.min(getMaximum(), v));
+			setIValue((int) v);
+		}
 
-            TGPoint2D newCenter = tgLensSet.convDrawToReal(newx,newy);
+		public double getDValue() {
+			return doubleValue;
+		}
+	}
 
-            offset.setX(offset.getX()+(newCenter.getX()-center.getX()));
-            offset.setY(offset.getY()+(newCenter.getY()-center.getY()));
-            
-            tgPanel.processGraphMove();
-        }
-    }
+	private void adjustHOffset() { // The inverse of the "graphMoved" function.
+		// System.out.println(horizontalSB.getDValue());
+		for (int iterate = 0; iterate < 3; iterate++) { // Iteration needed to
+			// yeild cerrect results
+			// depite warping lenses
+			TGPoint2D center = tgPanel.getCenter();
+			TGPoint2D tld = getTopLeftDraw();
+			TGPoint2D brd = getBottomRightDraw();
 
-    private class horizAdjustmentListener implements AdjustmentListener {
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-              if(!adjustmentIsInternal) {
-                  adjustHOffset();
-                tgPanel.repaintAfterMove();
-            }
-        }
-    }
+			double newx = ((horizontalSB.getDValue() + 1000.0) / 2000) * (brd.getX() - tld.getX()) + tld.getX();
+			double newy = tgPanel.getSize().height / 2;
+			TGPoint2D newCenter = tgLensSet.convDrawToReal(newx, newy);
 
-    private class vertAdjustmentListener implements AdjustmentListener {
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-            if(!adjustmentIsInternal) {
-                adjustVOffset();
-                tgPanel.repaintAfterMove();
-            }
-        }
-    }
+			offset.setX(offset.getX() + (newCenter.getX() - center.getX()));
+			offset.setY(offset.getY() + (newCenter.getY() - center.getY()));
 
+			tgPanel.processGraphMove();
+		}
+	}
 
-     class HVLens extends TGAbstractLens {
-        protected void applyLens(TGPoint2D p) {
-            p.setX(p.getX()-offset.getX());
-            p.setY(p.getY()-offset.getY());
-        }
+	private void adjustVOffset() { // The inverse of the "graphMoved" function.
+		for (int iterate = 0; iterate < 10; iterate++) { // Iteration needed to
+			// yeild cerrect
+			// results depite
+			// warping lenses
+			TGPoint2D center = tgPanel.getCenter();
+			TGPoint2D tld = getTopLeftDraw();
+			TGPoint2D brd = getBottomRightDraw();
 
-        protected void undoLens(TGPoint2D p) {
-            p.setX(p.getX()+offset.getX());
-            p.setY(p.getY()+offset.getY());
-        }
-     }
+			double newx = tgPanel.getSize().width / 2;
+			double newy = ((verticalSB.getDValue() + 1000.0) / 2000) * (brd.getY() - tld.getY()) + tld.getY();
 
-     public void setOffset(Point p) {
-        offset.setLocation(p.x,p.y);
-        tgPanel.processGraphMove(); //Adjust draw coordinates to include new offset
-        graphMoved(); //adjusts scrollbars to fit draw coordinates
-     }
+			TGPoint2D newCenter = tgLensSet.convDrawToReal(newx, newy);
 
-     public Point getOffset() {
-        return new Point((int) offset.getX(),(int) offset.getY());
-     }
-    
-     public void scrollAtoB(TGPoint2D drawFrom, TGPoint2D drawTo) {
-        TGPoint2D from = tgLensSet.convDrawToReal(drawFrom);
-        TGPoint2D to = tgLensSet.convDrawToReal(drawTo);
-        offset.setX(offset.getX()+(from.getX()-to.getX()));
-        offset.setY(offset.getY()+(from.getY()-to.getY()));
-     }
+			offset.setX(offset.getX() + (newCenter.getX() - center.getX()));
+			offset.setY(offset.getY() + (newCenter.getY() - center.getY()));
 
-     Thread scrollThread;
-	         
-     public void slowScrollToCenter(final Node n) {
-         scrolling = true;
-         if (scrollThread!=null && scrollThread.isAlive()) scrollThread.interrupt();
-         scrollThread = new Thread() {
-             public void run() {
-                double nx=-999;
-                double ny=-999;
-                double cx;
-                double cy;
-                double distFromCenter;
-                boolean keepScrolling = true; 
-                int scrollSteps=0;       
-                
-                while(keepScrolling && scrollSteps++<250) {
-                	nx= n.drawx; 
-                    ny= n.drawy;
-                    cx= getDrawCenter().getX();
-                    cy= getDrawCenter().getY();
+			tgPanel.processGraphMove();
+		}
+	}
 
-                	distFromCenter = Math.sqrt((nx-cx)*(nx-cx)+(ny-cy)*(ny-cy));
-                	if (Double.isInfinite(distFromCenter)) {
-                	    distFromCenter = Double.MAX_VALUE;
-                	}
+	private class horizAdjustmentListener implements AdjustmentListener {
+		public void adjustmentValueChanged(AdjustmentEvent e) {
+			if (!adjustmentIsInternal) {
+				adjustHOffset();
+				tgPanel.repaintAfterMove();
+			}
+		}
+	}
 
-					double newx, newy;					
-					if(distFromCenter>5) {
-                    	newx = cx + (nx-cx)*((distFromCenter-5)/distFromCenter);
-						newy = cy + (ny-cy)*((distFromCenter-5)/distFromCenter);             				
-                	}
-                	else {
-                		newx = cx;
+	private class vertAdjustmentListener implements AdjustmentListener {
+		public void adjustmentValueChanged(AdjustmentEvent e) {
+			if (!adjustmentIsInternal) {
+				adjustVOffset();
+				tgPanel.repaintAfterMove();
+			}
+		}
+	}
+
+	class HVLens extends TGAbstractLens {
+		@Override
+		protected void applyLens(TGPoint2D p) {
+			p.setX(p.getX() - offset.getX());
+			p.setY(p.getY() - offset.getY());
+		}
+
+		@Override
+		protected void undoLens(TGPoint2D p) {
+			p.setX(p.getX() + offset.getX());
+			p.setY(p.getY() + offset.getY());
+		}
+	}
+
+	public void setOffset(Point p) {
+		offset.setLocation(p.x, p.y);
+		tgPanel.processGraphMove(); // Adjust draw coordinates to include new
+		// offset
+		graphMoved(); // adjusts scrollbars to fit draw coordinates
+	}
+
+	public Point getOffset() {
+		return new Point((int) offset.getX(), (int) offset.getY());
+	}
+
+	public void scrollAtoB(TGPoint2D drawFrom, TGPoint2D drawTo) {
+		TGPoint2D from = tgLensSet.convDrawToReal(drawFrom);
+		TGPoint2D to = tgLensSet.convDrawToReal(drawTo);
+		offset.setX(offset.getX() + (from.getX() - to.getX()));
+		offset.setY(offset.getY() + (from.getY() - to.getY()));
+	}
+
+	Thread scrollThread;
+
+	public void slowScrollToCenter(final Node n) {
+		scrolling = true;
+		if (scrollThread != null && scrollThread.isAlive()) {
+			scrollThread.interrupt();
+		}
+		scrollThread = new Thread() {
+			@Override
+			public void run() {
+				double nx = -999;
+				double ny = -999;
+				double cx;
+				double cy;
+				double distFromCenter;
+				boolean keepScrolling = true;
+				int scrollSteps = 0;
+
+				while (keepScrolling && scrollSteps++ < 250) {
+					nx = n.drawx;
+					ny = n.drawy;
+					cx = getDrawCenter().getX();
+					cy = getDrawCenter().getY();
+
+					distFromCenter = Math.sqrt((nx - cx) * (nx - cx) + (ny - cy) * (ny - cy));
+					if (Double.isInfinite(distFromCenter)) {
+						distFromCenter = Double.MAX_VALUE;
+					}
+
+					double newx, newy;
+					if (distFromCenter > 5) {
+						newx = cx + (nx - cx) * ((distFromCenter - 5) / distFromCenter);
+						newy = cy + (ny - cy) * ((distFromCenter - 5) / distFromCenter);
+					} else {
+						newx = cx;
 						newy = cy;
-                	}
+					}
 
-                    scrollAtoB(new TGPoint2D(nx,ny), new TGPoint2D(newx,newy));  
-                                      
-                    if (noRepaintThread==null || !noRepaintThread.isAlive()) { 
-    	               	tgPanel.repaintAfterMove(); //only repaint if 40 milliseconds have not ellapsed since last repaint
-                	}
-                    else {
-                    	tgPanel.processGraphMove(); //otherwise, register scroll internally
-                	}		
-                    
-                    try {
-                           Thread.sleep(20);
-                    } catch (InterruptedException ex) { keepScrolling=false; }
-                    
-                    if(distFromCenter<3) {
-	                    try {
-    	                       Thread.sleep(200); //Wait a little to make sure
-        	            } catch (InterruptedException ex) { keepScrolling=false; }
-        	            nx= n.drawx; 
-                    	ny= n.drawy;
-                    	cx= getDrawCenter().getX();
-                    	cy= getDrawCenter().getY();
-                		distFromCenter = Math.sqrt((nx-cx)*(nx-cx)+(ny-cy)*(ny-cy));
-            			if (distFromCenter<3) keepScrolling=false;            			
-            				        	
-                    }
-                }
-                scrollAtoB(new TGPoint2D(n.drawx,n.drawy),getDrawCenter()); //for good measure
-                tgPanel.repaintAfterMove();
-                HVScroll.this.scrolling = false;
-            }
-        };
-        scrollThread.start();
-     }
+					scrollAtoB(new TGPoint2D(nx, ny), new TGPoint2D(newx, newy));
 
-    class HVScrollToCenterUI extends TGAbstractClickUI {
-        public void mouseClicked(MouseEvent e) {
-/*            Node mouseOverN=tgPanel.getMouseOverN();
-            if(!scrolling && mouseOverN!=null)
-                slowScrollToCenter(mouseOverN);
-*/        }
-    }
+					if (noRepaintThread == null || !noRepaintThread.isAlive()) {
+						tgPanel.repaintAfterMove(); // only repaint if 40
+						// milliseconds have not
+						// ellapsed since last
+						// repaint
+					} else {
+						tgPanel.processGraphMove(); // otherwise, register
+						// scroll internally
+					}
 
-    class HVDragUI extends TGAbstractDragUI{
-        TGPoint2D lastMousePos;
-        HVDragUI() { super(HVScroll.this.tgPanel); }
+					try {
+						Thread.sleep(20);
+					} catch (InterruptedException ex) {
+						keepScrolling = false;
+					}
 
-        public void preActivate() {}
-        public void preDeactivate() {}
+					if (distFromCenter < 3) {
+						try {
+							Thread.sleep(200); // Wait a little to make sure
+						} catch (InterruptedException ex) {
+							keepScrolling = false;
+						}
+						nx = n.drawx;
+						ny = n.drawy;
+						cx = getDrawCenter().getX();
+						cy = getDrawCenter().getY();
+						distFromCenter = Math.sqrt((nx - cx) * (nx - cx) + (ny - cy) * (ny - cy));
+						if (distFromCenter < 3) {
+							keepScrolling = false;
+						}
 
-        public void mousePressed(MouseEvent e) {
-            lastMousePos = new TGPoint2D(e.getX(), e.getY());
-        }
-        public void mouseReleased(MouseEvent e) {}
-        public void mouseDragged(MouseEvent e) {
-            if(!scrolling) scrollAtoB(lastMousePos, new TGPoint2D(e.getX(), e.getY()));
-            lastMousePos.setLocation(e.getX(),e.getY());
-            this.tgPanel.repaintAfterMove();
-        }
-    }
+					}
+				}
+				scrollAtoB(new TGPoint2D(n.drawx, n.drawy), getDrawCenter()); // for
+				// good
+				// measure
+				tgPanel.repaintAfterMove();
+				HVScroll.this.scrolling = false;
+			}
+		};
+		scrollThread.start();
+	}
+
+	class HVScrollToCenterUI extends TGAbstractClickUI {
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			/*
+			 * Node mouseOverN=tgPanel.getMouseOverN(); if(!scrolling && mouseOverN!=null) slowScrollToCenter(mouseOverN);
+			 */}
+	}
+
+	class HVDragUI extends TGAbstractDragUI {
+		TGPoint2D lastMousePos;
+
+		HVDragUI() {
+			super(HVScroll.this.tgPanel);
+		}
+
+		@Override
+		public void preActivate() {
+		}
+
+		@Override
+		public void preDeactivate() {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			lastMousePos = new TGPoint2D(e.getX(), e.getY());
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if (!scrolling) {
+				scrollAtoB(lastMousePos, new TGPoint2D(e.getX(), e.getY()));
+			}
+			lastMousePos.setLocation(e.getX(), e.getY());
+			this.tgPanel.repaintAfterMove();
+		}
+	}
 
 } // end com.touchgraph.graphlayout.interaction.HVScroll

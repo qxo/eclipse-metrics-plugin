@@ -29,6 +29,7 @@ import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.ListEditor;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -49,31 +50,39 @@ public class NORMPreferencePage extends FieldEditorPreferencePage implements IWo
 		setDescription("Settings for NORM (Number of Overridden Methods)\nWARNING: changes invalidate cache and force recalculation!");
 	}
 
-	public void init(IWorkbench workbench)  {
+	public void init(IWorkbench workbench) {
 		getPreferenceStore().setDefault("NORM.Abstract", false);
 		getPreferenceStore().setDefault("NORM.Super", false);
 		getPreferenceStore().setDefault("NORM.ExludeList", "toString, hashCode, equals");
 	}
 
+	@Override
 	public void createFieldEditors() {
-		addField(new BooleanFieldEditor("NORM.Abstract","Count abstract Inherited Methods", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("NORM.Super","Count methods invoking super", getFieldEditorParent()));
-		addField(new ListEditor("NORM.ExludeList","Exclude the following methods:", getFieldEditorParent()) {
+		addField(new BooleanFieldEditor("NORM.Abstract", "Count abstract Inherited Methods", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("NORM.Super", "Count methods invoking super", getFieldEditorParent()));
+		addField(new ListEditor("NORM.ExludeList", "Exclude the following methods:", getFieldEditorParent()) {
+			@Override
 			protected String createList(String[] items) {
 				StringBuffer b = new StringBuffer();
-				for (int i = 0; i < items.length;i++) {
-					b.append(items[i]).append(",");
+				for (String item : items) {
+					b.append(item).append(",");
 				}
-				return b.substring(0,b.length()-1);
+				return b.substring(0, b.length() - 1);
 			}
+
+			@Override
 			protected String getNewInputObject() {
-				InputDialog input = new InputDialog(getShell(),"New Excluded method", "Please type a method name","", null);
+				InputDialog input = new InputDialog(getShell(), "New Excluded method", "Please type a method name", "", null);
 				input.open();
-				if (input.getReturnCode() == InputDialog.OK) 
+				if (input.getReturnCode() == Window.OK) {
 					return input.getValue();
-				else return null;
+				} /* else { */
+				return null;
+				/* } */
 			}
-			protected String[] parseString(String stringList) {				
+
+			@Override
+			protected String[] parseString(String stringList) {
 				StringTokenizer t = new StringTokenizer(stringList, ",");
 				int length = t.countTokens();
 				String[] items = new String[length];
@@ -84,5 +93,5 @@ public class NORMPreferencePage extends FieldEditorPreferencePage implements IWo
 			}
 		});
 	}
-	
+
 }

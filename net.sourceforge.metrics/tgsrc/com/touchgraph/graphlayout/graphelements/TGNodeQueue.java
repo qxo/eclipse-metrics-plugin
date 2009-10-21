@@ -53,36 +53,36 @@ import java.util.Vector;
 
 import com.touchgraph.graphlayout.Node;
 
-/** TGNodeQueue: a very simple queue implementation for doing a breadth
-  * first search.  Should probably be implemented with linked lists.
-  *   
-  * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: TGNodeQueue.java,v 1.1 2003/05/05 01:25:44 sauerf Exp $
-  */
+/**
+ * TGNodeQueue: a very simple queue implementation for doing a breadth first search. Should probably be implemented with linked lists.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: TGNodeQueue.java,v 1.1 2003/05/05 01:25:44 sauerf Exp $
+ */
 public class TGNodeQueue {
 
-    Vector queue;
+	Vector<Node> queue;
 
-    public TGNodeQueue() {
-        queue=new Vector();
-    }
-    
-    public void push( Node n ) {
-        queue.addElement(n);
-    }
-    
-    public Node pop() {
-        Node n = (Node)queue.elementAt(0);
-        queue.removeElementAt(0);
-        return n;
-    }
-    
-    public boolean isEmpty() {
-        return queue.size() == 0;
-    }
-    
-    public boolean contains( Node n ) {
-        return queue.contains(n);
-    }
+	public TGNodeQueue() {
+		queue = new Vector<Node>();
+	}
+
+	public void push(Node n) {
+		queue.addElement(n);
+	}
+
+	public Node pop() {
+		Node n = queue.elementAt(0);
+		queue.removeElementAt(0);
+		return n;
+	}
+
+	public boolean isEmpty() {
+		return queue.size() == 0;
+	}
+
+	public boolean contains(Node n) {
+		return queue.contains(n);
+	}
 
 } // end com.touchgraph.graphlayout.graphelements.TGNodeQueue

@@ -27,6 +27,8 @@ package net.sourceforge.metrics.calculators;
  */
 public class InvalidSourceException extends Exception {
 
+	private static final long serialVersionUID = -7545786773692682861L;
+
 	/**
 	 * Constructor for InvalidSourceException.
 	 */
@@ -36,6 +38,7 @@ public class InvalidSourceException extends Exception {
 
 	/**
 	 * Constructor for InvalidSourceException.
+	 * 
 	 * @param s
 	 */
 	public InvalidSourceException(String s) {

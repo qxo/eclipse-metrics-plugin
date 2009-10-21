@@ -24,10 +24,12 @@
  */
 package classycle.graph;
 
-public interface GraphAttributes extends Attributes
-{
-  public int getGirth();
-  public int getRadius();
-  public int getDiameter();
-  public Vertex[] getCenterVertices();
-} //interface
+public interface GraphAttributes extends Attributes {
+	public int getGirth();
+
+	public int getRadius();
+
+	public int getDiameter();
+
+	public Vertex[] getCenterVertices();
+} // interface

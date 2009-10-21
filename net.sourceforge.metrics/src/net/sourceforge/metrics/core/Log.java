@@ -15,17 +15,19 @@ import org.eclipse.core.runtime.Status;
  * @author Frank Sauer
  */
 public class Log {
-	
+
 	public final static String pluginId = "net.sourceforge.metrics";
-	
+
 	public static void logError(String message, Throwable t) {
-		MetricsPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, pluginId,
-				IStatus.ERROR, message, t));
+		MetricsPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, pluginId, IStatus.ERROR, message, t));
 	}
-	
+
+	public static void logWarrning(String message, Throwable t) {
+		MetricsPlugin.getDefault().getLog().log(new Status(IStatus.WARNING, pluginId, IStatus.WARNING, message, t));
+	}
+
 	public static void logMessage(String message) {
-		MetricsPlugin.getDefault().getLog().log(
-			new Status(IStatus.INFO, pluginId, IStatus.INFO, message, null));
+		MetricsPlugin.getDefault().getLog().log(new Status(IStatus.INFO, pluginId, IStatus.INFO, message, null));
 	}
 
 }

@@ -29,12 +29,11 @@ import junit.framework.TestSuite;
 public class AllTests {
 
 	public static Test suite() {
-		TestSuite suite =
-			new TestSuite("Test for net.sourceforge.metrics.tests");
-		//$JUnit-BEGIN$
+		TestSuite suite = new TestSuite("Test for net.sourceforge.metrics.tests");
+		// $JUnit-BEGIN$
 		suite.addTest(new TestSuite(AvgTests.class));
 		suite.addTest(new TestSuite(MaxTests.class));
-		//$JUnit-END$
+		// $JUnit-END$
 		return suite;
 	}
 }

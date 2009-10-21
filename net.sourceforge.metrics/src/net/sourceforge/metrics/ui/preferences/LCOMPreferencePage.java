@@ -45,14 +45,15 @@ public class LCOMPreferencePage extends FieldEditorPreferencePage implements IWo
 		setDescription("Settings for LCOM* (Lack of Cohesion of Methods)\nWARNING: changes invalidate cache and force recalculation!");
 	}
 
-	public void init(IWorkbench workbench)  {
+	public void init(IWorkbench workbench) {
 		getPreferenceStore().setDefault("LCOM.StaticAttributes", false);
 		getPreferenceStore().setDefault("LCOM.StaticMethods", false);
 	}
 
+	@Override
 	public void createFieldEditors() {
-		addField(new BooleanFieldEditor("LCOM.StaticAttributes","Consider static fields in calculation", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("LCOM.StaticMethods","Consider static methods in calculation", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("LCOM.StaticAttributes", "Consider static fields in calculation", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("LCOM.StaticMethods", "Consider static methods in calculation", getFieldEditorParent()));
 	}
-	
+
 }

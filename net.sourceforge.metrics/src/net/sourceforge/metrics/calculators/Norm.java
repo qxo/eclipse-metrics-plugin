@@ -21,6 +21,7 @@
 package net.sourceforge.metrics.calculators;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import net.sourceforge.metrics.core.Constants;
 import net.sourceforge.metrics.core.Metric;
@@ -32,22 +33,21 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 
 /**
- * Calculates number of overridden methods for a class.
- * Note that if the inherited method is abstract or if the method under investigation
- * calls the superclass' implementation, it is <EM>not</EM> counted. A better name for
- * this metric would be NumberOfReplaced methods. The reasons for not counting these is
- * outlined on page 68 of the Lorenz and Kidd book "Object Oriented Software Metrics".
+ * Calculates number of overridden methods for a class. Note that if the inherited method is abstract or if the method under investigation calls the superclass' implementation, it is <EM>not</EM> counted. A better name for this metric would
+ * be NumberOfReplaced methods. The reasons for not counting these is outlined on page 68 of the Lorenz and Kidd book "Object Oriented Software Metrics".
  * 
  * Note that this calculator is now configurable from a preference page.
  * 
  * @author Frank Sauer
  */
 public class Norm extends Calculator implements Constants {
-	
+
 	private static Preferences prefs = null;
-	
+
 	/**
 	 * Constructor for Norm.
 	 */
@@ -58,62 +58,71 @@ public class Norm extends Calculator implements Constants {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) {
-		TypeMetrics tm = (TypeMetrics)source;
-		IType iType = (IType)source.getJavaElement();
+		TypeMetrics tm = (TypeMetrics) source;
+		IType iType = (IType) source.getJavaElement();
 		ITypeHierarchy hierarchy = tm.getHierarchy();
 		IType[] supers = hierarchy.getAllSuperclasses(iType);
 		try {
 			int overridden = 0;
 			IMethod[] myMethods = iType.getMethods();
-			ArrayList counted = new ArrayList();
-			for (int m = 0; m < myMethods.length; m++) {
-				IMethod myMethod = myMethods[m];
+			List<IMethod> counted = new ArrayList<IMethod>();
+			for (IMethod myMethod : myMethods) {
 				// don't consider methods excluded by preferences
 				if (getPrefs().countMethod(myMethod.getElementName())) {
 					overridden = countMethods(supers, overridden, counted, myMethod);
 				}
 			}
-			source.setValue(new Metric(NORM,overridden));
+			source.setValue(new Metric(NORM, overridden));
 		} catch (JavaModelException e) {
-		}	
+		}
 	}
 
-	private int countMethods(
-		IType[] supers,
-		int overridden,
-		ArrayList counted,
-		IMethod myMethod)
-		throws JavaModelException {
-		for (int s = 0 ; s < supers.length; s++) {
-			IMethod[] inheritedMethods = supers[s].getMethods();
-			for (int sm = 0; sm < inheritedMethods.length; sm++) {
-				if (counted.contains(myMethod)) continue;
-				IMethod inherited = inheritedMethods[sm];
+	private int countMethods(IType[] supers, int overridden, List<IMethod> counted, IMethod myMethod) throws JavaModelException {
+		int totalOverridden = overridden;
+		for (IType super1 : supers) {
+			IMethod[] inheritedMethods = super1.getMethods();
+			for (IMethod inheritedMethod : inheritedMethods) {
+				if (counted.contains(myMethod)) {
+					continue;
+				}
+				IMethod inherited = inheritedMethod;
 				int inheritedFlags = inherited.getFlags();
 				// don't have to consider static methods
-				if ((inheritedFlags & Flags.AccStatic) != 0) continue; 
+				if ((inheritedFlags & Flags.AccStatic) != 0) {
+					continue;
+				}
 				// don't have to consider private methods
-				if ((inheritedFlags & Flags.AccPrivate) != 0) continue; 
+				if ((inheritedFlags & Flags.AccPrivate) != 0) {
+					continue;
+				}
 				// don't count abstract methods unless preferences dictate it
-				if ((!getPrefs().countAbstract())&&((inheritedFlags & Flags.AccAbstract) != 0)) continue;
-				// methods must have same signature and return type 
-				if (!inherited.isSimilar(myMethod)) continue;
-				// don't count methods invoking super unless preferences override
-				if ((getPrefs().countSuper())||(!containsSuperCall(myMethod))) {
-					overridden++;
+				if ((!getPrefs().countAbstract()) && ((inheritedFlags & Flags.AccAbstract) != 0)) {
+					continue;
+				}
+				// methods must have same signature and return type
+				if (!inherited.isSimilar(myMethod)) {
+					continue;
+				}
+				// don't count methods invoking super unless preferences
+				// override
+				if ((getPrefs().countSuper()) || (!containsSuperCall(myMethod))) {
+					totalOverridden++;
 					counted.add(myMethod);
 				}
 			}
 		}
-		return overridden;
+		return totalOverridden;
 	}
-	
+
 	private boolean containsSuperCall(IMethod myMethod) {
 		try {
 			String source = myMethod.getSource();
 			int indexOfSuper = source.indexOf("super.");
-			if (indexOfSuper == -1) return false;
+			if (indexOfSuper == -1) {
+				return false;
+			}
 			String rest = source.substring(indexOfSuper + 6);
 			return rest.startsWith(myMethod.getElementName());
 		} catch (JavaModelException e) {
@@ -122,56 +131,55 @@ public class Norm extends Calculator implements Constants {
 	}
 
 	/**
-	 * Statically cache preference values, yet register for change events so they
-	 * get updated when they change.
+	 * Statically cache preference values, yet register for change events so they get updated when they change.
 	 */
-	public static class Preferences implements org.eclipse.core.runtime.Preferences.IPropertyChangeListener {
+	public static class Preferences implements IPropertyChangeListener {
 
 		private boolean countAbstract;
 		private boolean supers;
 		private String excludes;
 
-		
 		public Preferences() {
 			init();
 			getPreferences().addPropertyChangeListener(this);
 		}
-		
+
 		protected void init() {
 			countAbstract = getPreferences().getBoolean("NORM.Abstract");
 			supers = getPreferences().getBoolean("NORM.Super");
 			excludes = getPreferences().getString("NORM.ExludeList");
 		}
-		
+
 		public boolean countAbstract() {
 			return countAbstract;
 		}
-		
+
 		public boolean countSuper() {
 			return supers;
 		}
-		
+
 		public String getExcludedMethods() {
 			return excludes;
 		}
-		
+
 		public boolean countMethod(String name) {
 			return getExcludedMethods().indexOf(name) == -1;
 		}
-		
+
 		/**
 		 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
 		 */
-		public void propertyChange(org.eclipse.core.runtime.Preferences.PropertyChangeEvent event) {
-			//System.err.println("NORM.prefs resetting!!!");
+		public void propertyChange(PropertyChangeEvent event) {
+			// System.err.println("NORM.prefs resetting!!!");
 			if (event.getProperty().startsWith("NORM")) {
 				init();
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns the preferences.
+	 * 
 	 * @return Preferences
 	 */
 	public static Preferences getPrefs() {

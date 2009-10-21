@@ -56,8 +56,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.PartInitException;
 
 /**
- * TableTree specialized for metrics display. Specializations include
- * lazy child creation and child sorting in descending metric value
+ * TableTree specialized for metrics display. Specializations include lazy child creation and child sorting in descending metric value
  * 
  * @author Frank Sauer
  */
@@ -65,7 +64,7 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 
 	private Color lastDefaultColor;
 	private Color lastInRangeColor;
-	private Color lastOutofRangeColor;	
+	private Color lastOutofRangeColor;
 	private TreeColumn description;
 	private TreeColumn value;
 	private TreeColumn average;
@@ -76,6 +75,7 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 
 	/**
 	 * Constructor for MetricsTable.
+	 * 
 	 * @param parent
 	 * @param style
 	 */
@@ -96,38 +96,40 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 		path = new TreeColumn(this, SWT.LEFT);
 		path.setText("Resource causing Maximum");
 		method = new TreeColumn(this, SWT.LEFT);
-		method.setText("Method");	
+		method.setText("Method");
 		addSelectionListener(this);
 		addTreeListener(this);
 	}
-	
+
 	/**
 	 * Update the table with new metrics.
+	 * 
 	 * @param ms
 	 */
 	public void setMetrics(final AbstractMetricSource ms) {
 		try {
 			removeAll();
-			if (ms == null) return;
+			if (ms == null) {
+				return;
+			}
 			MetricsPlugin plugin = MetricsPlugin.getDefault();
-			String[] names = plugin.getMetricIds(); 
+			String[] names = plugin.getMetricIds();
 			String[] descriptions = plugin.getMetricDescriptions();
 			for (int i = 0; i < names.length; i++) {
 				boolean rowNeeded = false;
 				String name = names[i];
-				String[] cols = 
-					new String[] {descriptions[i],"","","","","",""};
+				String[] cols = new String[] { descriptions[i], "", "", "", "", "", "" };
 				Metric m = ms.getValue(name);
 				if (m != null) {
 					rowNeeded = true;
 					cols[1] = format(m.doubleValue());
 				}
-				for (int j = 0; j < pers.length;j++) {
-					Avg avg = ms.getAverage(name, pers[j]);
-					Max max = ms.getMaximum(name, pers[j]);
-					if ((avg != null)||(max != null)) {
+				for (String per : pers) {
+					Avg avg = ms.getAverage(name, per);
+					Max max = ms.getMaximum(name, per);
+					if ((avg != null) || (max != null)) {
 						TreeItem row = createNewRow();
-						cols[0] = descriptions[i] + " (avg/max per " + pers[j] + ")";
+						cols[0] = descriptions[i] + " (avg/max per " + per + ")";
 						if (avg != null) {
 							cols[2] = format(avg.doubleValue());
 							cols[3] = format(avg.getStandardDeviation());
@@ -141,21 +143,23 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 								setForeground(max, row);
 								cols[6] = getMethodName(element);
 								row.setData("handle", handle);
-								row.setData("element", element);								
+								row.setData("element", element);
 							}
-						} else setForeground(m, row);
-						setText(row,cols); 
-						addChildren(row, ms, name, pers[j]);
+						} else {
+							setForeground(m, row);
+						}
+						setText(row, cols);
+						addChildren(row, ms, name, per);
 						rowNeeded = false;
 					}
 				}
 				if (rowNeeded) {
 					TreeItem row = createNewRow();
 					setForeground(m, row);
-					setText(row,cols); 
+					setText(row, cols);
 					addChildren(row, ms, name, "");
 				}
-			}		
+			}
 		} catch (Throwable e) {
 			Log.logError("MetricsTable::setMetrics", e);
 		}
@@ -166,13 +170,14 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 			row.setForeground(getDefaultForeground());
 		} else {
 			MetricDescriptor md = MetricsPlugin.getDefault().getMetricDescriptor(metric.getName());
-			Color c = md.isValueInRange(metric.doubleValue())?getInRangeForeground():getOutOfRangeForeground();
+			Color c = md.isValueInRange(metric.doubleValue()) ? getInRangeForeground() : getOutOfRangeForeground();
 			row.setForeground(c);
 		}
 	}
 
 	/**
 	 * create a new root row
+	 * 
 	 * @return
 	 */
 	private TreeItem createNewRow() {
@@ -183,6 +188,7 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 
 	/**
 	 * create a new child row
+	 * 
 	 * @param parent
 	 * @return
 	 */
@@ -191,81 +197,87 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 		item.setForeground(getDefaultForeground());
 		return item;
 	}
-	
+
 	/**
 	 * Get the default color (for metrics without a max and within range)
+	 * 
 	 * @return
 	 */
 	private Color getDefaultForeground() {
 		RGB color = PreferenceConverter.getColor(MetricsPlugin.getDefault().getPreferenceStore(), "METRICS.defaultColor");
 		if (lastDefaultColor == null) {
 			lastDefaultColor = new Color(getDisplay(), color);
-		} else	if (!lastDefaultColor.getRGB().equals(color)) {
+		} else if (!lastDefaultColor.getRGB().equals(color)) {
 			lastDefaultColor.dispose();
 			lastDefaultColor = new Color(getDisplay(), color);
-		} 
+		}
 		return lastDefaultColor;
 	}
 
 	/**
 	 * Get the in range color (for metrics with a max and within range)
+	 * 
 	 * @return
 	 */
 	private Color getInRangeForeground() {
 		RGB color = PreferenceConverter.getColor(MetricsPlugin.getDefault().getPreferenceStore(), "METRICS.linkedColor");
 		if (lastInRangeColor == null) {
 			lastInRangeColor = new Color(getDisplay(), color);
-		} else	if (!lastInRangeColor.getRGB().equals(color)) {
+		} else if (!lastInRangeColor.getRGB().equals(color)) {
 			lastInRangeColor.dispose();
 			lastInRangeColor = new Color(getDisplay(), color);
-		} 
+		}
 		return lastInRangeColor;
 	}
-	
+
 	/**
 	 * Get the out of range color (for metrics with a max and out of range)
+	 * 
 	 * @return
 	 */
 	private Color getOutOfRangeForeground() {
 		RGB color = PreferenceConverter.getColor(MetricsPlugin.getDefault().getPreferenceStore(), "METRICS.outOfRangeColor");
 		if (lastOutofRangeColor == null) {
 			lastOutofRangeColor = new Color(getDisplay(), color);
-		} else	if (!lastOutofRangeColor.getRGB().equals(color)) {
+		} else if (!lastOutofRangeColor.getRGB().equals(color)) {
 			lastOutofRangeColor.dispose();
 			lastOutofRangeColor = new Color(getDisplay(), color);
-		} 
+		}
 		return lastOutofRangeColor;
 	}
-	
+
 	/**
-	 * first time simply adds a dummy child if there should be any children.
-	 * When such a dummy child is already rpesent, replaces it with the real children.
-	 * This spreads the work load across expansion events instead of constructing the
+	 * first time simply adds a dummy child if there should be any children. When such a dummy child is already rpesent, replaces it with the real children. This spreads the work load across expansion events instead of constructing the
 	 * entire tree up front, which could be very time consuming in large projects.
-	 * @param row	parent TreeItem
-	 * @param ms	AbstractMetricSource containing the metrics
-	 * @param metric 	Name of the Metric
-	 * @param per		name of the avg/max type
+	 * 
+	 * @param row
+	 *            parent TreeItem
+	 * @param ms
+	 *            AbstractMetricSource containing the metrics
+	 * @param metric
+	 *            Name of the Metric
+	 * @param per
+	 *            name of the avg/max type
 	 */
 	private void addChildren(TreeItem row, AbstractMetricSource ms, String metric, String per) {
 		AbstractMetricSource[] children = ms.getChildrenHaving(per, metric);
 		// don't have to do anything if there are no child metrics
-		if ((children != null)&&(children.length>0)) {
+		if ((children != null) && (children.length > 0)) {
 			if (row.getData("source") != null) {
 				// dummy already present, replace it with the real thing
 				row.setData("source", null);
 				row.getItems()[0].dispose();
 				sort(children, metric, per);
-				for (int i = 0; i < children.length; i++) {
+				for (AbstractMetricSource element : children) {
 					TreeItem child = createNewRow(row);
-					child.setText(getElementName(children[i].getJavaElement()));
-					Metric val = children[i].getValue(metric);
-					child.setText(1, (val != null)?format(val.doubleValue()):"");
-					Avg avg = children[i].getAverage(metric, per);
-					child.setText(2, (avg != null)?format(avg.doubleValue()):"");
-					child.setText(3, (avg != null)?format(avg.getStandardDeviation()):"");
-					Max max = children[i].getMaximum(metric, per);
-					child.setText(4, (max != null)?format(max.doubleValue()):"");
+					child.setText(getElementName(element.getJavaElement()));
+					Metric val = element.getValue(metric);
+					child.setText(1, (val != null) ? format(val.doubleValue()) : "");
+					Avg avg = element.getAverage(metric, per);
+					child.setText(2, (avg != null) ? format(avg.doubleValue()) : "");
+					child.setText(3, (avg != null) ? format(avg.getStandardDeviation()) : "");
+					Max max = element.getMaximum(metric, per);
+					child.setText(4, (max != null) ? format(max.doubleValue()) : "");
 					if (max != null) {
 						IJavaElement maxElm = JavaCore.create(max.getHandle());
 						child.setText(5, getPath(maxElm));
@@ -274,18 +286,20 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 					} else {
 						child.setText(5, "");
 						child.setText(6, "");
-						if (val != null) setForeground(val, row);
+						if (val != null) {
+							setForeground(val, row);
+						}
 					}
-					child.setData("handle", children[i].getHandle());
-					child.setData("element", children[i].getJavaElement());	
-					// recurse							
-					addChildren(child, children[i], metric, per);
+					child.setData("handle", element.getHandle());
+					child.setData("element", element.getJavaElement());
+					// recurse
+					addChildren(child, element, metric, per);
 				}
 			} else { // add dummy
 				createNewRow(row);
 				row.setData("metric", metric);
 				row.setData("per", per);
-				row.setData("source", ms);								
+				row.setData("source", ms);
 			}
 		} else {
 			Max max = ms.getMaximum(metric, per);
@@ -296,47 +310,50 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 			}
 		}
 	}
-	
+
 	private String getElementName(IJavaElement element) {
 		String candidate = element.getElementName();
-		if ("".equals(candidate)){
-			if(element instanceof IType){
+		if ("".equals(candidate)) {
+			if (element instanceof IType) {
 				return "anonymous";
 			}
 			return "(default package)";
 		}
 		return candidate;
 	}
-	
+
 	/**
-	 * Sort the metrics in descending max/value order, giving preference to max
-	 * over value (if max exists, use it, otherwise use value)
+	 * Sort the metrics in descending max/value order, giving preference to max over value (if max exists, use it, otherwise use value)
+	 * 
 	 * @param children
 	 * @param metric
 	 * @param per
 	 * @return
 	 */
 	private void sort(AbstractMetricSource[] children, final String metric, final String per) {
-		Comparator c = new Comparator() {
+		Comparator<AbstractMetricSource> c = new Comparator<AbstractMetricSource>() {
 
-			public int compare(Object o1, Object o2) {
-				AbstractMetricSource s1 = (AbstractMetricSource)o1;
-				AbstractMetricSource s2 = (AbstractMetricSource)o2;
-				Max max1 = s1.getMaximum(metric, per);
-				Max max2 = s2.getMaximum(metric, per);
-				if ((max1 != null)&&(max2 != null)) {
+			public int compare(AbstractMetricSource o1, AbstractMetricSource o2) {
+				Max max1 = o1.getMaximum(metric, per);
+				Max max2 = o2.getMaximum(metric, per);
+				if ((max1 != null) && (max2 != null)) {
 					return -max1.compareTo(max2);
-				} else {
-					Metric m1 = s1.getValue(metric);
-					Metric m2 = s2.getValue(metric);
-					if ((m1 != null)&&(m2 != null)) {
-						return -m1.compareTo(m2);
-					} else {
-						if ((max1 != null)&&(max2 == null)) return -1;
-						if ((m2 != null)&&(m2 == null)) return -1;
-						return 1;
-					}
+				} /* else { */
+				Metric m1 = o1.getValue(metric);
+				Metric m2 = o2.getValue(metric);
+				if ((m1 != null) && (m2 != null)) {
+					return -m1.compareTo(m2);
+				} /* else { */
+				if ((max1 != null) && (max2 == null)) {
+					return -1;
 				}
+				if ((m1 != null) && (m2 == null)) {
+					return -1; // change from if ((m2 != null)&&(m2 ==
+					// null)) return -1;
+				}
+				return 1;
+				/* } */
+				/* } */
 			}
 		};
 		Arrays.sort(children, c);
@@ -348,13 +365,13 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 			row.setText(i, columns[i]);
 		}
 	}
-	
+
 	/**
 	 * @param handle
 	 * @return String
 	 */
 	private String getMethodName(IJavaElement element) {
-		return (element.getElementType() == IJavaElement.METHOD)?element.getElementName():"";
+		return (element.getElementType() == IJavaElement.METHOD) ? element.getElementName() : "";
 	}
 
 	/**
@@ -364,7 +381,7 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 	private String getPath(IJavaElement element) {
 		return element.getPath().toString();
 	}
-	
+
 	private String format(double value) {
 		NumberFormat nf = NumberFormat.getInstance();
 		int decimals = MetricsPlugin.getDefault().getPreferenceStore().getInt("METRICS.decimals");
@@ -372,30 +389,32 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 		nf.setGroupingUsed(false);
 		return nf.format(value);
 	}
-	
+
 	/**
 	 * @see org.eclipse.swt.widgets.Widget#checkSubclass()
 	 */
+	@Override
 	protected void checkSubclass() {
 	}
-	
+
 	public void widgetSelected(SelectionEvent e) {
 	}
-	
 
 	/**
 	 * react to double-clicks in the table by opening an editor on the resource for the metric
+	 * 
 	 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(SelectionEvent)
 	 */
 	public void widgetDefaultSelected(SelectionEvent e) {
-		TreeItem row =  (TreeItem)e.item;
-		IJavaElement element = (IJavaElement)row.getData("element");
-		String handle = (String)row.getData("handle");
+		TreeItem row = (TreeItem) e.item;
+		IJavaElement element = (IJavaElement) row.getData("element");
+		String handle = (String) row.getData("handle");
 		try {
 			if (element != null) {
-					IEditorPart javaEditor = JavaUI.openInEditor(element);
-					if (element instanceof IMember)
-						JavaUI.revealInEditor(javaEditor, element);
+				IEditorPart javaEditor = JavaUI.openInEditor(element);
+				if (element instanceof IMember) {
+					JavaUI.revealInEditor(javaEditor, element);
+				}
 			}
 		} catch (PartInitException x) {
 			System.err.println("Error selecting " + handle);
@@ -412,12 +431,12 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 	private int getWidth(IMemento m, String name, int defaultVal) {
 		try {
 			Integer val = m.getInteger(name);
-			return (val==null)?defaultVal:val.intValue();
+			return (val == null) ? defaultVal : val.intValue();
 		} catch (Throwable e) {
 			return defaultVal;
 		}
 	}
-	
+
 	void initWidths(IMemento memento) {
 		description.setWidth(getWidth(memento, "description", 270));
 		value.setWidth(getWidth(memento, "value", 50));
@@ -438,8 +457,10 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 		memento.putInteger("method", method.getWidth());
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.TreeListener#treeCollapsed(org.eclipse.swt.events.TreeEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.swt.events.TreeListener#treeCollapsed(org.eclipse.swt.events .TreeEvent)
 	 */
 	public void treeCollapsed(TreeEvent e) {
 	}
@@ -455,16 +476,25 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 			String per = (String) item.getData("per");
 			addChildren(item, source, metric, per);
 		}
-	}	
+	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.swt.widgets.Widget#dispose()
 	 */
+	@Override
 	public void dispose() {
 		super.dispose();
-		if (lastDefaultColor != null) lastDefaultColor.dispose();
-		if (lastInRangeColor != null) lastInRangeColor.dispose();
-		if (lastOutofRangeColor != null) lastOutofRangeColor.dispose();
+		if (lastDefaultColor != null) {
+			lastDefaultColor.dispose();
+		}
+		if (lastInRangeColor != null) {
+			lastInRangeColor.dispose();
+		}
+		if (lastOutofRangeColor != null) {
+			lastOutofRangeColor.dispose();
+		}
 	}
 
 }

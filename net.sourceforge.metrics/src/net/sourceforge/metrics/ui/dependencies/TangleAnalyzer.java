@@ -23,7 +23,6 @@ package net.sourceforge.metrics.ui.dependencies;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,80 +48,78 @@ import classycle.graph.StrongComponent;
 import classycle.graph.Vertex;
 
 /**
- * Analyze the details of class dependencies for all types in the
- * packages of an single tangle (strong component).
+ * Analyze the details of class dependencies for all types in the packages of an single tangle (strong component).
  * 
  * @author Frank Sauer
- *
+ * 
  */
 public class TangleAnalyzer {
 
 	private StrongComponent packageTangle = null;
 	private IProgressMonitor monitor = null;
-	
+
 	/**
 	 * IType-handle -> {IType-handle}*
 	 */
-	private Map result = null;
-	
+	private Map<String, Set<String>> result = null;
+
 	/**
 	 * packageName -> {IType-handle}*
 	 */
-	private Map packages = null;
-	
+	private Map<String, Set<String>> packages = null;
+
 	/**
-	 * The results of analyzing will be stored in the two maps given.
-	 * dependencies will contain IType-handle => {IType-handle}* associations and
-	 * packages will contain package-name => {IType-handle}* associations
+	 * The results of analyzing will be stored in the two maps given. dependencies will contain IType-handle => {IType-handle}* associations and packages will contain package-name => {IType-handle}* associations
+	 * 
 	 * @param tangle
 	 * @param dependencies
 	 * @param packages
 	 */
-	public TangleAnalyzer(StrongComponent tangle, Map dependencies, Map packages) {
+	public TangleAnalyzer(StrongComponent tangle, Map<String, Set<String>> dependencies, Map<String, Set<String>> packages) {
 		this.packageTangle = tangle;
 		this.result = dependencies;
 		this.packages = packages;
 	}
-	
-	public void analyze() {
-			Display d = Display.getDefault();
-			d.syncExec(new Runnable() {
 
-				public void run() {
-					try {
-						new ProgressMonitorDialog(new Shell()).run(true, true,
-							new IRunnableWithProgress() {
-						
-								public void run(IProgressMonitor m) throws InvocationTargetException, InterruptedException {
-									analyze(m);
-									if (m.isCanceled()) {
-										result.clear();
-									}
-								}
-						
+	public void analyze() {
+		Display d = Display.getDefault();
+		d.syncExec(new Runnable() {
+
+			public void run() {
+				try {
+					new ProgressMonitorDialog(new Shell()).run(true, true, new IRunnableWithProgress() {
+
+						public void run(IProgressMonitor m) throws InvocationTargetException, InterruptedException {
+							analyze(m);
+							if (m.isCanceled()) {
+								result.clear();
 							}
-						);
-					} catch (InvocationTargetException e) {
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+						}
+
+					});
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-			});
+			}
+		});
 	}
-	
+
 	private void analyze(IProgressMonitor m) {
 		monitor = m;
 		monitor.beginTask("Analyzing tangle details", 1000);
-		List packageNames = new ArrayList();
+		List<String> packageNames = new ArrayList<String>();
 		// get all package names from the StrongComponent
 		for (int i = 0; i < packageTangle.getNumberOfVertices(); i++) {
 			Vertex v = packageTangle.getVertex(i);
 			packageNames.add(v.getAttributes().toString());
 		}
-		//find corresponding IPackageFragment objects		
-		List packages = getPackageFragments(packageNames);	
-		if (!m.isCanceled()) getDependencies(packages);				
+		// find corresponding IPackageFragment objects
+		List<IJavaElement> packages = getPackageFragments(packageNames);
+		if (!m.isCanceled()) {
+			getDependencies(packages);
+		}
 		monitor.done();
 	}
 
@@ -130,31 +127,33 @@ public class TangleAnalyzer {
 	 * @param packages
 	 * @return
 	 */
-	private void getDependencies(List packages) {
+	private void getDependencies(List<IJavaElement> packages) {
 		try {
 			SearchEngine searchEngine = new SearchEngine();
-			// fill in the packageName->{IType}* map by getting all type declarations in scope
-			IJavaElement[] packs = (IJavaElement[])packages.toArray(new IJavaElement[]{});
+			// fill in the packageName->{IType}* map by getting all type
+			// declarations in scope
+			IJavaElement[] packs = packages.toArray(new IJavaElement[] {});
 			IJavaSearchScope scope = SearchEngine.createJavaSearchScope(packs);
-			SearchPattern pattern = SearchPattern.createPattern("*",IJavaSearchConstants.TYPE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);			
+			SearchPattern pattern = SearchPattern.createPattern("*", IJavaSearchConstants.TYPE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);
 			TypeCollector c = new TypeCollector(result);
 			monitor.subTask("Collecting types in packages");
-			searchEngine.search(pattern, new SearchParticipant[]{SearchEngine.getDefaultSearchParticipant()}, scope, c, monitor);
-			if (monitor.isCanceled()) return;
-			// get all type references to these types. 
+			searchEngine.search(pattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope, c, monitor);
+			if (monitor.isCanceled()) {
+				return;
+			}
+			// get all type references to these types.
 			// Have to do multiple searches to get proper relationship :-(
-			Set typesInScope = result.keySet();
+			Set<String> typesInScope = result.keySet();
 			monitor.worked(400);
 			monitor.subTask("Collecting type dependencies");
 			int scale = 500 / typesInScope.size();
-			for (Iterator i = typesInScope.iterator(); i.hasNext();) {
-				if (monitor.isCanceled()) return;
-				String handle = (String)i.next();
+			for (Object element : typesInScope) {
+				if (monitor.isCanceled()) {
+					return;
+				}
+				String handle = (String) element;
 				IJavaElement type = JavaCore.create(handle);
-				searchEngine.searchDeclarationsOfReferencedTypes(
-					type,
-					new RefCollector((Set)result.get(handle), typesInScope, type),
-					monitor);
+				searchEngine.searchDeclarationsOfReferencedTypes(type, new RefCollector(result.get(handle), typesInScope, type), monitor);
 				monitor.worked(scale);
 			}
 		} catch (CoreException e) {
@@ -166,19 +165,19 @@ public class TangleAnalyzer {
 	 * @param packageNames
 	 * @return
 	 */
-	private List getPackageFragments(List packageNames) {
+	private List<IJavaElement> getPackageFragments(List<String> packageNames) {
 		monitor.subTask("Finding Packages in tangle");
 		SearchEngine searchEngine = new SearchEngine();
 		IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
-		SearchPattern pattern = SearchPattern.createPattern("*",IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);
+		SearchPattern pattern = SearchPattern.createPattern("*", IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);
 		PackageCollector c = new PackageCollector(packageNames);
 		try {
-			searchEngine.search(pattern, new SearchParticipant[]{SearchEngine.getDefaultSearchParticipant()}, scope, c, monitor);
+			searchEngine.search(pattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope, c, monitor);
 			monitor.worked(100);
 			return c.getResult();
 		} catch (CoreException e) {
 			e.printStackTrace();
-			return new ArrayList();
+			return new ArrayList<IJavaElement>();
 		}
 	}
 
@@ -187,66 +186,71 @@ public class TangleAnalyzer {
 	 */
 	public class PackageCollector extends SearchRequestor {
 
-		private List packages = new ArrayList();
-		private List packageNames = null;
-		
-		public PackageCollector(List packageNames) {
+		private List<IJavaElement> packages = new ArrayList<IJavaElement>();
+		private List<String> packageNames = null;
+
+		public PackageCollector(List<String> packageNames) {
 			this.packageNames = packageNames;
 		}
-		
-		/**
-		 * 
-		 */
-		public List getResult() {
-			return packages;			
+
+		public List<IJavaElement> getResult() {
+			return packages;
 		}
 
-		/* count package references <em>outside</em>the current package
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#accept(org.eclipse.core.resources.IResource, int, int, org.eclipse.jdt.core.IJavaElement, int)
+		/*
+		 * count package references <em>outside</em>the current package
+		 * 
+		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#accept(org .eclipse.core.resources.IResource, int, int, org.eclipse.jdt.core.IJavaElement, int)
 		 */
 		public void accept(IResource resource, int start, int end, IJavaElement enclosingElement, int accuracy) throws CoreException {
-			if ((enclosingElement != null)&&(packageNames.contains(enclosingElement.getElementName()))) {
+			if ((enclosingElement != null) && (packageNames.contains(enclosingElement.getElementName()))) {
 				packages.add(enclosingElement);
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org.eclipse.jdt.core.search.SearchMatch)
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org .eclipse.jdt.core.search.SearchMatch)
 		 */
+		@Override
 		public void acceptSearchMatch(SearchMatch match) {
 			IJavaElement enclosingElement = (IJavaElement) match.getElement();
-			if ((enclosingElement != null)&&(packageNames.contains(enclosingElement.getElementName()))) {
+			if ((enclosingElement != null) && (packageNames.contains(enclosingElement.getElementName()))) {
 				packages.add(enclosingElement);
 			}
 		}
 	}
-	
+
 	/**
 	 * Collect all type declarations in the packages of the component
 	 */
-	public class TypeCollector extends SearchRequestor 
-	//implements IJavaSearchResultCollector 
+	public class TypeCollector extends SearchRequestor
+	// implements IJavaSearchResultCollector
 	{
 
-		Map store = null;
-		
-		public TypeCollector(Map store) {
+		Map<String, Set<String>> store = null;
+
+		public TypeCollector(Map<String, Set<String>> store) {
 			this.store = store;
 		}
-		
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org.eclipse.jdt.core.search.SearchMatch)
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org .eclipse.jdt.core.search.SearchMatch)
 		 */
+		@Override
 		public void acceptSearchMatch(SearchMatch match) {
 			IJavaElement enclosingElement = (IJavaElement) match.getElement();
 			try {
-				if ((enclosingElement != null)&&(enclosingElement.getElementType() == IJavaElement.TYPE)) {
+				if ((enclosingElement != null) && (enclosingElement.getElementType() == IJavaElement.TYPE)) {
 					String packName = enclosingElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT).getElementName();
-					Set deps = new HashSet();
+					Set<String> deps = new HashSet<String>();
 					store.put(enclosingElement.getHandleIdentifier(), deps);
-					Set typesInPackage = (Set)packages.get(packName);
+					Set<String> typesInPackage = packages.get(packName);
 					if (typesInPackage == null) {
-						typesInPackage = new HashSet();
+						typesInPackage = new HashSet<String>();
 						packages.put(packName, typesInPackage);
 					}
 					typesInPackage.add(enclosingElement.getHandleIdentifier());
@@ -256,41 +260,44 @@ public class TangleAnalyzer {
 			}
 		}
 	}
-	
+
 	/**
-	 * Collect all type references in the packages of the component.
-	 * Only collect references to/from classes in these packages (both to AND
-	 * from must be in the scope)
+	 * Collect all type references in the packages of the component. Only collect references to/from classes in these packages (both to AND from must be in the scope)
 	 */
 	public class RefCollector extends SearchRequestor {
 
-		Set store = null;
+		Set<String> store = null;
 		Set types = null;
 		IJavaElement from = null;
 		IJavaElement fromPackage = null;
-		
-		public RefCollector(Set store, Set handles, IJavaElement from) {
+
+		public RefCollector(Set<String> store, Set<String> handles, IJavaElement from) {
 			this.store = store;
 			this.types = handles;
 			this.from = from;
 			this.fromPackage = from.getAncestor(IJavaElement.PACKAGE_FRAGMENT);
 		}
-		
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org.eclipse.jdt.core.search.SearchMatch)
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org .eclipse.jdt.core.search.SearchMatch)
 		 */
+		@Override
 		public void acceptSearchMatch(SearchMatch match) throws CoreException {
 			IJavaElement enclosingElement = (IJavaElement) match.getElement();
-			if ((enclosingElement != null)&&(enclosingElement.getElementType() == IJavaElement.TYPE)) {
+			if ((enclosingElement != null) && (enclosingElement.getElementType() == IJavaElement.TYPE)) {
 				// found type declaration is of one of the types we want
 				if (types.contains(enclosingElement.getHandleIdentifier())) {
 					// it's in a different package than the from type
-					//if (!fromPackage.equals(enclosingElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT))) {
-						store.add(enclosingElement.getHandleIdentifier());
-					//}
+					// if
+					// (!fromPackage.equals(enclosingElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT)))
+					// {
+					store.add(enclosingElement.getHandleIdentifier());
+					// }
 				}
 			}
 		}
 	}
-	
+
 }

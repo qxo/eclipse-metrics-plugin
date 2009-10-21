@@ -49,57 +49,59 @@
 
 package com.touchgraph.graphlayout;
 
-/** TGPoint2D is only needed for java 1.1.
-  *   
-  * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: TGPoint2D.java,v 1.2 2004/10/25 06:57:41 donv70 Exp $
-  */
+/**
+ * TGPoint2D is only needed for java 1.1.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: TGPoint2D.java,v 1.2 2004/10/25 06:57:41 donv70 Exp $
+ */
 public class TGPoint2D {
 
-    private double x;
-    private double y;
-    
-    public TGPoint2D( double xpos, double ypos ) {
-        setX(xpos);
-        setY(ypos);
-    }
+	private double x;
+	private double y;
 
-    public TGPoint2D( TGPoint2D p ) {
-        setX(p.getX());
-        setY(p.getY());
-    }
-    
-    public void setLocation( double xpos,double ypos ) {
-        setX(xpos);
-        setY(ypos);
-    }
+	public TGPoint2D(double xpos, double ypos) {
+		setX(xpos);
+		setY(ypos);
+	}
 
-    public void setX(double x) {
-        if (Double.isInfinite(x)) {
-            x = x > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
-        }
-        if (Double.isNaN(x) || x == Double.NaN) {
-            System.err.println("Argh!");
-        }
-        this.x = x;
-    }
+	public TGPoint2D(TGPoint2D p) {
+		setX(p.getX());
+		setY(p.getY());
+	}
 
-    public double getX() {
-        return x;
-    }
+	public void setLocation(double xpos, double ypos) {
+		setX(xpos);
+		setY(ypos);
+	}
 
-    public void setY(double y) {
-        if (Double.isInfinite(y)) {
-            y = y > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
-        }
-        if (Double.isNaN(y) || Double.isInfinite(y) || y == Double.NaN) {
-            System.err.println("Argh!");
-        }
-        this.y = y;
-    }
+	public void setX(double newX) {
+		x = newX;
+		if (Double.isInfinite(newX)) {
+			x = newX > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
+		}
+		if (Double.isNaN(newX) || newX == Double.NaN) {
+			System.err.println("Argh!");
+		}
+	}
 
-    public double getY() {
-        return y;
-    }
-    
+	public double getX() {
+		return x;
+	}
+
+	public void setY(double newY) {
+		y = newY;
+		if (Double.isInfinite(newY)) {
+			y = newY > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
+		}
+		if (Double.isNaN(newY) || Double.isInfinite(newY) || newY == Double.NaN) {
+			System.err.println("Argh!");
+		}
+
+	}
+
+	public double getY() {
+		return y;
+	}
+
 } // end com.touchgraph.graphlayout.TGPoint2D

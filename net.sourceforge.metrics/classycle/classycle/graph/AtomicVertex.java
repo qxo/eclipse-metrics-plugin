@@ -25,67 +25,59 @@
 package classycle.graph;
 
 /**
- *  A subclass of {@link Vertex} with the following additional properties:
- *  <ul><li>A flag indicating whether this vertex belongs to the graph or not.
- *      <li>The order of visiting.
- *      <li>The low function.
- *  </ul>
- *  The last two properties are used in Tarjan's algorithm to find the
- *  strong components (see {@link StrongComponentProcessor}).
- *
- *  @author Franz-Josef Elmer
+ * A subclass of {@link Vertex} with the following additional properties:
+ * <ul>
+ * <li>A flag indicating whether this vertex belongs to the graph or not.
+ * <li>The order of visiting.
+ * <li>The low function.
+ * </ul>
+ * The last two properties are used in Tarjan's algorithm to find the strong components (see {@link StrongComponentProcessor}).
+ * 
+ * @author Franz-Josef Elmer
  */
-public class AtomicVertex extends Vertex
-{
-  private boolean _graphVertex;
-  private int _order;
-  private int _low;
+public class AtomicVertex extends Vertex {
+	private boolean _graphVertex;
+	private int _order;
+	private int _low;
 
-  /** Creates an instance for the specified attributes. */
-  public AtomicVertex(Attributes attributes)
-  {
-    super(attributes);
-  }
+	/** Creates an instance for the specified attributes. */
+	public AtomicVertex(Attributes attributes) {
+		super(attributes);
+	}
 
-  /**
-   *  Reset this instance. That is, it becomes unvisited vertex of a graph
-   *  with order and low set to -1;
-   */
-  public void reset()
-  {
-    super.reset();
-    _graphVertex = true;
-    _order = -1;
-    _low = -1;
-  }
+	/**
+	 * Reset this instance. That is, it becomes unvisited vertex of a graph with order and low set to -1;
+	 */
+	@Override
+	public void reset() {
+		super.reset();
+		_graphVertex = true;
+		_order = -1;
+		_low = -1;
+	}
 
-  /** Returns <tt>true</tt> if this vertex belongs to a graph. */
-  public boolean isGraphVertex()
-  {
-    return _graphVertex;
-  }
+	/** Returns <tt>true</tt> if this vertex belongs to a graph. */
+	public boolean isGraphVertex() {
+		return _graphVertex;
+	}
 
-  /** Returns the order of visiting. */
-  public int getOrder()
-  {
-    return _order;
-  }
+	/** Returns the order of visiting. */
+	public int getOrder() {
+		return _order;
+	}
 
-  /** Sets the order of visiting. */
-  public void setOrder(int order)
-  {
-    _order = order;
-  }
+	/** Sets the order of visiting. */
+	public void setOrder(int order) {
+		_order = order;
+	}
 
-  /** Returns the current value of the low function. */
-  public int getLow()
-  {
-    return _low;
-  }
+	/** Returns the current value of the low function. */
+	public int getLow() {
+		return _low;
+	}
 
-  /** Sets the current value of the low function. */
-  public void setLow(int low)
-  {
-    _low = low;
-  }
-} //class
+	/** Sets the current value of the low function. */
+	public void setLow(int low) {
+		_low = low;
+	}
+} // class

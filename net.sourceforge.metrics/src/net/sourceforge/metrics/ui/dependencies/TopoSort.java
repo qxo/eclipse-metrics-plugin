@@ -34,14 +34,13 @@ public class TopoSort extends GraphProcessor {
 
 	private Vertex[] sorted = null;
 	int finish = 0;
-	
+
 	public TopoSort() {
 		super();
 	}
-	
+
 	/**
-	 * return the graph topologically sorted, or null if the
-	 * graph has cycles and no topological sort order is possible
+	 * return the graph topologically sorted, or null if the graph has cycles and no topological sort order is possible
 	 */
 	public Vertex[] sort(Vertex[] graph) {
 		StrongComponentProcessor cycleTest = new StrongComponentProcessor();
@@ -51,62 +50,75 @@ public class TopoSort extends GraphProcessor {
 			sorted = new Vertex[graph.length];
 			super.deepSearchFirst(comps);
 			return sorted;
-		} else return null;
+		} /* else { */
+		return null;
+		/* } */
 	}
-	
-	/* (non-Javadoc)
-	 * @see classycle.graph.GraphProcessor#initializeProcessing(classycle.graph.Vertex[])
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see classycle.graph.GraphProcessor#initializeProcessing(classycle.graph.Vertex [])
 	 */
+	@Override
 	protected void initializeProcessing(Vertex[] graph) {
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see classycle.graph.GraphProcessor#processBefore(classycle.graph.Vertex)
 	 */
+	@Override
 	protected void processBefore(Vertex vertex) {
 		castAsStrongComponent(vertex);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see classycle.graph.GraphProcessor#processArc(classycle.graph.Vertex, classycle.graph.Vertex)
 	 */
+	@Override
 	protected void processArc(Vertex tail, Vertex head) {
 		castAsStrongComponent(tail);
 		StrongComponent h = castAsStrongComponent(head);
-	  	if (!h.isVisited()) {
+		if (!h.isVisited()) {
 			process(h);
-	  	} 
+		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see classycle.graph.GraphProcessor#processAfter(classycle.graph.Vertex)
 	 */
+	@Override
 	protected void processAfter(Vertex vertex) {
 		StrongComponent component = castAsStrongComponent(vertex);
 		sorted[finish++] = component.getVertex(0);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see classycle.graph.GraphProcessor#finishProcessing(classycle.graph.Vertex[])
 	 */
+	@Override
 	protected void finishProcessing(Vertex[] graph) {
 	}
-	
+
 	/**
-	 *  Casts the specified vertex as an {@link StrongComponent}.
-	 *  @throws IllegalArgumentException if <tt>vertex</tt> is not an instance
-	 *          of {@link StrongComponent}.
+	 * Casts the specified vertex as an {@link StrongComponent}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if <tt>vertex</tt> is not an instance of {@link StrongComponent}.
 	 */
-	private StrongComponent castAsStrongComponent(Vertex vertex)
-	{
-	  if (vertex instanceof StrongComponent)
-	  {
-		return (StrongComponent) vertex;
-	  }
-	  else
-	  {
-		throw new IllegalArgumentException(vertex
-				+ " is not an instance of StrongComponent");
-	  }
+	private StrongComponent castAsStrongComponent(Vertex vertex) {
+		if (vertex instanceof StrongComponent) {
+			return (StrongComponent) vertex;
+		} /* else { */
+		throw new IllegalArgumentException(vertex + " is not an instance of StrongComponent");
+		/* } */
 	}
 }

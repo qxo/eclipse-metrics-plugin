@@ -35,21 +35,19 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 
 /**
- * Based on the current selection figure out what metric source to create
- * and instruct to calculate metrics, or simply pick up from the cache and
- * use it.
+ * Based on the current selection figure out what metric source to create and instruct to calculate metrics, or simply pick up from the cache and use it.
  * 
  * @author Frank Sauer
  */
 public class Dispatcher {
 
 	protected static Dispatcher singleton = new Dispatcher();
-	
-	private Map sourcemap = null;
-	
+
+	private Map<Class, Class> sourcemap = null;
+
 	protected Map getSourceMap() {
 		if (sourcemap == null) {
-			sourcemap = new HashMap();
+			sourcemap = new HashMap<Class, Class>();
 			initMetrics();
 		}
 		return sourcemap;
@@ -66,21 +64,21 @@ public class Dispatcher {
 		sourcemap.put(ICompilationUnit.class, CompilationUnitMetrics.class);
 		sourcemap.put(IJavaProject.class, ProjectMetrics.class);
 	}
-	
+
 	/**
-	 * Create a new AbstractMetricSource subclass instance appropriate for the
-	 * given IJavaElement
+	 * Create a new AbstractMetricSource subclass instance appropriate for the given IJavaElement
+	 * 
 	 * @param input
 	 * @return AbstractMetricSource
 	 */
 	protected AbstractMetricSource createNewSource(IJavaElement input) {
 		Map metrics = getSourceMap();
 		for (Iterator i = metrics.keySet().iterator(); i.hasNext();) {
-			Class next = (Class)i.next();
+			Class next = (Class) i.next();
 			if (next.isInstance(input)) {
 				try {
-					Class msc = (Class)metrics.get(next);
-					AbstractMetricSource ms = (AbstractMetricSource)msc.newInstance();
+					Class msc = (Class) metrics.get(next);
+					AbstractMetricSource ms = (AbstractMetricSource) msc.newInstance();
 					return ms;
 				} catch (InstantiationException e) {
 					Log.logError("createNewSource for " + input.getHandleIdentifier(), e);
@@ -91,10 +89,10 @@ public class Dispatcher {
 		}
 		return null;
 	}
-		
+
 	/**
-	 * Get the AbstractMetricSource for the given IJavaElement from cache or create a 
-	 * new one and have it calculate the metrics.
+	 * Get the AbstractMetricSource for the given IJavaElement from cache or create a new one and have it calculate the metrics.
+	 * 
 	 * @param input
 	 * @return AbstractMetricSource
 	 */
@@ -111,18 +109,19 @@ public class Dispatcher {
 			m.recurse(null);
 			// should be in cache now
 			m = Cache.singleton.get(input);
-		} 
+		}
 		return m;
 	}
-	
+
 	/**
-	 * Get the AbstractMetricSource for the given IJavaElement from cache or create a 
-	 * new one and have it calculate the metrics. This method will give the parent
-	 * AbstractMetricSource a chance to initialize the new element (in cas e anew one is created)
-	 * with the given data. 
+	 * Get the AbstractMetricSource for the given IJavaElement from cache or create a new one and have it calculate the metrics. This method will give the parent AbstractMetricSource a chance to initialize the new element (in cas e anew one
+	 * is created) with the given data.
+	 * 
 	 * @param input
-	 * @param parent	AbstractMetricSource with need to participate in creation process
-	 * @param data		Map with additional data needed for creation
+	 * @param parent
+	 *            AbstractMetricSource with need to participate in creation process
+	 * @param data
+	 *            Map with additional data needed for creation
 	 * @return AbstractMetricSource
 	 * @see AbstractMetricSource#initializeNewInstance(AbstractMetricSource,IJavaElement,Map)
 	 */
@@ -133,7 +132,8 @@ public class Dispatcher {
 			parent.initializeNewInstance(m, input, data);
 			m.recurse(parent);
 		} else {
-			// happens if a previous remove from cache failed, simply reinitialize existing instance
+			// happens if a previous remove from cache failed, simply
+			// reinitialize existing instance
 			// for recalculation
 			parent.initializeNewInstance(m, input, data);
 			Log.logMessage("Reusing instance for " + m.getHandle());

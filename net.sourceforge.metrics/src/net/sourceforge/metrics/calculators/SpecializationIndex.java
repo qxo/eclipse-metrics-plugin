@@ -25,8 +25,7 @@ import net.sourceforge.metrics.core.Metric;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
 /**
- * Calculates the SI (NORM * DIT) / NOM. Note that because NORM is configurable from
- * preferences, the value of SI is indirectly influenced by preferences as well.
+ * Calculates the SI (NORM * DIT) / NOM. Note that because NORM is configurable from preferences, the value of SI is indirectly influenced by preferences as well.
  * 
  * @author Frank Sauer
  */
@@ -42,13 +41,15 @@ public class SpecializationIndex extends Calculator implements Constants {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) throws InvalidSourceException {
-		if (source.getLevel() != TYPE) 
+		if (source.getLevel() != TYPE) {
 			throw new InvalidSourceException("SpecializationIndex only applicable to types");
+		}
 		double norm = source.getValue(NORM).doubleValue();
-		double dit  = source.getValue(INHERITANCE_DEPTH).doubleValue();
-		double nom  = source.getValue(NUM_METHODS).doubleValue();
-		source.setValue(new Metric(SPECIALIZATION_IN, div(norm * dit , nom)));
+		double dit = source.getValue(INHERITANCE_DEPTH).doubleValue();
+		double nom = source.getValue(NUM_METHODS).doubleValue();
+		source.setValue(new Metric(SPECIALIZATION_IN, div(norm * dit, nom)));
 	}
 
 }

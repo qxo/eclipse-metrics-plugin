@@ -56,7 +56,6 @@ import net.sourceforge.metrics.ui.dependencies.PackageAttributes;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 
 import classycle.graph.AtomicVertex;
@@ -65,39 +64,38 @@ import classycle.graph.StrongComponentProcessor;
 import classycle.graph.Vertex;
 
 /**
- * Export metrics in the http://metrics.sourceforge.net/2003/Metrics-First-Flat
- * format (flat per metric data ideal for plotting graphs and histograms)
+ * Export metrics in the http://metrics.sourceforge.net/2003/Metrics-First-Flat format (flat per metric data ideal for plotting graphs and histograms)
  * 
  * @author Frank Sauer
  */
 public class MetricsFirstExporter implements IExporter, Constants {
 
-	private SoftCache cache;
+	private SoftCache<String, AbstractMetricSource> cache;
 	private MetricsPlugin plugin = MetricsPlugin.getDefault();
-	private String[] names = plugin.getMetricIds(); 
+	private String[] names = plugin.getMetricIds();
 	private String[] descriptions = plugin.getMetricDescriptions();
-	
+
 	public MetricsFirstExporter() {
-		cache = new SoftCache();
+		cache = new SoftCache<String, AbstractMetricSource>();
 	}
-	
+
 	protected String formatXMLStr(String handle) {
 		return handle.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 	}
-	
+
 	public void export(IJavaElement element, File outputFile, IProgressMonitor monitor) throws InvocationTargetException {
 		try {
 			FileOutputStream out = new FileOutputStream(outputFile);
 			XMLPrintStream pOut = new XMLPrintStream(out);
 			monitor.beginTask("Exporting metrics to flat per Metric XML format...", names.length);
-			AbstractMetricSource root = getData(element);			
+			AbstractMetricSource root = getData(element);
 			pOut.printXMLHeader();
 			NumberFormat nf = NumberFormat.getInstance();
-			int decimals = MetricsPlugin.getDefault().getPluginPreferences().getInt("METRICS.decimals");
+			int decimals = MetricsPlugin.getDefault().getPreferenceStore().getInt("METRICS.decimals");
 			nf.setMaximumFractionDigits(decimals);
 			nf.setGroupingUsed(false);
 			printRoot(root, pOut, monitor, nf);
-			pOut.close();		
+			pOut.close();
 		} catch (FileNotFoundException e) {
 			throw new InvocationTargetException(e);
 		}
@@ -106,19 +104,19 @@ public class MetricsFirstExporter implements IExporter, Constants {
 	protected AbstractMetricSource getData(IJavaElement element) {
 		return getData(element.getHandleIdentifier());
 	}
-	
+
 	/*
 	 * BUG 756998 This extra caching helps a LOT!!!!!!!
 	 */
 	protected AbstractMetricSource getData(String handle) {
-		AbstractMetricSource s = (AbstractMetricSource) cache.get(handle);
+		AbstractMetricSource s = cache.get(handle);
 		if (s == null) {
-			s =  Cache.singleton.get(handle);
+			s = Cache.singleton.get(handle);
 			cache.put(handle, s);
 		}
 		return s;
 	}
-	
+
 	private void printRoot(AbstractMetricSource root, XMLPrintStream pOut, IProgressMonitor monitor, NumberFormat nf) {
 		pOut.print("<Metrics scope=\"");
 		pOut.print(getName(root));
@@ -146,11 +144,12 @@ public class MetricsFirstExporter implements IExporter, Constants {
 				pOut.print("\"");
 			}
 			String hint = md.getHint();
-			if (hint != null && hint.length()>0) {
+			if (hint != null && hint.length() > 0) {
 				pOut.print(" hint =\"");
 				pOut.print(hint);
 				pOut.print("\"");
-			}			pOut.println(">");
+			}
+			pOut.println(">");
 			if (!printValues(names[i], root, pOut, nf)) {
 				Metric val = root.getValue(names[i]);
 				if (val != null) {
@@ -171,31 +170,33 @@ public class MetricsFirstExporter implements IExporter, Constants {
 
 	/**
 	 * If root is a source folder or a project, include any cyclic package dependencies in the xml
+	 * 
 	 * @param root
 	 * @param pOut
 	 * @param monitor
 	 */
 	private void maybePrintCycles(AbstractMetricSource root, XMLPrintStream pOut, IProgressMonitor monitor) {
 		Map dependencies = null;
-		if (root.getLevel() == AbstractMetricSource.PACKAGEROOT) {
+		if (root.getLevel() == Constants.PACKAGEROOT) {
 			PackageFragmentRootMetrics pfr = (PackageFragmentRootMetrics) root;
 			dependencies = pfr.getEfferent();
 		}
-		if (root.getLevel() == AbstractMetricSource.PROJECT) {
+		if (root.getLevel() == Constants.PROJECT) {
 			ProjectMetrics pm = (ProjectMetrics) root;
 			dependencies = pm.getEfferent();
 		}
 		if (dependencies != null) {
 			monitor.subTask("Exporting cyclic dependencies...");
 			StrongComponent[] comps = calculateCycles(dependencies);
-			for (int i = 0; i < comps.length; i++) {
-				exportCycle(comps[i], pOut);
-			}			
+			for (StrongComponent comp : comps) {
+				exportCycle(comp, pOut);
+			}
 		}
 	}
-	
+
 	/**
 	 * Write a single cycle (if length > 1) to XML
+	 * 
 	 * @param component
 	 * @param pOut
 	 */
@@ -226,20 +227,20 @@ public class MetricsFirstExporter implements IExporter, Constants {
 
 	// TODO refactor to common place between this and DependencyGraphPanel
 	private StrongComponent[] calculateCycles(Map efferent) {
-		List graph = new ArrayList();
-		HashMap  done = new HashMap();
+		List<Vertex> graph = new ArrayList<Vertex>();
+		Map<String, Vertex> done = new HashMap<String, Vertex>();
 		for (Iterator i = efferent.keySet().iterator(); i.hasNext();) {
-			String key = (String)i.next();
-			Vertex from = (Vertex)done.get(key);
+			String key = (String) i.next();
+			Vertex from = done.get(key);
 			if (from == null) {
 				from = new AtomicVertex(new PackageAttributes(key));
 				done.put(key, from);
 				graph.add(from);
 			}
-			Set deps = (Set)efferent.get(key);
+			Set deps = (Set) efferent.get(key);
 			for (Iterator j = deps.iterator(); j.hasNext();) {
-				String dep = (String)j.next();
-				Vertex to = (Vertex)done.get(dep);
+				String dep = (String) j.next();
+				Vertex to = done.get(dep);
 				if (to == null) {
 					to = new AtomicVertex(new PackageAttributes(dep));
 					done.put(dep, to);
@@ -248,19 +249,15 @@ public class MetricsFirstExporter implements IExporter, Constants {
 				from.addOutgoingArcTo(to);
 			}
 		}
-		Vertex[] vgraph = (Vertex[])graph.toArray(new Vertex[]{});
+		Vertex[] vgraph = graph.toArray(new Vertex[] {});
 		StrongComponentProcessor scp = new StrongComponentProcessor();
 		scp.deepSearchFirst(vgraph);
 		StrongComponent[] comps = scp.getStrongComponents();
 		return comps;
-	}	
+	}
 
-	private Class[] filters = new Class[] {
-		PackageFragmentMetrics.class,
-		TypeMetrics.class,
-		MethodMetrics.class
-	};
-	
+	private Class[] filters = new Class[] { PackageFragmentMetrics.class, TypeMetrics.class, MethodMetrics.class };
+
 	private boolean printValues(String id, AbstractMetricSource element, XMLPrintStream pOut, NumberFormat nf) {
 		boolean result = false;
 		for (int i = 0; i < pers.length; i++) {
@@ -268,7 +265,7 @@ public class MetricsFirstExporter implements IExporter, Constants {
 			MetricDescriptor md = plugin.getMetricDescriptor(id);
 			Avg avg = element.getAverage(id, pers[i]);
 			Max max = element.getMaximum(id, pers[i]);
-			if ((avg  != null) || (max != null)) {
+			if ((avg != null) || (max != null)) {
 				pOut.indent(2);
 				pOut.print("<Values per = \"");
 				pOut.print(pers[i]);
@@ -284,7 +281,7 @@ public class MetricsFirstExporter implements IExporter, Constants {
 					pOut.print("\"");
 					pOut.print(" stddev = \"");
 					pOut.print(nf.format(avg.getStandardDeviation()));
-					pOut.print("\"");					
+					pOut.print("\"");
 				}
 				if (max != null) {
 					pOut.print(" max = \"");
@@ -293,9 +290,9 @@ public class MetricsFirstExporter implements IExporter, Constants {
 					if (!md.isValueInRange(max.doubleValue())) {
 						pOut.print(" maxinrange=\"false\"");
 					}
-				}				
+				}
 				pOut.println(">");
-				List values = getChildren(element.getHandle(), filters[i]);
+				List<AbstractMetricSource> values = getChildren(element.getHandle(), filters[i]);
 				printValues(values, id, pOut, md, nf);
 				pOut.indent(2);
 				pOut.println("</Values>");
@@ -310,28 +307,29 @@ public class MetricsFirstExporter implements IExporter, Constants {
 	 * @param id
 	 * @param pOut
 	 */
-	private void printValues(List values, final String id, XMLPrintStream pOut, MetricDescriptor md, NumberFormat nf) {
+	private void printValues(List<AbstractMetricSource> values, final String id, XMLPrintStream pOut, MetricDescriptor md, NumberFormat nf) {
 		// sort values first
-		Collections.sort(values, new Comparator() {
+		Collections.sort(values, new Comparator<? super AbstractMetricSource>() {
 
 			public int compare(Object o1, Object o2) {
-				AbstractMetricSource left = (AbstractMetricSource)o1;
-				AbstractMetricSource right = (AbstractMetricSource)o2;
+				AbstractMetricSource left = (AbstractMetricSource) o1;
+				AbstractMetricSource right = (AbstractMetricSource) o2;
 				Metric lm = left.getValue(id);
 				Metric rm = right.getValue(id);
 				int result;
-			    if (lm == null) { // BUG #826997 
-			        result = (rm == null) ? 0 : -1;
-			    } else {
-			        result = -lm.compareTo(rm); // BUG 746394
-			    }
-				if (result != 0) return result;
+				if (lm == null) { // BUG #826997
+					result = (rm == null) ? 0 : -1;
+				} else {
+					result = -lm.compareTo(rm); // BUG 746394
+				}
+				if (result != 0) {
+					return result;
+				}
 				return left.getHandle().compareTo(right.getHandle());
 			}
-			
+
 		});
-		for (Iterator i = values.iterator(); i.hasNext();) {
-			AbstractMetricSource next = (AbstractMetricSource)i.next();
+		for (AbstractMetricSource next : values) {
 			IJavaElement element = next.getJavaElement();
 			Metric val = next.getValue(id);
 			if (val != null) {
@@ -356,19 +354,21 @@ public class MetricsFirstExporter implements IExporter, Constants {
 				pOut.print("\"");
 				if (!md.isValueInRange(val.doubleValue())) {
 					pOut.print(" inrange=\"false\"");
-				}				pOut.println("/>");
+				}
+				pOut.println("/>");
 			}
 		}
 	}
 
-	protected List getChildren(String handle, Class filter) {
-		List handles = new ArrayList(Cache.singleton.getKeysForHandle(handle));
-		List result = new ArrayList();
-		for (Iterator i = handles.iterator();i.hasNext();) {
-			String next = (String)i.next();
+	protected List<AbstractMetricSource> getChildren(String handle, Class filter) {
+		List<String> handles = new ArrayList<String>(Cache.singleton.getKeysForHandle(handle));
+		List<AbstractMetricSource> result = new ArrayList<AbstractMetricSource>();
+		for (String next : handles) {
 			if (next.startsWith(handle) && (!next.equals(handle))) {
 				AbstractMetricSource p = getData(next);
-				if (filter.isInstance(p)) result.add(p);
+				if (filter.isInstance(p)) {
+					result.add(p);
+				}
 			}
 		}
 		return result;
@@ -376,24 +376,24 @@ public class MetricsFirstExporter implements IExporter, Constants {
 
 	public String getTagName() {
 		return null;
-	}	
-	
+	}
+
 	protected String getName(AbstractMetricSource source) {
 		return getName(source.getJavaElement());
 	}
-	
+
 	protected String getName(IJavaElement element) {
 		return formatXMLStr(getNotBlankName(buildName(element), element));
 	}
-	
-	protected String getNotBlankName(String currentName , IJavaElement element){
+
+	protected String getNotBlankName(String currentName, IJavaElement element) {
 		String l_return = currentName;
-		if ("".equals(l_return)){
-			if(element instanceof IType){
+		if ("".equals(l_return)) {
+			if (element instanceof IType) {
 				IJavaElement parentType = element.getParent().getAncestor(IJavaElement.TYPE);
 				String handle = element.getHandleIdentifier();
 				int start = handle.lastIndexOf(parentType.getElementName());
-				if(start != -1){
+				if (start != -1) {
 					handle = handle.substring(start + parentType.getElementName().length());
 				}
 				l_return = "anonymous#" + handle;
@@ -403,56 +403,59 @@ public class MetricsFirstExporter implements IExporter, Constants {
 		}
 		return l_return;
 	}
-	
-	protected String buildName(IJavaElement element){
+
+	protected String buildName(IJavaElement element) {
 		String l_return = element.getElementName();
-		if(element instanceof IType){
+		if (element instanceof IType) {
 			IJavaElement container = element.getParent();
-			if(container != null && container.getAncestor(IJavaElement.TYPE) != null){
-				l_return =buildParentTypeNamePart(element);
+			if (container != null && container.getAncestor(IJavaElement.TYPE) != null) {
+				l_return = buildParentTypeNamePart(element);
 			}
-		} else if(element instanceof IMethod){
-			IJavaElement container = element.getAncestor(IJavaElement.TYPE); 
-			if(container != null && container.getParent() != null && container.getParent().getAncestor(IJavaElement.TYPE) != null){
-				l_return =buildParentTypeNamePart(container) + "#" + element.getElementName();
+		} else if (element instanceof IMethod) {
+			IJavaElement container = element.getAncestor(IJavaElement.TYPE);
+			if (container != null && container.getParent() != null && container.getParent().getAncestor(IJavaElement.TYPE) != null) {
+				l_return = buildParentTypeNamePart(container) + "#" + element.getElementName();
 			}
 		}
 		return l_return;
 	}
-	
-	protected String buildParentTypeNamePart(IJavaElement element){
+
+	protected String buildParentTypeNamePart(IJavaElement element) {
 		StringBuffer l_strBuffer = new StringBuffer(getNotBlankName(element.getElementName(), element));
 		IJavaElement l_current = element.getParent().getAncestor(IJavaElement.TYPE);
-		while(l_current != null){
-			l_strBuffer.insert(0,'.' );
-			l_strBuffer.insert(0,getNotBlankName(l_current.getElementName(), l_current));
+		while (l_current != null) {
+			l_strBuffer.insert(0, '.');
+			l_strBuffer.insert(0, getNotBlankName(l_current.getElementName(), l_current));
 			l_current = l_current.getParent();
-			if(l_current != null){
+			if (l_current != null) {
 				l_current = l_current.getAncestor(IJavaElement.TYPE);
 			}
 		}
 		return l_strBuffer.toString();
 	}
-	
+
 	/**
-	 * keys are strong, values are soft, strangely enough WeakHashMap
-	 * does the opposite??? What good is that?
+	 * keys are strong, values are soft, strangely enough WeakHashMap does the opposite??? What good is that?
+	 * 
 	 * @author Frank Sauer
 	 */
-	static class SoftCache extends HashMap {
-		
+	static class SoftCache<K, V> {
+
+		private Map<K, Reference<V>> inner;
+
 		SoftCache() {
-			super();
+			inner = new HashMap<K, Reference<V>>();
 		}
-		
-		public Object put(Object key, Object value) {
-			Object old = super.put(key, new SoftReference(value));
-			return (old==null)?null:((Reference)old).get();
+
+		public V put(K key, V value) {
+			Reference<V> old = inner.put(key, new SoftReference<V>(value));
+			return old == null ? null : old.get();
 		}
-		
-		public Object get(Object key) {
-			Reference r = (Reference) super.get(key);
-			return (r==null)?null:r.get();
+
+		public V get(K key) {
+			Reference<V> r = inner.get(key);
+			return r == null ? null : r.get();
 		}
+
 	}
 }

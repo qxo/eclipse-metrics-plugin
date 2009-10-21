@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
  * Counts the number of parameters for a method
  * 
  * @author Frank Sauer
- *
+ * 
  */
 public class NumberOfParameters extends Calculator implements Constants {
 
@@ -44,10 +44,13 @@ public class NumberOfParameters extends Calculator implements Constants {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) throws InvalidSourceException {
-		if (source.getLevel() != METHOD) throw new InvalidSourceException("NumberOfParameters only applicable to methods");
-		MethodDeclaration astNode = (MethodDeclaration)source.getASTNode();
-		source.setValue(new Metric(PARMS,astNode.parameters().size()));
+		if (source.getLevel() != METHOD) {
+			throw new InvalidSourceException("NumberOfParameters only applicable to methods");
+		}
+		MethodDeclaration astNode = (MethodDeclaration) source.getASTNode();
+		source.setValue(new Metric(PARMS, astNode.parameters().size()));
 	}
 
 }

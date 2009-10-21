@@ -20,24 +20,23 @@
  */
 package net.sourceforge.metrics.propagators;
 
-import java.util.Iterator;
-
 import net.sourceforge.metrics.core.Metric;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
 /**
- * Calculates the sum of the metric with name x in the source's children.
- * The name of the sum could be different
+ * Calculates the sum of the metric with name x in the source's children. The name of the sum could be different
  * 
  * @author Frank Sauer
  */
 public class Sum extends Propagator {
 
 	/**
-	 * Calculates the sum of the metric with name x in the source's children.
- 	 * The name of the sum could be different
-	 * @param name		name of Sum
-	 * @param x		name of metric to be summed
+	 * Calculates the sum of the metric with name x in the source's children. The name of the sum could be different
+	 * 
+	 * @param name
+	 *            name of Sum
+	 * @param x
+	 *            name of metric to be summed
 	 */
 	public Sum(String name, String x) {
 		super(name, "", x);
@@ -45,36 +44,43 @@ public class Sum extends Propagator {
 
 	/**
 	 * Calculates the sum of the metric with same name in the source's children.
-	 * @param name		name of Sum and of metric to be summed
+	 * 
+	 * @param name
+	 *            name of Sum and of metric to be summed
 	 */
 	public Sum(String name) {
 		this(name, name);
 	}
-	
+
 	/**
 	 * @see net.sourceforge.metrics.core.metrics.Metric#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) {
 		double sum = 0;
-		for (Iterator i = source.getChildren().iterator(); i.hasNext();) {
-			AbstractMetricSource next = (AbstractMetricSource)i.next();
+		for (Object element : source.getChildren()) {
+			AbstractMetricSource next = (AbstractMetricSource) element;
 			Metric partial = next.getValue(x);
-			if (partial != null) sum += partial.doubleValue();
+			if (partial != null) {
+				sum += partial.doubleValue();
+			}
 		}
 		source.setValue(new net.sourceforge.metrics.core.Sum(getName(), sum, isPropagator()));
 	}
-	
+
 	private boolean isPropagator() {
 		return getName().equals(x);
 	}
-	
+
 	/**
 	 * @see net.sourceforge.metrics.propagators.Propagator#createNextLevel()
 	 */
+	@Override
 	public Propagator createNextLevel() {
 		return new Sum(name, name);
 	}
 
+	@Override
 	public String toString() {
 		return "Sum(" + name + ")";
 	}

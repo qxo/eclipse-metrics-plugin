@@ -14,46 +14,43 @@ import classycle.graph.Vertex;
 
 /**
  * Finds shortest paths in a strong component
+ * 
  * @author Frank Sauer
  */
 public class PathFinder {
 
 	private Vertex[] graph;
-	
+
 	public PathFinder(StrongComponent cycle) {
 		this(getVerticesFromCycle(cycle));
 	}
-	
+
 	public PathFinder(Vertex[] graph) {
 		this.graph = graph;
 	}
-	
+
 	public Vertex[] getVertices() {
 		return graph;
 	}
-	
+
 	public static Vertex[] getVerticesFromCycle(StrongComponent cycle) {
 		Vertex[] result = new Vertex[cycle.getNumberOfVertices()];
-		for (int i = 0; i < result.length;i++) {
+		for (int i = 0; i < result.length; i++) {
 			result[i] = cycle.getVertex(i);
 		}
 		return result;
 	}
-	
+
 	/**
-	 * Should only be called with from and to as vertices of the strong
-	 * component used to create this TangleAnalyzer, otherwise no
-	 * guarantee exists that a path can be found.
-	 * Since all vertices in a strong component are reachable from
-	 * each other, there must be a shortest path from every vertex
-	 * of the tangle to every other vertex of the tangle, and this
-	 * method should therefore never return null. Just in case, if no
-	 * path is found, this method returns null. 
-	 * This method implements the breadth-first search from Cormen et al
-	 * page 470
-	 * @param from	starting vertex
-	 * @param to	target vertex
-	 * @return		arrsy of Vertex starting with from, ending with to
+	 * Should only be called with from and to as vertices of the strong component used to create this TangleAnalyzer, otherwise no guarantee exists that a path can be found. Since all vertices in a strong component are reachable from each
+	 * other, there must be a shortest path from every vertex of the tangle to every other vertex of the tangle, and this method should therefore never return null. Just in case, if no path is found, this method returns null. This method
+	 * implements the breadth-first search from Cormen et al page 470
+	 * 
+	 * @param from
+	 *            starting vertex
+	 * @param to
+	 *            target vertex
+	 * @return arrsy of Vertex starting with from, ending with to
 	 */
 	public Vertex[] findShortestPath(Vertex from, Vertex to) {
 		// reset all vertices to WHITE
@@ -62,8 +59,8 @@ public class PathFinder {
 			graph[i].reset();
 		}
 		// BFS from Cormen et al, page 470
-		Queue q = new Queue();
-		Map p = new HashMap();
+		Queue<Vertex> q = new Queue<Vertex>();
+		Map<Vertex, Vertex> p = new HashMap<Vertex, Vertex>();
 		from.visit();
 		q.enqueue(from);
 		while (q.size() != 0) {
@@ -73,70 +70,79 @@ public class PathFinder {
 				Vertex v = u.getHeadVertex(a);
 				if (!v.isVisited()) {
 					v.visit();
-					p.put(v,u);
+					p.put(v, u);
 					q.enqueue(v);
 				}
 			}
-			q.dequeue();			
+			q.dequeue();
 		}
-		List result = new ArrayList();
+		List<Vertex> result = new ArrayList<Vertex>();
 		try {
 			buildPath(from, to, p, result);
-			return (Vertex[])result.toArray(new Vertex[]{});
+			return result.toArray(new Vertex[] {});
 		} catch (IllegalArgumentException e) {
 			return null; // no path found
 		}
 	}
-	
+
 	/**
-	 * recursively build the path from the precedence map calculated
-	 * by the BFS
-	 * @param from		starting vertex
-	 * @param to		target vertex
-	 * @param p			precedence map from BFS
-	 * @param result	path is collected in here
-	 * @throws IllegalArgumentException if path cannot be constructed
+	 * recursively build the path from the precedence map calculated by the BFS
+	 * 
+	 * @param from
+	 *            starting vertex
+	 * @param to
+	 *            target vertex
+	 * @param p
+	 *            precedence map from BFS
+	 * @param result
+	 *            path is collected in here
+	 * @throws IllegalArgumentException
+	 *             if path cannot be constructed
 	 */
-	private void buildPath(Vertex from, Vertex to, Map p, List result) throws IllegalArgumentException {
+	private void buildPath(Vertex from, Vertex to, Map p, List<Vertex> result) throws IllegalArgumentException {
 		if (from == to) {
 			result.add(from);
 		} else {
-			Vertex pv = (Vertex)p.get(to);
-			if (pv == null) throw new IllegalArgumentException("No path found");
+			Vertex pv = (Vertex) p.get(to);
+			if (pv == null) {
+				throw new IllegalArgumentException("No path found");
+			}
 			// recurse
 			buildPath(from, pv, p, result);
 			result.add(to);
 		}
-	}	
+	}
+
 	/**
-	 * Simple Queue interface derived from LinkedList to make BFS
-	 * more readable and related to pseudocode in the textbook.
+	 * Simple Queue interface derived from LinkedList to make BFS more readable and related to pseudocode in the textbook.
 	 * 
 	 * @author Frank Sauer
 	 */
-	static class Queue extends LinkedList {
-		
-		public void enqueue(Vertex v) {
+	static class Queue<V> extends LinkedList<V> {
+
+		private static final long serialVersionUID = 7410776876637784785L;
+
+		public void enqueue(V v) {
 			super.addFirst(v);
 		}
-		
-		public Vertex dequeue() {
-			return (Vertex)super.removeLast();
+
+		public V dequeue() {
+			return super.removeLast();
 		}
-		
-		public Vertex head() {
-			return (Vertex)super.getLast();
+
+		public V head() {
+			return super.getLast();
 		}
 	}
-	
+
 	public static void showPathFinderUI(StrongComponent cycle) {
 		new PathFinder(cycle).showUI(true);
 	}
-	
+
 	public static void showPathFinderUI(Vertex[] graph) {
 		new PathFinder(graph).showUI(false);
 	}
-	
+
 	private void showUI(final boolean showReverse) {
 		final Display d = Display.getDefault();
 		d.syncExec(new Runnable() {

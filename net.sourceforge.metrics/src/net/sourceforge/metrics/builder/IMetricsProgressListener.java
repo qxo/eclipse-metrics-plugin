@@ -25,34 +25,39 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 
-
 public interface IMetricsProgressListener {
 	/**
 	 * announces that an element has moved
-	 * @param handle	new handle
-	 * @param fromPath	old location
+	 * 
+	 * @param handle
+	 *            new handle
+	 * @param fromPath
+	 *            old location
 	 */
 	public void moved(IJavaElement element, IPath fromPath);
-	
+
 	/**
 	 * announces that count new elements are queued for calculation
+	 * 
 	 * @param count
 	 */
 	public void queued(int count);
-	
+
 	/**
 	 * announces the currently calculating element
+	 * 
 	 * @param current
 	 */
 	public void pending(IJavaElement element);
-	
+
 	/**
 	 * announces that the calculation for the element has completed
+	 * 
 	 * @param handle
 	 * @param data
 	 */
 	public void completed(IJavaElement element, Object data);
-	
+
 	/**
 	 * announces that the currently calculating project is complete
 	 */

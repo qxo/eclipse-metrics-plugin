@@ -38,23 +38,23 @@ import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.compiler.IScanner;
 import org.eclipse.jdt.core.compiler.ITerminalSymbols;
 import org.eclipse.jdt.core.compiler.InvalidInputException;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 
 /**
- * Calculates the Lack of Cohesion of Methods (LCOM*) metric
- * using the Henderson-Sellers method (See book page 147):
- * (avg(m(a)) - m)/(1 - m) where m(a) is the number of methods that access a.
- * Note that whether static attributes and static methods are considered is
- * configurable from preferences.
+ * Calculates the Lack of Cohesion of Methods (LCOM*) metric using the Henderson-Sellers method (See book page 147): (avg(m(a)) - m)/(1 - m) where m(a) is the number of methods that access a. Note that whether static attributes and static
+ * methods are considered is configurable from preferences.
  * 
  * @author Frank Sauer
  */
 public class LackOfCohesion extends Calculator implements Constants {
 
-	private HashMap buckets = new HashMap();
+	private HashMap<String, Set<String>> buckets = new HashMap<String, Set<String>>();
 	private static Preferences prefs;
-	
+
 	/**
 	 * Constructor for LackOfCohesion.
+	 * 
 	 * @param name
 	 */
 	public LackOfCohesion() {
@@ -63,23 +63,25 @@ public class LackOfCohesion extends Calculator implements Constants {
 
 	private void add(String field, String method) {
 		if (buckets.containsKey(field)) {
-			Set methods = (Set) buckets.get(field);
+			Set<String> methods = buckets.get(field);
 			methods.add(method);
-		} 
+		}
 	}
-	
+
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) throws InvalidSourceException {
-		if (source.getLevel() != TYPE) 
+		if (source.getLevel() != TYPE) {
 			throw new InvalidSourceException("LCOM only applicable to types");
+		}
 		try {
-			IType type = (IType)source.getJavaElement();
+			IType type = (IType) source.getJavaElement();
 			IMethod[] methods = type.getMethods();
 			IField[] fields = type.getFields();
 			double value = 0;
-			if ((fields.length > 1)&&(methods.length > 1)) {
+			if ((fields.length > 1) && (methods.length > 1)) {
 				initBuckets(fields);
 				if (buckets.size() > 0) {
 					visitMethods(methods);
@@ -97,32 +99,36 @@ public class LackOfCohesion extends Calculator implements Constants {
 	private double calculateResult() {
 		int sum = 0;
 		int a = 0;
-		Set allMethods = new HashSet();
-		for (Iterator i = buckets.values().iterator(); i.hasNext();a++) {
-			Set methods = (Set)i.next();
+		Set<String> allMethods = new HashSet<String>();
+		for (Iterator<Set<String>> i = buckets.values().iterator(); i.hasNext(); a++) {
+			Set<String> methods = i.next();
 			allMethods.addAll(methods);
 			sum += methods.size();
 		}
 		int m = allMethods.size();
-		if (m == 1) return 0;
-		double avg = (double)sum / (double)a;
+		if (m == 1) {
+			return 0;
+		}
+		double avg = (double) sum / (double) a;
 		return Math.abs((avg - m) / (1 - m));
 	}
 
 	private void visitMethods(IMethod[] methods) {
 		boolean countStatics = getPrefs().countStaticMethods();
-		for (int i = 0; i < methods.length; i++) {
-			String methodName = methods[i].getElementName();
+		for (IMethod method2 : methods) {
+			String methodName = method2.getElementName();
 			try {
-				if ((countStatics)||((methods[i].getFlags() & Flags.AccStatic) == 0)) {
+				if ((countStatics) || ((method2.getFlags() & Flags.AccStatic) == 0)) {
 					IScanner s = ToolFactory.createScanner(false, false, false, false);
-					s.setSource(methods[i].getSource().toCharArray());
+					s.setSource(method2.getSource().toCharArray());
 					while (true) {
-						 int token = s.getNextToken();
-						 if (token == ITerminalSymbols.TokenNameEOF) break;
-						 if (token == ITerminalSymbols.TokenNameIdentifier) {
-						 	add(new String(s.getCurrentTokenSource()), methodName);
-						 }
+						int token = s.getNextToken();
+						if (token == ITerminalSymbols.TokenNameEOF) {
+							break;
+						}
+						if (token == ITerminalSymbols.TokenNameIdentifier) {
+							add(new String(s.getCurrentTokenSource()), methodName);
+						}
 					}
 				}
 			} catch (JavaModelException e) {
@@ -134,63 +140,62 @@ public class LackOfCohesion extends Calculator implements Constants {
 	}
 
 	/**
-	 * create a map of HashSets to store methods for each attribute. Ask 
-	 * preferences whether static attributes have to be considered
+	 * create a map of HashSets to store methods for each attribute. Ask preferences whether static attributes have to be considered
+	 * 
 	 * @param fields
 	 */
 	private void initBuckets(IField[] fields) {
-		buckets.clear(); // BUG #867594 
+		buckets.clear(); // BUG #867594
 		try {
 			boolean countStatics = getPrefs().countStaticAttributes();
-			for (int i = 0; i < fields.length; i++) {
-				if (countStatics||((fields[i].getFlags() & Flags.AccStatic) == 0)) {
-					buckets.put(fields[i].getElementName(), new HashSet());
+			for (IField field : fields) {
+				if (countStatics || ((field.getFlags() & Flags.AccStatic) == 0)) {
+					buckets.put(field.getElementName(), new HashSet<String>());
 				}
 			}
 		} catch (JavaModelException e) {
 		}
 	}
-	
+
 	/**
-	 * Statically cache preference values, yet register for change events so they
-	 * get updated when they change.
+	 * Statically cache preference values, yet register for change events so they get updated when they change.
 	 */
-	public static class Preferences implements org.eclipse.core.runtime.Preferences.IPropertyChangeListener {
+	public static class Preferences implements IPropertyChangeListener {
 
 		private boolean countStaticMethods;
 		private boolean countStaticAttributes;
 
-		
 		public Preferences() {
 			init();
 			getPreferences().addPropertyChangeListener(this);
 		}
-		
+
 		protected void init() {
 			countStaticMethods = getPreferences().getBoolean("LCOM.StaticMethods");
 			countStaticAttributes = getPreferences().getBoolean("LCOM.StaticAttributes");
 		}
-		
+
 		public boolean countStaticMethods() {
 			return countStaticMethods;
 		}
-		
+
 		public boolean countStaticAttributes() {
 			return countStaticAttributes;
 		}
-		
+
 		/**
 		 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
 		 */
-		public void propertyChange(org.eclipse.core.runtime.Preferences.PropertyChangeEvent event) {
+		public void propertyChange(PropertyChangeEvent event) {
 			if (event.getProperty().startsWith("LCOM")) {
 				init();
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns the preferences.
+	 * 
 	 * @return Preferences
 	 */
 	public static Preferences getPrefs() {
@@ -199,5 +204,5 @@ public class LackOfCohesion extends Calculator implements Constants {
 		}
 		return prefs;
 	}
-	
+
 }

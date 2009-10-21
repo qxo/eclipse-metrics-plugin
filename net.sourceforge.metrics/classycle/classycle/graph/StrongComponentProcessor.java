@@ -32,143 +32,120 @@ import java.util.Map;
 import java.util.Stack;
 
 /**
- *  A processor which extracts the strong components of a directed graph.
- *  A strong component is a maximal strongly connected subgraph of a
- *  directed graph. The implementation is based on Tarjan's algorithm.
- *
- *  @author Franz-Josef Elmer
+ * A processor which extracts the strong components of a directed graph. A strong component is a maximal strongly connected subgraph of a directed graph. The implementation is based on Tarjan's algorithm.
+ * 
+ * @author Franz-Josef Elmer
  */
-public class StrongComponentProcessor extends GraphProcessor
-{
-  private int _counter;
-  private Stack _vertexStack = new Stack();
-  private List _strongComponents = new ArrayList();
-  private Map _vertexToComponents = new HashMap();
-  private StrongComponent[] _graph;
+public class StrongComponentProcessor extends GraphProcessor {
+	private int _counter;
+	private Stack<AtomicVertex> _vertexStack = new Stack<AtomicVertex>();
+	private List<StrongComponent> _strongComponents = new ArrayList<StrongComponent>();
+	private Map<AtomicVertex, StrongComponent> _vertexToComponents = new HashMap<AtomicVertex, StrongComponent>();
+	private StrongComponent[] _graph;
 
-  /**
-   *  Returns the result of {@link deepSearchFirst}.
-   */
-  public StrongComponent[] getStrongComponents()
-  {
-    return _graph;
-  }
+	/**
+	 * Returns the result of {@link deepSearchFirst}.
+	 */
+	public StrongComponent[] getStrongComponents() {
+		return _graph;
+	}
 
-  protected void initializeProcessing(Vertex[] graph)
-  {
-    _counter = 0;
-    _vertexStack.clear();
-    _strongComponents.clear();
-    _vertexToComponents.clear();
-  }
+	@Override
+	protected void initializeProcessing(Vertex[] graph) {
+		_counter = 0;
+		_vertexStack.clear();
+		_strongComponents.clear();
+		_vertexToComponents.clear();
+	}
 
-  /**
-   *  @throws IllegalArgumentException if <tt>vertex</tt> is not an instance
-   *          of {@link AtomicVertex}.
-   */
-  protected void processBefore(Vertex vertex)
-  {
-    final AtomicVertex atomicVertex = castAsAtomicVertex(vertex);
-    atomicVertex.setOrder(_counter);
-    atomicVertex.setLow(_counter++);
-    _vertexStack.push(atomicVertex);
-  }
+	/**
+	 * @throws IllegalArgumentException
+	 *             if <tt>vertex</tt> is not an instance of {@link AtomicVertex} .
+	 */
+	@Override
+	protected void processBefore(Vertex vertex) {
+		final AtomicVertex atomicVertex = castAsAtomicVertex(vertex);
+		atomicVertex.setOrder(_counter);
+		atomicVertex.setLow(_counter++);
+		_vertexStack.push(atomicVertex);
+	}
 
-  /**
-   *  @throws IllegalArgumentException if <tt>tail</tt> and <tt>head</tt> are
-   *          not an instances of {@link AtomicVertex}.
-   */
-  protected void processArc(Vertex tail, Vertex head)
-  {
-    final AtomicVertex t = castAsAtomicVertex(tail);
-    final AtomicVertex h = castAsAtomicVertex(head);
-    if (h.isGraphVertex())
-    {
-      if (!h.isVisited())
-      {
-        process(h);
-        t.setLow(Math.min(t.getLow(), h.getLow()));
-      }
-      else if (h.getOrder() < t.getOrder() && _vertexStack.contains(h))
-      {
-        t.setLow(Math.min(t.getLow(), h.getOrder()));
-      }
-    }
-  }
+	/**
+	 * @throws IllegalArgumentException
+	 *             if <tt>tail</tt> and <tt>head</tt> are not an instances of {@link AtomicVertex}.
+	 */
+	@Override
+	protected void processArc(Vertex tail, Vertex head) {
+		final AtomicVertex t = castAsAtomicVertex(tail);
+		final AtomicVertex h = castAsAtomicVertex(head);
+		if (h.isGraphVertex()) {
+			if (!h.isVisited()) {
+				process(h);
+				t.setLow(Math.min(t.getLow(), h.getLow()));
+			} else if (h.getOrder() < t.getOrder() && _vertexStack.contains(h)) {
+				t.setLow(Math.min(t.getLow(), h.getOrder()));
+			}
+		}
+	}
 
-  /**
-   *  Processes the specified vertex after all its outgoing arcs are
-   *  processed.
-   *  @throws IllegalArgumentException if <tt>vertex</tt> is not an instance
-   *          of {@link AtomicVertex}.
-   */
-  protected void processAfter(Vertex vertex)
-  {
-    final AtomicVertex atomicVertex = castAsAtomicVertex(vertex);
-    if (atomicVertex.getLow() == atomicVertex.getOrder())
-    {
-      StrongComponent component = new StrongComponent();
-      while (!_vertexStack.isEmpty()
-             && ((AtomicVertex) _vertexStack.peek()).getOrder()
-                                          >= atomicVertex.getOrder())
-      {
-        AtomicVertex vertexOfComponent = (AtomicVertex) _vertexStack.pop();
-        component.addVertex(vertexOfComponent);
-        _vertexToComponents.put(vertexOfComponent, component);
-      }
-      _strongComponents.add(component);
-    }
-  }
+	/**
+	 * Processes the specified vertex after all its outgoing arcs are processed.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if <tt>vertex</tt> is not an instance of {@link AtomicVertex} .
+	 */
+	@Override
+	protected void processAfter(Vertex vertex) {
+		final AtomicVertex atomicVertex = castAsAtomicVertex(vertex);
+		if (atomicVertex.getLow() == atomicVertex.getOrder()) {
+			StrongComponent component = new StrongComponent();
+			while (!_vertexStack.isEmpty() && (_vertexStack.peek()).getOrder() >= atomicVertex.getOrder()) {
+				AtomicVertex vertexOfComponent = _vertexStack.pop();
+				component.addVertex(vertexOfComponent);
+				_vertexToComponents.put(vertexOfComponent, component);
+			}
+			_strongComponents.add(component);
+		}
+	}
 
-  /**
-   * Adds all arcs to the strong components. There is an arc from a strong
-   * component to another one if there is at least one arc from a vertex
-   * of one component to the other one.
-   */
-  protected void finishProcessing(Vertex[] graph)
-  {
-    _graph = new StrongComponent[_strongComponents.size()];
-    for (int i = 0; i < _graph.length; i++)
-    {
-      _graph[i] = (StrongComponent) _strongComponents.get(i);
-      _graph[i].calculateAttributes();
-    }
+	/**
+	 * Adds all arcs to the strong components. There is an arc from a strong component to another one if there is at least one arc from a vertex of one component to the other one.
+	 */
+	@Override
+	protected void finishProcessing(Vertex[] graph) {
+		_graph = new StrongComponent[_strongComponents.size()];
+		for (int i = 0; i < _graph.length; i++) {
+			_graph[i] = _strongComponents.get(i);
+			_graph[i].calculateAttributes();
+		}
 
-    Iterator keys = _vertexToComponents.keySet().iterator();
-    while (keys.hasNext())
-    {
-      AtomicVertex vertex = (AtomicVertex) keys.next();
-      StrongComponent tail = (StrongComponent) _vertexToComponents.get(vertex);
-      for (int i = 0, n = vertex.getNumberOfOutgoingArcs(); i < n; i++)
-      {
-        AtomicVertex h = (AtomicVertex) vertex.getHeadVertex(i);
-        if (h.isGraphVertex())
-        {
-          StrongComponent head = (StrongComponent) _vertexToComponents.get(h);
-          if (head != tail)
-          {
-            tail.addOutgoingArcTo(head);
-          }
-        }
-      }
-    }
-  }
+		Iterator keys = _vertexToComponents.keySet().iterator();
+		while (keys.hasNext()) {
+			AtomicVertex vertex = (AtomicVertex) keys.next();
+			StrongComponent tail = _vertexToComponents.get(vertex);
+			for (int i = 0, n = vertex.getNumberOfOutgoingArcs(); i < n; i++) {
+				AtomicVertex h = (AtomicVertex) vertex.getHeadVertex(i);
+				if (h.isGraphVertex()) {
+					StrongComponent head = _vertexToComponents.get(h);
+					if (head != tail) {
+						tail.addOutgoingArcTo(head);
+					}
+				}
+			}
+		}
+	}
 
-  /**
-   *  Casts the specified vertex as an {@link AtomicVertex}.
-   *  @throws IllegalArgumentException if <tt>vertex</tt> is not an instance
-   *          of {@link AtomicVertex}.
-   */
-  private AtomicVertex castAsAtomicVertex(Vertex vertex)
-  {
-    if (vertex instanceof AtomicVertex)
-    {
-      return (AtomicVertex) vertex;
-    }
-    else
-    {
-      throw new IllegalArgumentException(vertex
-                                    + " is not an instance of AtomicVertex");
-    }
-  }
-} //class
+	/**
+	 * Casts the specified vertex as an {@link AtomicVertex}.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             if <tt>vertex</tt> is not an instance of {@link AtomicVertex} .
+	 */
+	private AtomicVertex castAsAtomicVertex(Vertex vertex) {
+		if (vertex instanceof AtomicVertex) {
+			return (AtomicVertex) vertex;
+		} /* else { */
+		throw new IllegalArgumentException(vertex + " is not an instance of AtomicVertex");
+		/* } */
+	}
+} // class

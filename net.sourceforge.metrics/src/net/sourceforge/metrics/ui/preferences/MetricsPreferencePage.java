@@ -43,15 +43,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-
 /**
- * Base category for the settings  of the individual metrics. 
- * Allows the display order of metrics to be modified.
+ * Base category for the settings of the individual metrics. Allows the display order of metrics to be modified.
  * 
  * @author Frank Sauer
  * @see PreferencePage
  */
-public class MetricsPreferencePage extends FieldEditorPreferencePage	implements IWorkbenchPreferencePage, Constants {
+public class MetricsPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, Constants {
 
 	public MetricsPreferencePage() {
 		super(GRID);
@@ -59,22 +57,27 @@ public class MetricsPreferencePage extends FieldEditorPreferencePage	implements 
 		setDescription("General preferences for metrics");
 	}
 
-	
+	@Override
 	public void createFieldEditors() {
 		addField(new IntegerFieldEditor("METRICS.decimals", "Number of decimal places for Average and Standard Deviation", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("METRICS.showProject", "Display project level metrics after a build completes", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("METRICS.enablewarnings", "Enable out-of-range warnings", getFieldEditorParent()));
-		addField(new ListUpDownEditor("METRICS.displayOrder","Display metrics in this order:", getFieldEditorParent()) {
+		addField(new ListUpDownEditor("METRICS.displayOrder", "Display metrics in this order:", getFieldEditorParent()) {
+			@Override
 			protected String createList(String[] items) {
 				StringBuffer b = new StringBuffer();
-				for (int i = 0; i < items.length;i++) {
-					b.append(items[i]).append(",");
+				for (String item : items) {
+					b.append(item).append(",");
 				}
-				return b.substring(0,b.length()-1);
+				return b.substring(0, b.length() - 1);
 			}
+
+			@Override
 			protected String getNewInputObject() {
- 				return null;
+				return null;
 			}
+
+			@Override
 			protected String[] parseString(String stringList) {
 				StringTokenizer t = new StringTokenizer(stringList, ",");
 				int length = t.countTokens();
@@ -86,31 +89,27 @@ public class MetricsPreferencePage extends FieldEditorPreferencePage	implements 
 			}
 		});
 	}
-	
+
 	public void init(IWorkbench workbench) {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.preference.PreferencePage#contributeButtons(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferencePage#contributeButtons(org.eclipse .swt.widgets.Composite)
 	 */
+	@Override
 	protected void contributeButtons(Composite parent) {
-		((GridLayout)parent.getLayout()).numColumns +=1;
+		((GridLayout) parent.getLayout()).numColumns += 1;
 		super.contributeButtons(parent);
 		/**
-		Button clearCache = new Button(parent,SWT.PUSH);
-		clearCache.setText("Clear Cache");
-		clearCache.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				if (MessageDialog.openConfirm(getShell(), "Clear Cache", "This will remove all stored metrics and force recalculation.\nAre you sure?"))
-					Cache.singleton.clear();
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		});
-		*/
-		Button eraseMarkers = new Button(parent,SWT.PUSH);
+		 * Button clearCache = new Button(parent,SWT.PUSH); clearCache.setText("Clear Cache"); clearCache.addSelectionListener(new SelectionListener() {
+		 * 
+		 * public void widgetSelected(SelectionEvent e) { if (MessageDialog.openConfirm(getShell(), "Clear Cache", "This will remove all stored metrics and force recalculation.\nAre you sure?" )) Cache.singleton.clear(); }
+		 * 
+		 * public void widgetDefaultSelected(SelectionEvent e) { } });
+		 */
+		Button eraseMarkers = new Button(parent, SWT.PUSH);
 		eraseMarkers.setText("Erase All Warnings");
 		eraseMarkers.addSelectionListener(new SelectionListener() {
 
@@ -121,7 +120,7 @@ public class MetricsPreferencePage extends FieldEditorPreferencePage	implements 
 					} catch (CoreException x) {
 						Log.logError("Could not delete markers", x);
 					}
-				}			
+				}
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {

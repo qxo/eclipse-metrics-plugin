@@ -21,85 +21,95 @@
 package net.sourceforge.metrics.core;
 
 import java.io.Serializable;
-import java.util.Iterator;
 import java.util.List;
 
 /**
- * An Avg is a number with an associated count of the datapoints it
- * was calculated with, as well as the associated variance.
+ * An Avg is a number with an associated count of the datapoints it was calculated with, as well as the associated variance.
  * 
  * @author Frank Sauer
  */
 public class Avg extends Metric implements Serializable {
 
-	protected int points ;
-	protected double variance ;
-	
+	private static final long serialVersionUID = 4113517705917975168L;
+	protected int points;
+	protected double variance;
+
 	/**
 	 * Create the Avg for the metrics in the given list
-	 * @param name			name of Avg
-	 * @param per			scope of Avg
-	 * @param metrics		List of Metric objects
+	 * 
+	 * @param name
+	 *            name of Avg
+	 * @param per
+	 *            scope of Avg
+	 * @param metrics
+	 *            List of Metric objects
 	 * @return Avg
 	 */
-	public static Avg createFromMetrics(String name, String per, List metrics) {
+	public static Avg createFromMetrics(String name, String per, List<Metric> metrics) {
 		int points = metrics.size();
-		if (points == 0) return new Avg(name, per, 0,0,0);
+		if (points == 0) {
+			return new Avg(name, per, 0, 0, 0);
+		}
 		double sum = 0, sum2 = 0;
-		for (Iterator i = metrics.iterator(); i.hasNext();) {
-			Metric next = (Metric)i.next();
+		for (Metric next : metrics) {
 			sum += next.doubleValue();
 			sum2 += next.doubleValue() * next.doubleValue();
 		}
 		double avg = sum / points;
-		return new Avg(name, per, avg, sum2 / points - avg*avg, points);
+		return new Avg(name, per, avg, sum2 / points - avg * avg, points);
 	}
-	
+
 	/**
 	 * Create the (weighted) avg of the averages in the given list
-	 * @param name			name of Avg
-	 * @param per			scope of Avg
-	 * @param metrics		List of Avg objects
+	 * 
+	 * @param name
+	 *            name of Avg
+	 * @param per
+	 *            scope of Avg
+	 * @param metrics
+	 *            List of Avg objects
 	 * @return Avg
 	 */
-	public static Avg createFromAverages(String name, String per, List averages) {
+	public static Avg createFromAverages(String name, String per, List<Avg> averages) {
 		double sum2 = 0, sum = 0;
 		int points = 0;
-		for (Iterator i = averages.iterator(); i.hasNext();) {
-			Avg next = (Avg)i.next();
+		for (Avg next : averages) {
 			points += next.getPoints();
 			sum += next.doubleValue() * next.getPoints();
 			sum2 += next.getSum2();
 		}
-		if (points == 0) return new Avg(name, per, 0,0,0);
+		if (points == 0) {
+			return new Avg(name, per, 0, 0, 0);
+		}
 		double avg = sum / points;
 		return new Avg(name, per, avg, sum2 / points - avg * avg, points);
 	}
-	
+
 	public Avg(String name, String per, double value, double variance, int points) {
 		super(name, per, value);
-		this.variance = variance; 
+		this.variance = variance;
 		this.points = points;
 	}
-	
+
 	public double getVariance() {
 		return variance;
 	}
-	
+
 	public double getStandardDeviation() {
 		return Math.sqrt(variance);
 	}
-	
+
 	public int getPoints() {
 		return points;
 	}
-	
+
 	/**
 	 * get the sum of the squares
+	 * 
 	 * @return double
 	 */
 	public double getSum2() {
 		return points * (variance + getValue() * getValue());
 	}
-	
+
 }

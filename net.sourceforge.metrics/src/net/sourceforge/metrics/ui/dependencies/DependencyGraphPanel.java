@@ -57,6 +57,7 @@ import com.touchgraph.graphlayout.TGPanel;
  */
 public class DependencyGraphPanel extends GLPanel {
 
+	private static final long serialVersionUID = 4131385063548963525L;
 	private MenuItem topo;
 	private Vertex[] vgraph;
 	private Menu tangleMenu;
@@ -65,7 +66,7 @@ public class DependencyGraphPanel extends GLPanel {
 	public DependencyGraphPanel() {
 		super();
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -77,10 +78,13 @@ public class DependencyGraphPanel extends GLPanel {
 			e.printStackTrace();
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.touchgraph.graphlayout.GLPanel#buildPanel()
 	 */
+	@Override
 	public void buildPanel() {
 		super.buildPanel();
 		PopupMenu popup = this.getGLPopup();
@@ -104,7 +108,7 @@ public class DependencyGraphPanel extends GLPanel {
 		});
 		popup.add(topo);
 	}
-	
+
 	public void findShortestPaths() {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
@@ -113,24 +117,24 @@ public class DependencyGraphPanel extends GLPanel {
 		});
 		t.start();
 	}
-	
+
 	public void topoSort() {
 		Thread t = new Thread(new Runnable() {
 			public void run() {
-				TopoSortDialog.showUI(vgraph);				
+				TopoSortDialog.showUI(vgraph);
 			}
 		});
 		t.start();
 	}
-	
+
 	private void initTGPanel() {
 		tgPanel.clearSelect();
 		tgPanel.clearAll();
 		tgPanel.setBackColor(getGraphBackground());
 		tgPanel.setBackground(TGPanel.BACK_COLOR);
-		tgPanel.repaint();		
+		tgPanel.repaint();
 	}
-	
+
 	public void showMessage(String message) {
 		try {
 			initTGPanel();
@@ -138,14 +142,14 @@ public class DependencyGraphPanel extends GLPanel {
 			topo.setEnabled(false);
 			Node mNode = addNode("_messageNode");
 			mNode.setLabel(message);
-			tgPanel.setLocale(mNode,1);
+			tgPanel.setLocale(mNode, 1);
 			tgPanel.setSelect(mNode);
-			getHVScroll().slowScrollToCenter(mNode);			
+			getHVScroll().slowScrollToCenter(mNode);
 		} catch (TGException e) {
 			Log.logError("DepencyGraphPanel.showMessage:", e);
 		}
 	}
-	
+
 	/**
 	 * @param dependencies
 	 * @param packages
@@ -158,70 +162,72 @@ public class DependencyGraphPanel extends GLPanel {
 		Node center = null;
 		showDetailMenu = (packages == null);
 		StrongComponent[] components = calculateCycles(dependencies);
-		for (Iterator i = dependencies.keySet().iterator();i.hasNext();) {
+		for (Iterator i = dependencies.keySet().iterator(); i.hasNext();) {
 			String name = (String) i.next();
-			Set deps = (Set)dependencies.get(name);
+			Set deps = (Set) dependencies.get(name);
 			Node from = addNode(name);
-			if (deps.size()>max) {
+			if (deps.size() > max) {
 				max = deps.size();
 				center = from;
 			}
 			for (Iterator d = deps.iterator(); d.hasNext();) {
-				Node to = addNode((String)d.next());
+				Node to = addNode((String) d.next());
 				addEdge(from, to, components);
 			}
-			
+
 		}
 		if (packages != null) {
-			for (Iterator i = packages.keySet().iterator();i.hasNext();) {
+			for (Iterator i = packages.keySet().iterator(); i.hasNext();) {
 				String name = (String) i.next();
-				Set deps = (Set)packages.get(name);
-				Node from = addNode(name);	
+				Set deps = (Set) packages.get(name);
+				Node from = addNode(name);
 				from.setBackColor(Color.green);
-				from.setTextColor(Color.black);	
-				from.setNodeType(Node.TYPE_ROUNDRECT);		
+				from.setTextColor(Color.black);
+				from.setNodeType(Node.TYPE_ROUNDRECT);
 				for (Iterator d = deps.iterator(); d.hasNext();) {
-					Node to = addNode((String)d.next());
+					Node to = addNode((String) d.next());
 					addEdge(from, to);
 				}
-			
+
 			}
 		}
-		if (center != null) { //BUG #827055 
-			tgPanel.setLocale(center,1);
+		if (center != null) { // BUG #827055
+			tgPanel.setLocale(center, 1);
 			tgPanel.setSelect(center);
 			getHVScroll().slowScrollToCenter(center);
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.touchgraph.graphlayout.GLPanel#randomGraph()
 	 */
 	public void createDependencies(Map source) throws TGException {
 		createDependencies(source, null);
 	}
-	
+
 	/**
-	 * Calculate strongly connected components in dependency graph,
-	 * basically adaper code to map different graph representations
+	 * Calculate strongly connected components in dependency graph, basically adaper code to map different graph representations
+	 * 
 	 * @param efferent
 	 * @return
 	 */
 	private StrongComponent[] calculateCycles(Map efferent) {
-		List graph = new ArrayList();
-		HashMap  done = new HashMap();
+		List<Vertex> graph = new ArrayList<Vertex>();
+		Map<String, Vertex> done = new HashMap<String, Vertex>();
 		for (Iterator i = efferent.keySet().iterator(); i.hasNext();) {
-			String key = (String)i.next();
-			Vertex from = (Vertex)done.get(key);
+			String key = (String) i.next();
+			Vertex from = done.get(key);
 			if (from == null) {
 				from = new AtomicVertex(new PackageAttributes(key));
 				done.put(key, from);
 				graph.add(from);
 			}
-			Set deps = (Set)efferent.get(key);
+			Set deps = (Set) efferent.get(key);
 			for (Iterator j = deps.iterator(); j.hasNext();) {
-				String dep = (String)j.next();
-				Vertex to = (Vertex)done.get(dep);
+				String dep = (String) j.next();
+				Vertex to = done.get(dep);
 				if (to == null) {
 					to = new AtomicVertex(new PackageAttributes(dep));
 					done.put(dep, to);
@@ -230,16 +236,16 @@ public class DependencyGraphPanel extends GLPanel {
 				from.addOutgoingArcTo(to);
 			}
 		}
-		vgraph = (Vertex[])graph.toArray(new Vertex[]{});
+		vgraph = graph.toArray(new Vertex[] {});
 		StrongComponentProcessor scp = new StrongComponentProcessor();
 		scp.deepSearchFirst(vgraph);
 		StrongComponent[] comps = scp.getStrongComponents();
 		return comps;
-	}	
-	
+	}
+
 	/**
-	 * cluster strongly connected packages (cycles) together,
-	 * closer than packages not part of the strong connection.
+	 * cluster strongly connected packages (cycles) together, closer than packages not part of the strong connection.
+	 * 
 	 * @param to
 	 * @param from
 	 */
@@ -248,15 +254,17 @@ public class DependencyGraphPanel extends GLPanel {
 		if (e == null) {
 			e = new Edge(from, to);
 			int strong = isStrong(from, to, comps);
-			if ( strong >= 0 ) {
+			if (strong >= 0) {
 				addKnot(from, to, comps[strong], strong);
 				e.setLength(Edge.DEFAULT_LENGTH);
 				e.setColor(Color.red);
 				to.setBackColor(Color.red);
 				from.setBackColor(Color.red);
-			} else e.setLength(Edge.DEFAULT_LENGTH + 20);
+			} else {
+				e.setLength(Edge.DEFAULT_LENGTH + 20);
+			}
 			tgPanel.addEdge(e);
-		} 
+		}
 	}
 
 	private void addEdge(Node from, Node to) {
@@ -268,9 +276,10 @@ public class DependencyGraphPanel extends GLPanel {
 			tgPanel.addEdge(e);
 		}
 	}
-	
+
 	/**
 	 * A knot sits at the center of a strongly connected component
+	 * 
 	 * @param from
 	 * @param to
 	 * @param component
@@ -278,10 +287,10 @@ public class DependencyGraphPanel extends GLPanel {
 	 */
 	private void addKnot(Node from, Node to, StrongComponent component, int index) {
 		try {
-			Knot knot = (Knot)tgPanel.findNode("knot"+index);
+			Knot knot = (Knot) tgPanel.findNode("knot" + index);
 			if (knot == null) {
 				int length = component.getNumberOfVertices();
-				String lbl = ""+length+"/"+component.getDiameter();
+				String lbl = "" + length + "/" + component.getDiameter();
 				knot = new Knot("knot" + index, lbl, showDetailMenu);
 				knot.setCycle(component);
 				knot.setDependencyPanel(this);
@@ -308,12 +317,12 @@ public class DependencyGraphPanel extends GLPanel {
 	private void addKnotToMenu(String label, final Node knot) {
 		MenuItem knotItem = new MenuItem(label);
 		tangleMenu.add(knotItem);
-		topo.setEnabled(false); // no topological sort when cycles present	
+		topo.setEnabled(false); // no topological sort when cycles present
 		knotItem.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
 				try {
-					tgPanel.setLocale(knot,1);
+					tgPanel.setLocale(knot, 1);
 					tgPanel.setSelect(knot);
 					getHVScroll().slowScrollToCenter(knot);
 				} catch (TGException e1) {
@@ -331,6 +340,7 @@ public class DependencyGraphPanel extends GLPanel {
 
 	/**
 	 * find out if two nodes are part of the same component
+	 * 
 	 * @param from
 	 * @param to
 	 * @param comps
@@ -341,24 +351,28 @@ public class DependencyGraphPanel extends GLPanel {
 			int count = 0;
 			for (int j = 0; j < comps[i].getNumberOfVertices(); j++) {
 				Vertex v = comps[i].getVertex(j);
-				if (v.getAttributes().equals(from.getID())) count++;
-				if (v.getAttributes().equals(to.getID())) count++;				
+				if (v.getAttributes().equals(from.getID())) {
+					count++;
+				}
+				if (v.getAttributes().equals(to.getID())) {
+					count++;
+				}
 			}
-			if (count == 2) return i;
+			if (count == 2) {
+				return i;
+			}
 		}
 		return -1;
 	}
 
 	/**
-	 * Adds a node for the given id, unless it already exists.
-	 * The node's label will be the id, unless it starts with an "="
-	 * in which case it is treated as a IJavaElement handle and the
-	 * elements name will be used as the label.
+	 * Adds a node for the given id, unless it already exists. The node's label will be the id, unless it starts with an "=" in which case it is treated as a IJavaElement handle and the elements name will be used as the label.
+	 * 
 	 * @param id
 	 * @return
 	 * @throws TGException
 	 */
-	private Node addNode (String id) throws TGException {
+	private Node addNode(String id) throws TGException {
 		Node n = tgPanel.findNode(id);
 		String name = id;
 		if (name.length() == 0) {
@@ -370,11 +384,11 @@ public class DependencyGraphPanel extends GLPanel {
 		}
 		if (n == null) {
 			n = new EclipseNode(id, name);
-			tgPanel.addNode(n);		
+			tgPanel.addNode(n);
 		}
 		return n;
 	}
-	
+
 	private Color getGraphBackground() {
 		RGB color = PreferenceConverter.getColor(MetricsPlugin.getDefault().getPreferenceStore(), "METRICS.depGR_background");
 		return new Color(color.red, color.green, color.blue);

@@ -1,5 +1,7 @@
 package net.sourceforge.metrics.calculators;
 
+import net.sourceforge.metrics.core.Constants;
+
 /**
  * Calculates MLOC: Method Lines of Code
  * 
@@ -8,28 +10,30 @@ package net.sourceforge.metrics.calculators;
  */
 public class MethodLinesOfCode extends AbstractLinesOfCode {
 
-  public MethodLinesOfCode() {
-    super("MLOC"); // TODO Const ...
-  }
+	public MethodLinesOfCode() {
+		super(Constants.MLOC);
+	}
 
-  protected void checkLevelOfComputation(int a_level) throws InvalidSourceException {
-    // TODO do we realy need to do some check ?
-  }
+	@Override
+	protected void checkLevelOfComputation(int a_level) throws InvalidSourceException {
+		// TODO do we realy need to do some check ?
+	}
 
-  /**
-   * filter out everything outside of the method body 
-   */
-  protected String filterSourceToProcess(String a_source) {
-    String l_return;
-    int l_indexOfMethodBodyStart = a_source.indexOf('{');
-    int l_indexOfMethodBodyEnd = a_source.lastIndexOf('}');
+	/**
+	 * filter out everything outside of the method body
+	 */
+	@Override
+	protected String filterSourceToProcess(String a_source) {
+		String l_return;
+		int l_indexOfMethodBodyStart = a_source.indexOf('{');
+		int l_indexOfMethodBodyEnd = a_source.lastIndexOf('}');
 		if (l_indexOfMethodBodyStart != -1 && l_indexOfMethodBodyEnd != -1) {
-			l_return = a_source.substring(l_indexOfMethodBodyStart+1, l_indexOfMethodBodyEnd).trim();
+			l_return = a_source.substring(l_indexOfMethodBodyStart + 1, l_indexOfMethodBodyEnd).trim();
 		} else {
-		  l_return = EMPTY_STRING;
+			l_return = EMPTY_STRING;
 		}
-		
-    return l_return;
-  }
-  
+
+		return l_return;
+	}
+
 }

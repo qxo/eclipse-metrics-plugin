@@ -27,12 +27,10 @@ import net.sourceforge.metrics.core.Metric;
 import net.sourceforge.metrics.core.MetricsPlugin;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
-import org.eclipse.core.runtime.Preferences;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
- * Abstract base class for all metrics calculators.
- * Real calculators must implement the calculate method and a no argument
- * default constructor.
+ * Abstract base class for all metrics calculators. Real calculators must implement the calculate method and a no argument default constructor.
  * 
  * @author Frank Sauer
  */
@@ -40,7 +38,7 @@ public abstract class Calculator implements Constants, ICalculator {
 
 	protected String name;
 	private CalculatorDescriptor descriptor = null;
-	
+
 	/**
 	 * Constructor for Calculator.
 	 */
@@ -48,21 +46,22 @@ public abstract class Calculator implements Constants, ICalculator {
 		super();
 		this.name = name;
 	}
-	
+
 	public void setDescriptor(CalculatorDescriptor d) {
 		descriptor = d;
 	}
-	
+
 	public CalculatorDescriptor getDescriptor() {
 		return descriptor;
 	}
-	
+
 	protected Metric getZero() {
 		return new Metric(getName(), 0);
 	}
-	
+
 	/**
 	 * Returns the name.
+	 * 
 	 * @return String
 	 */
 	public String getName() {
@@ -71,7 +70,9 @@ public abstract class Calculator implements Constants, ICalculator {
 
 	/**
 	 * Sets the name.
-	 * @param name The name to set
+	 * 
+	 * @param name
+	 *            The name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -81,19 +82,24 @@ public abstract class Calculator implements Constants, ICalculator {
 	 * @param source
 	 */
 	public abstract void calculate(AbstractMetricSource source) throws InvalidSourceException;
-	
+
 	/**
 	 * calculate fraction but return 0 if denominator is 0 instead of infinity or NaN
-	 * @param num		numerator
-	 * @param den		denominator
+	 * 
+	 * @param num
+	 *            numerator
+	 * @param den
+	 *            denominator
 	 * @return double
 	 */
 	protected double div(double num, double den) {
-		if (den == 0) return 0;
+		if (den == 0) {
+			return 0;
+		}
 		return num / den;
 	}
-	
-	protected static Preferences getPreferences() {
-		return MetricsPlugin.getDefault().getPluginPreferences();
+
+	protected static IPreferenceStore getPreferences() {
+		return MetricsPlugin.getDefault().getPreferenceStore();
 	}
 }

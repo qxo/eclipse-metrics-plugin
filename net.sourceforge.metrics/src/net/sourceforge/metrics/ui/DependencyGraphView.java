@@ -52,9 +52,12 @@ public class DependencyGraphView extends ViewPart implements ArmListener {
 		super();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkbenchPart#createPartControl(org.eclipse.swt.widgets .Composite)
 	 */
+	@Override
 	public void createPartControl(Composite parent) {
 		// Note: in 3.0M8 using SWT.EMBEDDED is critical.
 		// without it the embedded component does not resize!
@@ -62,14 +65,14 @@ public class DependencyGraphView extends ViewPart implements ArmListener {
 		java.awt.Frame f = createAWTFrame(c);
 		if (f != null) { // solution for bug #757046 ?
 			glPanel = new DependencyGraphPanel();
-			glPanel.setSize(800,600);
+			glPanel.setSize(800, 600);
 			f.add("Center", glPanel);
 			glPanel.showMessage(MESSAGE);
 			MetricsView.setArmListener(this);
-		} else { 
+		} else {
 			Label l = new Label(c, SWT.NONE);
 			l.setText(MESSAGE);
-			l.setAlignment(SWT.CENTER); 
+			l.setAlignment(SWT.CENTER);
 		}
 	}
 
@@ -77,14 +80,14 @@ public class DependencyGraphView extends ViewPart implements ArmListener {
 		// try the final 3.0M7+ API
 		try {
 			Class clSWT_AWT = Class.forName("org.eclipse.swt.awt.SWT_AWT");
-			Method m = clSWT_AWT.getMethod("new_Frame", new Class[]{Composite.class});
-			java.awt.Frame f = (Frame) m.invoke(null, new Object[]{parent});
+			Method m = clSWT_AWT.getMethod("new_Frame", new Class[] { Composite.class });
+			java.awt.Frame f = (Frame) m.invoke(null, new Object[] { parent });
 			f.setLayout(new BorderLayout());
 			return f;
 		} catch (Throwable e) {
 			Log.logError("Could not embed awt panel using reflection", e);
 			return null;
-		}				
+		}
 	}
 
 	public void setDependencies(final Map dependencies) {
@@ -94,24 +97,32 @@ public class DependencyGraphView extends ViewPart implements ArmListener {
 			e.printStackTrace();
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.ui.IWorkbenchPart#setFocus()
 	 */
+	@Override
 	public void setFocus() {
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.swt.events.ArmListener#widgetArmed(org.eclipse.swt.events.ArmEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.swt.events.ArmListener#widgetArmed(org.eclipse.swt.events .ArmEvent)
 	 */
 	public void widgetArmed(ArmEvent e) {
-		Map deps = MetricsView.getDependencies();		
+		Map deps = MetricsView.getDependencies();
 		setDependencies(deps);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.ui.IWorkbenchPart#dispose()
 	 */
+	@Override
 	public void dispose() {
 		super.dispose();
 		if (glPanel != null) {
