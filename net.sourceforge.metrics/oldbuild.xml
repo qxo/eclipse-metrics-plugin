@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="net.sourceforge.metrics" default="build.jars" basedir=".">
+
+	<property name="bootclasspath" value=""/>
+	<property name="basews" value="${ws}"/>
+	<property name="baseos" value="${os}"/>
+	<property name="basearch" value="${arch}"/>
+	<property name="basenl" value="${nl}"/>
+	<property name="javacFailOnError" value="false"/>
+	<property name="javacDebugInfo" value="on"/>
+	<property name="javacVerbose" value="true"/>
+	<property name="javacSource" value="1.3"/>
+	<property name="javacTarget" value="1.1"/>
+	<property name="pluginbase" value="c:/usr/Eclipse3.0M8/eclipse/plugins/"/>
+
+	<target name="init" depends="properties">
+		<property name="plugin" value="net.sourceforge.metrics"/>
+		<property name="version.suffix" value="1.3.6"/>
+		<property name="full.name" value="${plugin}"/>
+		<property name="temp.folder" value="${basedir}/temp.folder"/>
+		<property name="plugin.destination" value="${basedir}"/>
+		<property name="build.result.folder" value="${basedir}"/>
+	</target>
+
+	<target name="properties" if="eclipse.running">
+		<property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+	</target>
+
+	<target name="build.update.jar" depends="init" description="Build the plug-in: net.sourceforge.metrics for an update site.">
+		<delete dir="${temp.folder}"/>
+		<mkdir dir="${temp.folder}"/>
+		<antcall target="build.jars"/>
+		<antcall target="gather.bin.parts">
+			<param name="destination.temp.folder" value="${temp.folder}/"/>
+		</antcall>
+		<zip zipfile="${plugin.destination}/net.sourceforge.metrics_${version.suffix}.jar" basedir="${temp.folder}/net.sourceforge.metrics_${version.suffix}" filesonly="false" whenempty="skip"/>
+		<delete dir="${temp.folder}"/>
+	</target>
+
+	<target name="gather.bin.parts" depends="init" if="destination.temp.folder">
+		<mkdir dir="${destination.temp.folder}/${full.name}"/>
+		<copy file="${build.result.folder}/metrics.jar" todir="${destination.temp.folder}/${full.name}"/>
+		<copy file="${basedir}/jdbm.jar" todir="${destination.temp.folder}/${full.name}"/>
+		<copy file="${build.result.folder}/anttasks.jar" todir="${destination.temp.folder}/${full.name}"/>
+		<copy todir="${destination.temp.folder}/${full.name}">
+			<fileset dir="." includes="*.xml" excludes="build.xml"/>
+		</copy>
+		<mkdir dir="${destination.temp.folder}/${full.name}/icons"/>
+		<copy todir="${destination.temp.folder}/${full.name}/icons">
+			<fileset dir="icons" includes="*"/>
+		</copy>
+		<mkdir dir="${destination.temp.folder}/${full.name}/schema"/>
+		<copy todir="${destination.temp.folder}/${full.name}/schema">
+			<fileset dir="schema" includes="*"/>
+		</copy>
+		<copy file="${build.result.folder}/doc.zip" todir="${destination.temp.folder}/${full.name}"/>
+		<copy file="${build.result.folder}/about.ini" todir="${destination.temp.folder}/${full.name}"/>
+			</target>
+
+	<target name="metrics.jar" depends="init" unless="metrics.jar" description="Create jar: metrics.jar.">
+		<delete dir="${temp.folder}/metrics.jar.bin"/>
+		<mkdir dir="${temp.folder}/metrics.jar.bin"/>
+		<!-- compile the source code -->
+		<javac destdir="${temp.folder}/metrics.jar.bin" 
+			failonerror="${javacFailOnError}" 
+			verbose="${javacVerbose}" 
+			debug="${javacDebugInfo}" 
+			includeAntRuntime="no" 
+			bootclasspath="${bootclasspath}" 
+			classpath="${pluginbase}org.eclipse.core.boot_3.0.0/bin;${pluginbase}org.eclipse.core.boot_3.0.0/boot.jar;jdbm.jar;${pluginbase}org.eclipse.core.runtime_3.0.0/bin;${pluginbase}org.eclipse.core.runtime_3.0.0/runtime.jar;${pluginbase}org.eclipse.osgi_3.0.0/bin;${pluginbase}org.eclipse.osgi_3.0.0/osgi.jar;${pluginbase}org.eclipse.osgi_3.0.0/core.jar;${pluginbase}org.eclipse.osgi_3.0.0/resolver.jar;${pluginbase}org.eclipse.osgi_3.0.0/defaultAdaptor.jar;${pluginbase}org.eclipse.osgi_3.0.0/eclipseAdaptor.jar;${pluginbase}org.eclipse.osgi_3.0.0/console.jar;${pluginbase}org.eclipse.osgi.services_3.0.0/bin;${pluginbase}org.eclipse.osgi.services_3.0.0/services.jar;${pluginbase}org.eclipse.osgi.util_3.0.0/bin;${pluginbase}org.eclipse.osgi.util_3.0.0/util.jar;${pluginbase}org.eclipse.jdt.ui_3.0.0/bin;${pluginbase}org.eclipse.jdt.ui_3.0.0/jdt.jar;${pluginbase}org.eclipse.ui_3.0.0/bin;${pluginbase}org.eclipse.ui_3.0.0/ui.jar;${pluginbase}org.eclipse.core.runtime.compatibility_3.0.0/bin;${pluginbase}org.eclipse.core.runtime.compatibility_3.0.0/compatibility.jar;${pluginbase}org.eclipse.update.configurator_3.0.0/bin;${pluginbase}org.eclipse.update.configurator_3.0.0/configurator.jar;${pluginbase}org.eclipse.help_3.0.0/bin;${pluginbase}org.eclipse.help_3.0.0/help.jar;${pluginbase}org.eclipse.swt_3.0.0/bin;${pluginbase}org.eclipse.swt_3.0.0/ws/${basews}/swt.jar;${pluginbase}org.eclipse.swt.win32_3.0.0/ws/${basews}/swt.jar;${pluginbase}org.eclipse.jface_3.0.0/bin;${pluginbase}org.eclipse.jface_3.0.0/jface.jar;${pluginbase}org.eclipse.ui.workbench_3.0.0/bin;${pluginbase}org.eclipse.ui.workbench_3.0.0/compatibility.jar;${pluginbase}org.eclipse.ui.workbench_3.0.0/workbench.jar;${pluginbase}org.eclipse.ui.workbench.compatibility_3.0.0/compatibility.jar;${pluginbase}org.eclipse.ui.workbench.compatibility_3.0.0/workbench.jar;${pluginbase}org.eclipse.ui.console_3.0.0/bin;${pluginbase}org.eclipse.ui.console_3.0.0/console.jar;${pluginbase}org.eclipse.core.resources_3.0.0/bin;${pluginbase}org.eclipse.core.resources_3.0.0/resources.jar;${pluginbase}org.eclipse.core.resources.win32_3.0.0/resources.jar;${pluginbase}org.eclipse.core.resources.win32_3.0.0/bin;${pluginbase}org.eclipse.core.resources.win32_3.0.0/resources-win32.jar;${pluginbase}org.eclipse.jface.text_3.0.0/bin;${pluginbase}org.eclipse.jface.text_3.0.0/jfacetext.jar;${pluginbase}org.eclipse.text_3.0.0/bin;${pluginbase}org.eclipse.text_3.0.0/text.jar;${pluginbase}org.eclipse.ui.workbench.texteditor_3.0.0/bin;${pluginbase}org.eclipse.ui.workbench.texteditor_3.0.0/texteditor.jar;${pluginbase}org.eclipse.core.expressions_3.0.0/bin;${pluginbase}org.eclipse.core.expressions_3.0.0/expressions.jar;${pluginbase}org.eclipse.jdt.core_3.0.0/bin;${pluginbase}org.eclipse.jdt.core_3.0.0/jdtcore.jar;${pluginbase}org.apache.ant_1.6.1/bin;${pluginbase}org.apache.ant_1.6.1/lib/ant.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-antlr.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-apache-bsf.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-apache-resolver.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-commons-logging.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-commons-net.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-icontract.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jai.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-bcel.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-log4j.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-oro.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-regexp.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-javamail.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jdepend.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jmf.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jsch.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-junit.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-launcher.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-netrexx.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-nodeps.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-starteam.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-stylebook.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-swing.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-trax.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-vaj.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-weblogic.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-xalan1.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-xalan2.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-xslp.jar;${pluginbase}org.eclipse.team.core_3.0.0/bin;${pluginbase}org.eclipse.team.core_3.0.0/team.jar;${pluginbase}org.eclipse.search_3.0.0/bin;${pluginbase}org.eclipse.search_3.0.0/search.jar;${pluginbase}org.eclipse.core.filebuffers_3.0.0/bin;${pluginbase}org.eclipse.core.filebuffers_3.0.0/filebuffers.jar;${pluginbase}org.eclipse.ui.ide_3.0.0/bin;${pluginbase}org.eclipse.ui.ide_3.0.0/ide.jar;${pluginbase}org.eclipse.ui.win32_3.0.0/ide.jar;${pluginbase}org.eclipse.ui.win32_3.0.0/bin;${pluginbase}org.eclipse.ui.win32_3.0.0/workbenchwin32.jar;${pluginbase}org.eclipse.ui.views_3.0.0/bin;${pluginbase}org.eclipse.ui.views_3.0.0/views.jar;${pluginbase}org.eclipse.update.core_3.0.0/bin;${pluginbase}org.eclipse.update.core_3.0.0/updatecore.jar;${pluginbase}org.eclipse.update.core.win32_3.0.0/updatecore.jar;${pluginbase}org.eclipse.ui.editors_3.0.0/bin;${pluginbase}org.eclipse.ui.editors_3.0.0/editors.jar;${pluginbase}org.eclipse.debug.core_3.0.0/bin;${pluginbase}org.eclipse.debug.core_3.0.0/dtcore.jar;${pluginbase}org.eclipse.core.variables_3.0.0/bin;${pluginbase}org.eclipse.core.variables_3.0.0/variables.jar;${pluginbase}org.eclipse.debug.ui_3.0.0/bin;${pluginbase}org.eclipse.debug.ui_3.0.0/dtui.jar;${pluginbase}org.eclipse.jdt.launching_3.0.0/bin;${pluginbase}org.eclipse.jdt.launching_3.0.0/launching.jar;${pluginbase}org.eclipse.jdt.debug_3.0.0/bin;${pluginbase}org.eclipse.jdt.debug_3.0.0/jdi.jar;${pluginbase}org.eclipse.jdt.debug_3.0.0/jdimodel.jar;${pluginbase}org.eclipse.jdt.debug_3.0.0/tools.jar;${pluginbase}org.eclipse.compare_3.0.0/bin;${pluginbase}org.eclipse.compare_3.0.0/compare.jar;${pluginbase}org.eclipse.ant.core_3.0.0/bin;${pluginbase}org.eclipse.ant.core_3.0.0/antsupport.jar;${pluginbase}org.junit_3.8.1/bin;${pluginbase}org.junit_3.8.1/junit.jar" source="${javacSource}" target="${javacTarget}"		>
+			<src path="src/"			/>
+			<src path="classycle/"			/>
+			<src path="tgsrc/"			/>
+		</javac>
+		<!-- copy necessary resources -->
+		<copy todir="${temp.folder}/metrics.jar.bin">
+			<fileset dir="src/" excludes="**/*.java"			/>
+			<fileset dir="classycle/" excludes="**/*.java"			/>
+			<fileset dir="tgsrc/" excludes="**/*.java"			/>
+		</copy>
+		<mkdir dir="${build.result.folder}"/>
+		<jar jarfile="${build.result.folder}/metrics.jar" basedir="${temp.folder}/metrics.jar.bin"/>
+		<delete dir="${temp.folder}/metrics.jar.bin"/>
+	</target>
+
+	<target name="metricssrc.zip" depends="init" unless="metricssrc.zip">
+		<mkdir dir="${build.result.folder}"/>
+		<zip zipfile="${build.result.folder}/metricssrc.zip" filesonly="false" whenempty="skip">
+			<fileset dir="src/" includes="**/*.java"			/>
+			<fileset dir="tgsrc/" includes="**/*.java"			/>
+			<fileset dir="classycle/" includes="**/*.java"			/>
+			<fileset dir="anttasks/" includes="**/*.java"			/>
+		</zip>
+	</target>
+
+	<target name="build.jars" depends="init" description="Build all the jars for the plug-in: net.sourceforge.metrics.">
+		<available property="metrics.jar" file="${build.result.folder}/metrics.jar"/>
+		<available property="anttasks.jar" file="${build.result.folder}/anttasks.jar"/>
+		<antcall target="metrics.jar"/>
+		<antcall target="anttasks.jar"/>
+	</target>
+
+	<target name="build.sources" depends="init">
+		<available property="metricssrc.zip" file="${build.result.folder}/metricssrc.zip"/>
+		<antcall target="metricssrc.zip"/>
+	</target>
+
+	<target name="build.zips" depends="init">
+		<zip zipfile="${build.result.folder}/doc.zip" filesonly="false" update="no">
+			<fileset dir="doc/" includes="**/*"/>
+		</zip>				
+	</target>
+
+	<target name="gather.sources" depends="init" if="destination.temp.folder">
+		<mkdir dir="${destination.temp.folder}/net.sourceforge.metrics_${version.suffix}"/>
+		<copy file="${build.result.folder}/metricssrc.zip" todir="${destination.temp.folder}/net.sourceforge.metrics"/>
+	</target>
+
+	<target name="gather.logs" depends="init" if="destination.temp.folder">
+		<mkdir dir="${destination.temp.folder}/net.sourceforge.metrics_${version.suffix}"/>
+		<copy file="${temp.folder}/metrics.jar.bin.log" todir="${destination.temp.folder}/net.sourceforge.metrics_${version.suffix}"/>
+	</target>
+
+	<target name="clean" depends="init" description="Clean the plug-in: net.sourceforge.metrics of all the zips, jars and logs created.">
+		<delete file="${build.result.folder}/metrics.jar"/>
+		<delete file="${build.result.folder}/metricssrc.zip"/>
+		<delete file="${plugin.destination}/net.sourceforge.metrics_${version.suffix}.jar"/>
+		<delete file="${plugin.destination}/net.sourceforge.metrics_${version.suffix}.zip"/>
+		<delete dir="${temp.folder}"/>
+	</target>
+
+	<target name="refresh" depends="init" if="eclipse.running" description="Refresh this folder.">
+		<eclipse.convertPath fileSystemPath="C:/usr/ecwsm8/net.sourceforge.metrics/" property="resourcePath"/>
+		<eclipse.refreshLocal resource="${resourcePath}" depth="infinite"/>
+	</target>
+
+	<target name="zip.plugin" depends="init" description="Create a zip containing all the elements for the plug-in: net.sourceforge.metrics.">
+		<delete dir="${temp.folder}"/>
+		<mkdir dir="${temp.folder}"/>
+		<antcall target="build.jars"/>
+		<antcall target="build.sources"/>
+		<antcall target="gather.bin.parts">
+			<param name="destination.temp.folder" value="${temp.folder}/"/>
+		</antcall>
+		<antcall target="gather.sources">
+			<param name="destination.temp.folder" value="${temp.folder}/"/>
+		</antcall>
+		<delete>
+			<fileset dir="${temp.folder}" includes="**/*.bin.log"			/>
+		</delete>
+		<zip zipfile="${plugin.destination}/net.sourceforge.metrics_${version.suffix}.zip" basedir="${temp.folder}" filesonly="true" whenempty="skip"/>
+		<delete dir="${temp.folder}"/>
+	</target>
+
+	<target name="anttasks.jar" depends="init" unless="anttasks.jar" description="Create jar: anttaks.jar.">
+		<property name="destdir" value="${temp.folder}/anttasks.jar.bin"/>
+		<delete dir="${temp.folder}/anttasks.jar.bin"/>
+		<mkdir dir="${temp.folder}/anttasks.jar.bin"/>
+		<!-- compile the source code -->
+		<javac destdir="${temp.folder}/anttasks.jar.bin" 
+		    failonerror="${javacFailOnError}" 
+		    verbose="${javacVerbose}" 
+		    debug="${javacDebugInfo}" 
+		    includeAntRuntime="yes" 
+		    bootclasspath="${bootclasspath}" 
+			classpath="metrics.jar;jdbm.jar;${pluginbase}org.eclipse.core.boot_3.0.0/bin;${pluginbase}org.eclipse.core.boot_3.0.0/boot.jar;jdbm.jar;${pluginbase}org.eclipse.core.runtime_3.0.0/bin;${pluginbase}org.eclipse.core.runtime_3.0.0/runtime.jar;${pluginbase}org.eclipse.osgi_3.0.0/bin;${pluginbase}org.eclipse.osgi_3.0.0/osgi.jar;${pluginbase}org.eclipse.osgi_3.0.0/core.jar;${pluginbase}org.eclipse.osgi_3.0.0/resolver.jar;${pluginbase}org.eclipse.osgi_3.0.0/defaultAdaptor.jar;${pluginbase}org.eclipse.osgi_3.0.0/eclipseAdaptor.jar;${pluginbase}org.eclipse.osgi_3.0.0/console.jar;${pluginbase}org.eclipse.osgi.services_3.0.0/bin;${pluginbase}org.eclipse.osgi.services_3.0.0/services.jar;${pluginbase}org.eclipse.osgi.util_3.0.0/bin;${pluginbase}org.eclipse.osgi.util_3.0.0/util.jar;${pluginbase}org.eclipse.jdt.ui_3.0.0/bin;${pluginbase}org.eclipse.jdt.ui_3.0.0/jdt.jar;${pluginbase}org.eclipse.ui_3.0.0/bin;${pluginbase}org.eclipse.ui_3.0.0/ui.jar;${pluginbase}org.eclipse.core.runtime.compatibility_3.0.0/bin;${pluginbase}org.eclipse.core.runtime.compatibility_3.0.0/compatibility.jar;${pluginbase}org.eclipse.update.configurator_3.0.0/bin;${pluginbase}org.eclipse.update.configurator_3.0.0/configurator.jar;${pluginbase}org.eclipse.help_3.0.0/bin;${pluginbase}org.eclipse.help_3.0.0/help.jar;${pluginbase}org.eclipse.swt_3.0.0/bin;${pluginbase}org.eclipse.swt_3.0.0/ws/${basews}/swt.jar;${pluginbase}org.eclipse.swt.win32_3.0.0/ws/${basews}/swt.jar;${pluginbase}org.eclipse.jface_3.0.0/bin;${pluginbase}org.eclipse.jface_3.0.0/jface.jar;${pluginbase}org.eclipse.ui.workbench_3.0.0/bin;${pluginbase}org.eclipse.ui.workbench_3.0.0/compatibility.jar;${pluginbase}org.eclipse.ui.workbench_3.0.0/workbench.jar;${pluginbase}org.eclipse.ui.workbench.compatibility_3.0.0/compatibility.jar;${pluginbase}org.eclipse.ui.workbench.compatibility_3.0.0/workbench.jar;${pluginbase}org.eclipse.ui.console_3.0.0/bin;${pluginbase}org.eclipse.ui.console_3.0.0/console.jar;${pluginbase}org.eclipse.core.resources_3.0.0/bin;${pluginbase}org.eclipse.core.resources_3.0.0/resources.jar;${pluginbase}org.eclipse.core.resources.win32_3.0.0/resources.jar;${pluginbase}org.eclipse.core.resources.win32_3.0.0/bin;${pluginbase}org.eclipse.core.resources.win32_3.0.0/resources-win32.jar;${pluginbase}org.eclipse.jface.text_3.0.0/bin;${pluginbase}org.eclipse.jface.text_3.0.0/jfacetext.jar;${pluginbase}org.eclipse.text_3.0.0/bin;${pluginbase}org.eclipse.text_3.0.0/text.jar;${pluginbase}org.eclipse.ui.workbench.texteditor_3.0.0/bin;${pluginbase}org.eclipse.ui.workbench.texteditor_3.0.0/texteditor.jar;${pluginbase}org.eclipse.core.expressions_3.0.0/bin;${pluginbase}org.eclipse.core.expressions_3.0.0/expressions.jar;${pluginbase}org.eclipse.jdt.core_3.0.0/bin;${pluginbase}org.eclipse.jdt.core_3.0.0/jdtcore.jar;${pluginbase}org.apache.ant_1.6.1/bin;${pluginbase}org.apache.ant_1.6.1/lib/ant.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-antlr.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-apache-bsf.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-apache-resolver.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-commons-logging.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-commons-net.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-icontract.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jai.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-bcel.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-log4j.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-oro.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jakarta-regexp.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-javamail.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jdepend.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jmf.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-jsch.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-junit.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-launcher.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-netrexx.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-nodeps.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-starteam.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-stylebook.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-swing.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-trax.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-vaj.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-weblogic.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-xalan1.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-xalan2.jar;${pluginbase}org.apache.ant_1.6.1/lib/ant-xslp.jar;${pluginbase}org.eclipse.team.core_3.0.0/bin;${pluginbase}org.eclipse.team.core_3.0.0/team.jar;${pluginbase}org.eclipse.search_3.0.0/bin;${pluginbase}org.eclipse.search_3.0.0/search.jar;${pluginbase}org.eclipse.core.filebuffers_3.0.0/bin;${pluginbase}org.eclipse.core.filebuffers_3.0.0/filebuffers.jar;${pluginbase}org.eclipse.ui.ide_3.0.0/bin;${pluginbase}org.eclipse.ui.ide_3.0.0/ide.jar;${pluginbase}org.eclipse.ui.win32_3.0.0/ide.jar;${pluginbase}org.eclipse.ui.win32_3.0.0/bin;${pluginbase}org.eclipse.ui.win32_3.0.0/workbenchwin32.jar;${pluginbase}org.eclipse.ui.views_3.0.0/bin;${pluginbase}org.eclipse.ui.views_3.0.0/views.jar;${pluginbase}org.eclipse.update.core_3.0.0/bin;${pluginbase}org.eclipse.update.core_3.0.0/updatecore.jar;${pluginbase}org.eclipse.update.core.win32_3.0.0/updatecore.jar;${pluginbase}org.eclipse.ui.editors_3.0.0/bin;${pluginbase}org.eclipse.ui.editors_3.0.0/editors.jar;${pluginbase}org.eclipse.debug.core_3.0.0/bin;${pluginbase}org.eclipse.debug.core_3.0.0/dtcore.jar;${pluginbase}org.eclipse.core.variables_3.0.0/bin;${pluginbase}org.eclipse.core.variables_3.0.0/variables.jar;${pluginbase}org.eclipse.debug.ui_3.0.0/bin;${pluginbase}org.eclipse.debug.ui_3.0.0/dtui.jar;${pluginbase}org.eclipse.jdt.launching_3.0.0/bin;${pluginbase}org.eclipse.jdt.launching_3.0.0/launching.jar;${pluginbase}org.eclipse.jdt.debug_3.0.0/bin;${pluginbase}org.eclipse.jdt.debug_3.0.0/jdi.jar;${pluginbase}org.eclipse.jdt.debug_3.0.0/jdimodel.jar;${pluginbase}org.eclipse.jdt.debug_3.0.0/tools.jar;${pluginbase}org.eclipse.compare_3.0.0/bin;${pluginbase}org.eclipse.compare_3.0.0/compare.jar;${pluginbase}org.eclipse.ant.core_3.0.0/bin;${pluginbase}org.eclipse.ant.core_3.0.0/antsupport.jar;${pluginbase}org.junit_3.8.1/bin;${pluginbase}org.junit_3.8.1/junit.jar" source="${javacSource}" target="${javacTarget}"		>			
+			<src path="anttasks/"/>
+		</javac>
+		<!-- copy necessary resources -->
+		<copy todir="${temp.folder}/anttasks.jar.bin">
+			<fileset dir="anttasks/" excludes="**/*.java"/>
+		</copy>
+		<mkdir dir="${build.result.folder}"/>
+		<jar jarfile="${build.result.folder}/anttasks.jar" basedir="${temp.folder}/anttasks.jar.bin"/>
+		<delete dir="${temp.folder}/anttasks.jar.bin"/>
+	</target>	
+	
+	<target name="updatesite" depends="init" description="Create a zip containing all the elements for an updatesite for: net.sourceforge.metrics.">
+		<delete dir="${temp.folder}"/>
+		<mkdir dir="${temp.folder}"/>
+		<mkdir dir="${temp.folder}/plugins"/>
+		<mkdir dir="${temp.folder}/features"/>
+		<antcall target="build.jars"/>
+		<antcall target="build.sources"/>
+		<antcall target="build.zips"/>
+		<antcall target="gather.bin.parts">
+			<param name="destination.temp.folder" value="${temp.folder}/plugins/"/>
+		</antcall>
+		<antcall target="gather.sources">
+			<param name="destination.temp.folder" value="${temp.folder}/plugins/"/>
+		</antcall>
+		<delete>
+			<fileset dir="${temp.folder}" includes="**/*.bin.log"/>
+		</delete>
+		<zip zipfile="${temp.folder}/plugins/net.sourceforge.metrics_${version.suffix}.jar" basedir="${temp.folder}/plugins/${full.name}" filesonly="true" update="no"/>
+		<delete dir="${temp.folder}/plugins/${full.name}"/>
+		<copy todir="${temp.folder}/features">
+			<fileset dir="${plugin.destination}/updateSite/features" includes="**/*"/>
+		</copy>
+		<zip zipfile="${temp.folder}/features/net.sourceforge.metrics_${version.suffix}.jar" basedir="${temp.folder}/features" includes="**/*"/>
+		<delete>
+			<fileset dir="${temp.folder}/features">
+				<include name="**/*.xml"/>
+				<include name="**/*.html"/>
+				<include name="**/*.properties"/>
+			</fileset>
+		</delete>
+		<copy file="updateSite/site.xml" todir="${temp.folder}"/>
+		<zip zipfile="${plugin.destination}/${full.name}-site-${version.suffix}.zip" basedir="${temp.folder}" filesonly="true" update="no" excludes="**/*.bin.log"/>
+		<delete dir="${temp.folder}"/>
+	</target>
+	
+	<target name="zip.folder" depends="init">
+		<zip zipfile="${plugin.destination}/${full.name}-${version.suffix}.zip" basedir="${temp.folder}" filesonly="true" update="no" excludes="**/*.bin.log"/>
+	</target>
+
+		
+</project>

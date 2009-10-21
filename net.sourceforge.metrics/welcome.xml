@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<welcomePage title="Metrics Plugin for Eclipse" format="wrap">
+
+<intro><p>This page will help familiarize you with the Metrics plugin. To get started, read the sections below and click on the related links.</p></intro>
+
+<item><b>Setting up a project for metrics calculation</b>
+To configure a project for metrics calculation, open the Project properties and check the Enable Metrics checkbox. 
+Now perform a full build to calculate the initial values for the metrics.
+</item>
+<item><b>Viewing the metrics</b>
+Select <action pluginId="net.sourceforge.metrics" class="net.sourceforge.metrics.ui.OpenMetricsViewAction">Window->Show View->Other->Metrics->MetricsView</action>
+</item>
+<item><b>Analyzing Dependencies</b>
+When a project or root source folder is selected in the metrics view, select the icon that look like
+a square with four dots, or select Dependency Graph from the view menu.
+</item>
+<item><b>Learn More</b>
+To learn more you can read the <topic id="/net.sourceforge.metrics/toc.xml">Metrics User Guide</topic>.
+</item>
+</welcomePage>
