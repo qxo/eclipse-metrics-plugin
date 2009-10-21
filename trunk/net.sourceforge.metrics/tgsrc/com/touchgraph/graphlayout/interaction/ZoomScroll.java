@@ -62,7 +62,7 @@ import com.touchgraph.graphlayout.TGPoint2D;
 /** ZoomScroll:  Contains code for enlarging the graph by zooming in.
   *
   * @author   Alexander Shapiro
-  * @version  1.21  $Id: ZoomScroll.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.21  $Id: ZoomScroll.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
   */
 public class ZoomScroll implements GraphListener {
 
@@ -108,14 +108,14 @@ public class ZoomScroll implements GraphListener {
 
     class ZoomLens extends TGAbstractLens {
         protected void applyLens(TGPoint2D p) {
-            p.x=p.x*Math.pow(2,zoomSB.getValue()/10.0);
-            p.y=p.y*Math.pow(2,zoomSB.getValue()/10.0);
+            p.setX(p.getX()*Math.pow(2,zoomSB.getValue()/10.0));
+            p.setY(p.getY()*Math.pow(2,zoomSB.getValue()/10.0));
 
         }
 
         protected void undoLens(TGPoint2D p) {
-            p.x=p.x/Math.pow(2,zoomSB.getValue()/10.0);
-            p.y=p.y/Math.pow(2,zoomSB.getValue()/10.0);
+            p.setX(p.getX()/Math.pow(2,zoomSB.getValue()/10.0));
+            p.setY(p.getY()/Math.pow(2,zoomSB.getValue()/10.0));
         }
     }
 

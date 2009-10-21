@@ -25,8 +25,6 @@ import java.text.NumberFormat;
 
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
-import org.eclipse.core.runtime.Platform;
-
 /**
  * Main class that holds a named calculated value and a (optional) scope,
  * e.g. method, type, etc.
@@ -114,11 +112,7 @@ public class Metric implements Constants, Serializable, Comparable {
 	protected static String format(double d) {
 		return getNumberFormat().format(d);
 	}
-	
-	private static String getCurrentVersion() {
-		return Platform.getPluginRegistry().getPluginDescriptor(pluginId).getVersionIdentifier().toString();
-	}
-	
+		
 	/**
 	 * Calculate the value of this metric. 
 	 * This default implementation does nothing

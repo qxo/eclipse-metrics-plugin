@@ -86,7 +86,7 @@ import com.touchgraph.graphlayout.interaction.TGAbstractClickUI;
   *
   * @author   Alexander Shapiro
   * @author   Murray Altheim  (2001-11-06; 2002-01-14 cleanup)
-  * @version  1.22-jre1.1  $Id: TGPanel.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: TGPanel.java,v 1.5 2004/10/25 06:57:41 donv70 Exp $
   */
 public class TGPanel extends Panel {
 
@@ -140,7 +140,7 @@ public class TGPanel extends Panel {
         adjustOriginLens = new AdjustOriginLens();
         switchSelectUI = new SwitchSelectUI();
 
-        TGLayout tgLayout = new TGLayout(this);
+        TGLayout tgLayout = new TGStarLayout(this);
         setTGLayout(tgLayout);
         tgLayout.start();
         setGraphEltSet(new GraphEltSet());
@@ -324,7 +324,6 @@ public class TGPanel extends Panel {
     public synchronized void setMouseOverN( Node node ) {
         if ( dragNode != null || maintainMouseOver ) return;  // So you don't accidentally switch nodes while dragging
         if ( mouseOverN != node ) {
-            Node oldMouseOverN = mouseOverN;
             mouseOverN=node;
         }
 
@@ -396,7 +395,6 @@ public class TGPanel extends Panel {
     public synchronized void setMouseOverE( Edge edge ) {
         if ( dragNode != null || maintainMouseOver ) return; // No funny business while dragging
         if ( mouseOverE != edge ) {
-            Edge oldMouseOverE = mouseOverE;
             mouseOverE = edge;
         }
     }
@@ -406,13 +404,13 @@ public class TGPanel extends Panel {
 
     protected class AdjustOriginLens extends TGAbstractLens {
         protected void applyLens(TGPoint2D p) {
-            p.x=p.x+TGPanel.this.getSize().width/2;
-            p.y=p.y+TGPanel.this.getSize().height/2;
+            p.setX(p.getX()+TGPanel.this.getSize().width/2);
+            p.setY(p.getY()+TGPanel.this.getSize().height/2);
         }
 
         protected void undoLens(TGPoint2D p) {
-            p.x=p.x-TGPanel.this.getSize().width/2;
-            p.y=p.y-TGPanel.this.getSize().height/2;
+            p.setX(p.getX()-TGPanel.this.getSize().width/2);
+            p.setY(p.getY()-TGPanel.this.getSize().height/2);
         }
     }
 
@@ -472,10 +470,6 @@ public class TGPanel extends Panel {
         paintListeners.removeElement(pl);
     }
 
-    private void redraw() {
-        resetDamper();
-    }
-
     public void setMaintainMouseOver( boolean maintain ) {
         maintainMouseOver = maintain;
     }
@@ -503,10 +497,10 @@ public class TGPanel extends Panel {
     public void multiSelect( TGPoint2D from, TGPoint2D to ) {
         final double minX,minY,maxX,maxY;
 
-        if ( from.x > to.x ) { maxX = from.x; minX = to.x; }
-        else                 { minX = from.x; maxX = to.x; }
-        if ( from.y > to.y ) { maxY = from.y; minY = to.y; }
-        else                 { minY = from.y; maxY = to.y; }
+        if ( from.getX() > to.getX() ) { maxX = from.getX(); minX = to.getX(); }
+        else                 { minX = from.getX(); maxX = to.getX(); }
+        if ( from.getY() > to.getY() ) { maxY = from.getY(); minY = to.getY(); }
+        else                 { minY = from.getY(); maxY = to.getY(); }
 
         final Vector selectedNodes = new Vector();
 
@@ -622,7 +616,7 @@ public class TGPanel extends Panel {
             mousePos = e.getPoint();
             findMouseOver();
             try {
-                Thread.currentThread().sleep(6); //An attempt to make the cursor flicker less
+                Thread.sleep(6); //An attempt to make the cursor flicker less
             } catch (InterruptedException ex) {
                 //break;
             }
@@ -764,10 +758,10 @@ public class TGPanel extends Panel {
                     bottomRightDraw.setLocation(node.drawx,node.drawy);
                     firstNode=false;
                 } else {  //Standard max and min finding
-                    topLeftDraw.setLocation(Math.min(node.drawx,topLeftDraw.x),
-                                            Math.min(node.drawy,topLeftDraw.y));
-                    bottomRightDraw.setLocation(Math.max(node.drawx, bottomRightDraw.x),
-                                                Math.max(node.drawy, bottomRightDraw.y));
+                    topLeftDraw.setLocation(Math.min(node.drawx,topLeftDraw.getX()),
+                                            Math.min(node.drawy,topLeftDraw.getY()));
+                    bottomRightDraw.setLocation(Math.max(node.drawx, bottomRightDraw.getX()),
+                                                Math.max(node.drawy, bottomRightDraw.getY()));
                 }
             }
         };
@@ -789,14 +783,14 @@ public class TGPanel extends Panel {
 
     public void updateDrawPos( Node node ) { //sets the visual position from the real position
         TGPoint2D p = tgLensSet.convRealToDraw(node.x,node.y);
-        node.drawx = p.x;
-        node.drawy = p.y;
+        node.drawx = p.getX();
+        node.drawy = p.getY();
        }
 
     public void updatePosFromDraw( Node node ) { //sets the real position from the visual position
         TGPoint2D p = tgLensSet.convDrawToReal(node.drawx,node.drawy);
-        node.x = p.x;
-        node.y = p.y;
+        node.x = p.getX();
+        node.y = p.getY();
     }
 
     public void updateDrawPositions() {

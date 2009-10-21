@@ -61,7 +61,7 @@ import com.touchgraph.graphlayout.graphelements.TGForEachNode;
   * require a reference to TGPanel.
   *
   * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: LocalityUtils.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: LocalityUtils.java,v 1.2 2004/06/05 14:49:49 sauerf Exp $
   */
 public class LocalityUtils {
 
@@ -131,8 +131,8 @@ public class LocalityUtils {
                     locality.addNodeWithEdges(n);
                     if (!fastFinishShift) {                        
                         try { 
-                        	if(radius==1) Thread.currentThread().sleep(50); 
-                        	else Thread.currentThread().sleep(50); 
+                        	if(radius==1) Thread.sleep(50); 
+                        	else Thread.sleep(50); 
                         }
                         catch (InterruptedException ex) {}                        
                     }
@@ -179,26 +179,26 @@ public class LocalityUtils {
                 	if (radius==1) {
                 		addNearNodes(distHash,radius);
                     	for (int i=0;i<4&&!fastFinishShift;i++) {
-                        	Thread.currentThread().sleep(100);
+                        	Thread.sleep(100);
                     	}                     	                   	
                 		unmarkNewAdditions();
                 		for (int i=0;i<4&&!fastFinishShift;i++) {
-                        	Thread.currentThread().sleep(100);
+                        	Thread.sleep(100);
                     	}
                 	}
                     if (markDistantNodes(distHash)){//.keySet())) {// markDistantNodes will use a Collection..
                          for (int i=0;i<8&&!fastFinishShift;i++) {
-                             Thread.currentThread().sleep(100);
+                             Thread.sleep(100);
                          }
                     }                    
                     removeMarkedNodes();                    
                     for (int i=0;i<1&&!fastFinishShift;i++) {
-                        if(radius>1) Thread.currentThread().sleep(100);
+                        if(radius>1) Thread.sleep(100);
                     }
                     if(radius!=1) {
                     	addNearNodes(distHash,radius);
                     	for (int i=0;i<4&&!fastFinishShift;i++) {
-                        	Thread.currentThread().sleep(100);
+                        	Thread.sleep(100);
                     	}
                     	unmarkNewAdditions();
                 	}
@@ -217,7 +217,7 @@ public class LocalityUtils {
         if(shiftLocaleThread!=null && shiftLocaleThread.isAlive()) {
             fastFinishShift=true; //This should cause last locale shift to finish quickly
             while(shiftLocaleThread.isAlive())
-                try { Thread.currentThread().sleep(100); }
+                try { Thread.sleep(100); }
                 catch (InterruptedException ex) {}
         }
         if (radius == INFINITE_LOCALITY_RADIUS || n==null) {
@@ -254,7 +254,7 @@ public class LocalityUtils {
                             newNode.justMadeLocal = true;
                             try {
                                 locality.addNodeWithEdges(newNode);
-                                Thread.currentThread().sleep(50);
+                                Thread.sleep(50);
                             } catch ( TGException tge ) {
                                 System.err.println("TGException: " + tge.getMessage());
                             } catch ( InterruptedException ex ) {}
@@ -263,7 +263,7 @@ public class LocalityUtils {
                             locality.addEdge(n.edgeAt(i));
                         }
                     }
-                    try { Thread.currentThread().sleep(200); }
+                    try { Thread.sleep(200); }
                     catch (InterruptedException ex) {}
                     unmarkNewAdditions();
                     tgPanel.resetDamper();
@@ -290,7 +290,7 @@ public class LocalityUtils {
 										Hashtable subgraph = GESUtils.getLargestConnectedSubgraph(locality);
                     markDistantNodes(subgraph);
                     tgPanel.repaint();                    
-                    try { Thread.currentThread().sleep(200); }
+                    try { Thread.sleep(200); }
                     catch (InterruptedException ex) {}
                     removeMarkedNodes();
 
@@ -318,7 +318,7 @@ public class LocalityUtils {
                     catch (TGException tge) { tge.printStackTrace(); }
                     tgPanel.repaint();
                     tgPanel.resetDamper();
-                    try { Thread.currentThread().sleep(600); }
+                    try { Thread.sleep(600); }
                     catch (InterruptedException ex) {}
                     removeMarkedNodes();
 

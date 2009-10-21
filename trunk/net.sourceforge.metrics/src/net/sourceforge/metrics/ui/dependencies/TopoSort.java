@@ -64,14 +64,14 @@ public class TopoSort extends GraphProcessor {
 	 * @see classycle.graph.GraphProcessor#processBefore(classycle.graph.Vertex)
 	 */
 	protected void processBefore(Vertex vertex) {
-		StrongComponent component = castAsStrongComponent(vertex);
+		castAsStrongComponent(vertex);
 	}
 
 	/* (non-Javadoc)
 	 * @see classycle.graph.GraphProcessor#processArc(classycle.graph.Vertex, classycle.graph.Vertex)
 	 */
 	protected void processArc(Vertex tail, Vertex head) {
-		StrongComponent t = castAsStrongComponent(tail);
+		castAsStrongComponent(tail);
 		StrongComponent h = castAsStrongComponent(head);
 	  	if (!h.isVisited()) {
 			process(h);

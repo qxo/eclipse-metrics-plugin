@@ -29,6 +29,7 @@ import net.sourceforge.metrics.propagators.MaxValue;
 import net.sourceforge.metrics.propagators.Sum;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
@@ -311,14 +312,14 @@ public class MetricDescriptor {
 	 * @return String
 	 */
 	public String getHint() {
-		return MetricsPlugin.getDefault().getPreferenceStore().getString(getPrefName("HINT"));
+		return getPreferences().getString(getPrefName("HINT"));
 	}
 
 	/**
 	 * @return Double
 	 */
 	public Double getMax() {
-		double max = MetricsPlugin.getDefault().getPreferenceStore().getDouble(getPrefName("MAX"));
+		double max = getPreferences().getDouble(getPrefName("MAX"));
 		if (max == IPreferenceStore.DOUBLE_DEFAULT_DEFAULT) return null;
 		return new Double(max);
 	}
@@ -327,7 +328,7 @@ public class MetricDescriptor {
 	 * @return Double
 	 */
 	public Double getMin() {
-		double min = MetricsPlugin.getDefault().getPreferenceStore().getDouble(getPrefName("MIN"));
+		double min = getPreferences().getDouble(getPrefName("MIN"));
 		if (min == IPreferenceStore.DOUBLE_DEFAULT_DEFAULT) return null;
 		return new Double(min);
 	}
@@ -375,24 +376,31 @@ public class MetricDescriptor {
 	}
 
 	private void initPreferences() {
-		if (hint != null) MetricsPlugin.getDefault().getPreferenceStore().setDefault(getPrefName("HINT"), hint);
-		if (min != null) MetricsPlugin.getDefault().getPreferenceStore().setDefault(getPrefName("MIN"), min.doubleValue());
-		if (max != null) MetricsPlugin.getDefault().getPreferenceStore().setDefault(getPrefName("MAX"), max.doubleValue());
+		if (hint != null) getPreferences().setDefault(getPrefName("HINT"), hint);
+		if (min != null) getPreferences().setDefault(getPrefName("MIN"), min.doubleValue());
+		if (max != null) getPreferences().setDefault(getPrefName("MAX"), max.doubleValue());
 	}
 	
 	public void copyToPreferences() {
-		if (hint != null) MetricsPlugin.getDefault().getPreferenceStore().setValue(getPrefName("HINT"), hint);
-		if (min != null) MetricsPlugin.getDefault().getPreferenceStore().setValue(getPrefName("MIN"), min.doubleValue());
-		if (max != null) MetricsPlugin.getDefault().getPreferenceStore().setValue(getPrefName("MAX"), max.doubleValue());
+		if (hint != null) getPreferences().setValue(getPrefName("HINT"), hint);
+		if (min != null) getPreferences().setValue(getPrefName("MIN"), min.doubleValue());
+		if (max != null) getPreferences().setValue(getPrefName("MAX"), max.doubleValue());
 	}
 	
+	/**
+	 * @return
+	 */
+	private Preferences getPreferences() {
+		return MetricsPlugin.getDefault().getPluginPreferences();
+	}
+
 	public void resetToDefaults() {
 		hint = defaultHint;
 		max = defaultMax;
 		min = defaultMin;
-		MetricsPlugin.getDefault().getPreferenceStore().setToDefault(getPrefName("HINT"));
-		MetricsPlugin.getDefault().getPreferenceStore().setToDefault(getPrefName("MIN"));
-		MetricsPlugin.getDefault().getPreferenceStore().setToDefault(getPrefName("MAX"));
+		getPreferences().setToDefault(getPrefName("HINT"));
+		getPreferences().setToDefault(getPrefName("MIN"));
+		getPreferences().setToDefault(getPrefName("MAX"));
 	}
 
 }

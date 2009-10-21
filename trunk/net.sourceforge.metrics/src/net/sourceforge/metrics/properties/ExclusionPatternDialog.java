@@ -16,7 +16,7 @@
  * HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
  *
  *
- * $Id: ExclusionPatternDialog.java,v 1.1 2003/07/16 02:58:15 sauerf Exp $
+ * $Id: ExclusionPatternDialog.java,v 1.2 2004/05/05 03:42:31 sauerf Exp $
  */
 package net.sourceforge.metrics.properties;
 
@@ -44,7 +44,6 @@ import org.eclipse.swt.widgets.Shell;
 public class ExclusionPatternDialog extends TitleAreaDialog implements SelectionListener{
 
 
-	private String selection;
 	private List patternList;
 	private String[] patterns;
 	private static int ADD_BUTTONID    = 100;
@@ -112,15 +111,14 @@ public class ExclusionPatternDialog extends TitleAreaDialog implements Selection
 		editButton.setEnabled(false);
 		removeButton = createButton(parent, REMOVE_BUTTONID, "Remove", false);
 		removeButton.setEnabled(false);
-		Button okButton = createButton(parent, IDialogConstants.OK_ID, "OK", true);
-		Button cancelButton = createButton(parent, IDialogConstants.CANCEL_ID, "Cancel", false);
+		createButton(parent, IDialogConstants.OK_ID, "OK", true);
+		createButton(parent, IDialogConstants.CANCEL_ID, "Cancel", false);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
 	 */
 	public void widgetSelected(SelectionEvent e) {
-		selection = patternList.getSelection()[0];
 		editButton.setEnabled(true);
 		removeButton.setEnabled(true);
 	}

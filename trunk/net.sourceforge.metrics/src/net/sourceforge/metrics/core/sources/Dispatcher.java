@@ -83,7 +83,9 @@ public class Dispatcher {
 					AbstractMetricSource ms = (AbstractMetricSource)msc.newInstance();
 					return ms;
 				} catch (InstantiationException e) {
+					Log.logError("createNewSource for " + input.getHandleIdentifier(), e);
 				} catch (IllegalAccessException e) {
+					Log.logError("createNewSource for " + input.getHandleIdentifier(), e);
 				}
 			}
 		}
@@ -106,7 +108,7 @@ public class Dispatcher {
 			}
 			m = singleton.createNewSource(calculate);
 			m.setJavaElement(calculate);
-			m.recurse();
+			m.recurse(null);
 			// should be in cache now
 			m = Cache.singleton.get(input);
 		} 
@@ -129,7 +131,7 @@ public class Dispatcher {
 		if (m == null) {
 			m = singleton.createNewSource(input);
 			parent.initializeNewInstance(m, input, data);
-			m.recurse();
+			m.recurse(parent);
 		} else {
 			// happens if a previous remove from cache failed, simply reinitialize existing instance
 			// for recalculation

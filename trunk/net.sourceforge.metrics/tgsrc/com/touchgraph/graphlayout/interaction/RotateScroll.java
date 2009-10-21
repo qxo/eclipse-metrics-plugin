@@ -66,7 +66,7 @@ import com.touchgraph.graphlayout.TGPoint2D;
   * lenses above the current one need to be added to TGLensSet to solve this problem.
   *
   * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: RotateScroll.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: RotateScroll.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
   */
 public class RotateScroll implements GraphListener {
 
@@ -153,19 +153,19 @@ public class RotateScroll implements GraphListener {
 
     class RotateLens extends TGAbstractLens {
         protected void applyLens(TGPoint2D p) {
-            double currentAngle=computeAngle(p.x,p.y);
-            double dist=Math.sqrt((p.x*p.x)+(p.y*p.y));
+            double currentAngle=computeAngle(p.getX(),p.getY());
+            double dist=Math.sqrt((p.getX()*p.getX())+(p.getY()*p.getY()));
 
-            p.x=dist*Math.cos(currentAngle+rotateAngle);
-            p.y=dist*Math.sin(currentAngle+rotateAngle);
+            p.setX(dist*Math.cos(currentAngle+rotateAngle));
+            p.setY(dist*Math.sin(currentAngle+rotateAngle));
         }
 
         protected void undoLens(TGPoint2D p) {
-            double currentAngle=computeAngle(p.x,p.y);
-            double dist=Math.sqrt((p.x*p.x)+(p.y*p.y));
+            double currentAngle=computeAngle(p.getX(),p.getY());
+            double dist=Math.sqrt((p.getX()*p.getX())+(p.getY()*p.getY()));
 
-            p.x=dist*Math.cos(currentAngle-rotateAngle);
-            p.y=dist*Math.sin(currentAngle-rotateAngle);
+            p.setX(dist*Math.cos(currentAngle-rotateAngle));
+            p.setY(dist*Math.sin(currentAngle-rotateAngle));
         }
     }
 
@@ -187,8 +187,8 @@ public class RotateScroll implements GraphListener {
         double lastAngle;
 
         double getMouseAngle(double x, double y) {
-            return computeAngle(x-this.tgPanel.getDrawCenter().x,
-                                y-this.tgPanel.getDrawCenter().y);
+            return computeAngle(x-this.tgPanel.getDrawCenter().getX(),
+                                y-this.tgPanel.getDrawCenter().getY());
         }
 
         public void preActivate() {}

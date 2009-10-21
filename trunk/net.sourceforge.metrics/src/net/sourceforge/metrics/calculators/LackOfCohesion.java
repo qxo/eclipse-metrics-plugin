@@ -16,7 +16,7 @@
  * HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
  *
  *
- * $Id: LackOfCohesion.java,v 1.12 2004/04/29 20:59:24 sauerf Exp $
+ * $Id: LackOfCohesion.java,v 1.15 2005/01/16 21:32:04 sauerf Exp $
  */
 package net.sourceforge.metrics.calculators;
 
@@ -38,8 +38,6 @@ import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.compiler.IScanner;
 import org.eclipse.jdt.core.compiler.ITerminalSymbols;
 import org.eclipse.jdt.core.compiler.InvalidInputException;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 
 /**
  * Calculates the Lack of Cohesion of Methods (LCOM*) metric
@@ -80,13 +78,15 @@ public class LackOfCohesion extends Calculator implements Constants {
 			IType type = (IType)source.getJavaElement();
 			IMethod[] methods = type.getMethods();
 			IField[] fields = type.getFields();
+			double value = 0;
 			if ((fields.length > 1)&&(methods.length > 1)) {
 				initBuckets(fields);
-				visitMethods(methods);
-				source.setValue(new Metric(LCOM, calculateResult()));
-			} else {
-				source.setValue(new Metric(LCOM, 0));
+				if (buckets.size() > 0) {
+					visitMethods(methods);
+					value = calculateResult();
+				}
 			}
+			source.setValue(new Metric(LCOM, value));
 		} catch (JavaModelException e) {
 		}
 	}
@@ -155,7 +155,7 @@ public class LackOfCohesion extends Calculator implements Constants {
 	 * Statically cache preference values, yet register for change events so they
 	 * get updated when they change.
 	 */
-	public static class Preferences implements IPropertyChangeListener {
+	public static class Preferences implements org.eclipse.core.runtime.Preferences.IPropertyChangeListener {
 
 		private boolean countStaticMethods;
 		private boolean countStaticAttributes;
@@ -182,7 +182,7 @@ public class LackOfCohesion extends Calculator implements Constants {
 		/**
 		 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
 		 */
-		public void propertyChange(PropertyChangeEvent event) {
+		public void propertyChange(org.eclipse.core.runtime.Preferences.PropertyChangeEvent event) {
 			if (event.getProperty().startsWith("LCOM")) {
 				init();
 			}

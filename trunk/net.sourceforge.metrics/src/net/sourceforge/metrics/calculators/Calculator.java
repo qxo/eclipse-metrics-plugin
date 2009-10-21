@@ -27,7 +27,7 @@ import net.sourceforge.metrics.core.Metric;
 import net.sourceforge.metrics.core.MetricsPlugin;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.core.runtime.Preferences;
 
 /**
  * Abstract base class for all metrics calculators.
@@ -93,7 +93,7 @@ public abstract class Calculator implements Constants, ICalculator {
 		return num / den;
 	}
 	
-	protected static IPreferenceStore getPreferences() {
-		return MetricsPlugin.getDefault().getPreferenceStore();
+	protected static Preferences getPreferences() {
+		return MetricsPlugin.getDefault().getPluginPreferences();
 	}
 }

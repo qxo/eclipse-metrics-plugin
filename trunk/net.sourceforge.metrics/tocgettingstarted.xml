@@ -2,19 +2,19 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="User Guide" link_to="toc.xml#gettingstarted"> 
-	<topic label="Metrics UI"  href="toc.html#gettingstarted"> 
+	<topic label="Metrics UI"  href="doc/toc.html#gettingstarted"> 
 	</topic>
-	<topic label="Preferences"  href="toc.html#preferences"> 
+	<topic label="Preferences"  href="doc/toc.html#preferences"> 
 	</topic>
-	<topic label="Setting Safe Ranges"  href="toc.html#ranges"> 
+	<topic label="Setting Safe Ranges"  href="doc/toc.html#ranges"> 
 	</topic>
-	<topic label="Export to XML"  href="toc.html#exportxml"> 
+	<topic label="Export to XML"  href="doc/toc.html#exportxml"> 
 	</topic>
-	<topic label="Dependency Analysis"  href="toc.html#dependencies"> 
+	<topic label="Dependency Analysis"  href="doc/toc.html#dependencies"> 
 	</topic>
-	<topic label="Headless Operation from Ant"  href="toc.html#headless"> 
+	<topic label="Headless Operation from Ant"  href="doc/toc.html#headless"> 
 	</topic>
-	<topic label="Licenses and Credits"  href="toc.html#license"> 
+	<topic label="Licenses and Credits"  href="doc/toc.html#license"> 
 	</topic>
 	
 </toc>

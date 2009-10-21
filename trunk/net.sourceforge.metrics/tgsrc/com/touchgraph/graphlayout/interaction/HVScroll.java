@@ -74,7 +74,7 @@ import com.touchgraph.graphlayout.TGPoint2D;
   * the user interacts with the drawn coordinates.
   *
   * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: HVScroll.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: HVScroll.java,v 1.4 2004/10/25 06:57:32 donv70 Exp $
   */
 public class HVScroll implements GraphListener {
 
@@ -90,7 +90,7 @@ public class HVScroll implements GraphListener {
     private TGPanel tgPanel;
     private TGLensSet tgLensSet;
 
-    TGPoint2D offset;
+    private TGPoint2D offset;
 
   // ............
 
@@ -135,13 +135,13 @@ public class HVScroll implements GraphListener {
 
     public TGPoint2D getTopLeftDraw() {
         TGPoint2D tld = tgPanel.getTopLeftDraw();
-        tld.setLocation(tld.x-tgPanel.getSize().width/4,tld.y-tgPanel.getSize().height/4);
+        tld.setLocation(tld.getX()-tgPanel.getSize().width/4,tld.getY()-tgPanel.getSize().height/4);
         return tld;
     }
 
     public TGPoint2D getBottomRightDraw() {
         TGPoint2D brd = tgPanel.getBottomRightDraw();
-        brd.setLocation(brd.x+tgPanel.getSize().width/4,brd.y+tgPanel.getSize().height/4);
+        brd.setLocation(brd.getX()+tgPanel.getSize().width/4,brd.getY()+tgPanel.getSize().height/4);
         return brd;
     }
 
@@ -158,8 +158,8 @@ public class HVScroll implements GraphListener {
             TGPoint2D tld = getTopLeftDraw();
             TGPoint2D brd = getBottomRightDraw();
 
-            double newH = (-(tld.x-drawCenter.x)/(brd.x-tld.x)*2000-1000);
-            double newV = (-(tld.y-drawCenter.y)/(brd.y-tld.y)*2000-1000);
+            double newH = (-(tld.getX()-drawCenter.getX())/(brd.getX()-tld.getX())*2000-1000);
+            double newV = (-(tld.getY()-drawCenter.getY())/(brd.getY()-tld.getY())*2000-1000);
 
             boolean beyondBorder;
             beyondBorder = true;
@@ -183,7 +183,7 @@ public class HVScroll implements GraphListener {
 		noRepaintThread = new Thread() {
 			public void run() {
 				try {
-                	Thread.currentThread().sleep(40); //Wait 40 milliseconds before repainting
+                	Thread.sleep(40); //Wait 40 milliseconds before repainting
                 } catch (InterruptedException ex) {}                    				
 			}
 		};
@@ -222,12 +222,12 @@ public class HVScroll implements GraphListener {
             TGPoint2D tld = getTopLeftDraw();
             TGPoint2D brd = getBottomRightDraw();
 
-            double newx = ((horizontalSB.getDValue()+1000.0)/2000)*(brd.x-tld.x)+tld.x;
+            double newx = ((horizontalSB.getDValue()+1000.0)/2000)*(brd.getX()-tld.getX())+tld.getX();
             double newy = tgPanel.getSize().height/2;
             TGPoint2D newCenter = tgLensSet.convDrawToReal(newx,newy);
 
-            offset.setX(offset.x+(newCenter.x-center.x));
-            offset.setY(offset.y+(newCenter.y-center.y));
+            offset.setX(offset.getX()+(newCenter.getX()-center.getX()));
+            offset.setY(offset.getY()+(newCenter.getY()-center.getY()));
             
             tgPanel.processGraphMove();
         }
@@ -240,12 +240,12 @@ public class HVScroll implements GraphListener {
             TGPoint2D brd = getBottomRightDraw();
 
             double newx = tgPanel.getSize().width/2;
-            double newy = ((verticalSB.getDValue()+1000.0)/2000)*(brd.y-tld.y)+tld.y;
+            double newy = ((verticalSB.getDValue()+1000.0)/2000)*(brd.getY()-tld.getY())+tld.getY();
 
             TGPoint2D newCenter = tgLensSet.convDrawToReal(newx,newy);
 
-            offset.setX(offset.x+(newCenter.x-center.x));
-            offset.setY(offset.y+(newCenter.y-center.y));
+            offset.setX(offset.getX()+(newCenter.getX()-center.getX()));
+            offset.setY(offset.getY()+(newCenter.getY()-center.getY()));
             
             tgPanel.processGraphMove();
         }
@@ -272,13 +272,13 @@ public class HVScroll implements GraphListener {
 
      class HVLens extends TGAbstractLens {
         protected void applyLens(TGPoint2D p) {
-            p.x=p.x-offset.x;
-            p.y=p.y-offset.y;
+            p.setX(p.getX()-offset.getX());
+            p.setY(p.getY()-offset.getY());
         }
 
         protected void undoLens(TGPoint2D p) {
-            p.x=p.x+offset.x;
-            p.y=p.y+offset.y;
+            p.setX(p.getX()+offset.getX());
+            p.setY(p.getY()+offset.getY());
         }
      }
 
@@ -289,21 +289,19 @@ public class HVScroll implements GraphListener {
      }
 
      public Point getOffset() {
-        return new Point((int) offset.x,(int) offset.y);
+        return new Point((int) offset.getX(),(int) offset.getY());
      }
     
      public void scrollAtoB(TGPoint2D drawFrom, TGPoint2D drawTo) {
         TGPoint2D from = tgLensSet.convDrawToReal(drawFrom);
         TGPoint2D to = tgLensSet.convDrawToReal(drawTo);
-        offset.setX(offset.x+(from.x-to.x));
-        offset.setY(offset.y+(from.y-to.y));
+        offset.setX(offset.getX()+(from.getX()-to.getX()));
+        offset.setY(offset.getY()+(from.getY()-to.getY()));
      }
 
      Thread scrollThread;
 	         
      public void slowScrollToCenter(final Node n) {
-         final TGPoint2D drawFrom =new TGPoint2D(n.drawx,n.drawy);
-         final TGPoint2D drawTo = getDrawCenter();
          scrolling = true;
          if (scrollThread!=null && scrollThread.isAlive()) scrollThread.interrupt();
          scrollThread = new Thread() {
@@ -314,16 +312,18 @@ public class HVScroll implements GraphListener {
                 double cy;
                 double distFromCenter;
                 boolean keepScrolling = true; 
-                int stopScrollingAttempt = 0;             
                 int scrollSteps=0;       
                 
                 while(keepScrolling && scrollSteps++<250) {
                 	nx= n.drawx; 
                     ny= n.drawy;
-                    cx= getDrawCenter().x;
-                    cy= getDrawCenter().y;
+                    cx= getDrawCenter().getX();
+                    cy= getDrawCenter().getY();
 
                 	distFromCenter = Math.sqrt((nx-cx)*(nx-cx)+(ny-cy)*(ny-cy));
+                	if (Double.isInfinite(distFromCenter)) {
+                	    distFromCenter = Double.MAX_VALUE;
+                	}
 
 					double newx, newy;					
 					if(distFromCenter>5) {
@@ -345,17 +345,17 @@ public class HVScroll implements GraphListener {
                 	}		
                     
                     try {
-                           Thread.currentThread().sleep(20);
+                           Thread.sleep(20);
                     } catch (InterruptedException ex) { keepScrolling=false; }
                     
                     if(distFromCenter<3) {
 	                    try {
-    	                       Thread.currentThread().sleep(200); //Wait a little to make sure
+    	                       Thread.sleep(200); //Wait a little to make sure
         	            } catch (InterruptedException ex) { keepScrolling=false; }
         	            nx= n.drawx; 
                     	ny= n.drawy;
-                    	cx= getDrawCenter().x;
-                    	cy= getDrawCenter().y;
+                    	cx= getDrawCenter().getX();
+                    	cy= getDrawCenter().getY();
                 		distFromCenter = Math.sqrt((nx-cx)*(nx-cx)+(ny-cy)*(ny-cy));
             			if (distFromCenter<3) keepScrolling=false;            			
             				        	

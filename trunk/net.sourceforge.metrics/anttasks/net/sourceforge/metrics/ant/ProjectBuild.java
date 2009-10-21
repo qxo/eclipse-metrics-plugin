@@ -45,14 +45,11 @@ public class ProjectBuild extends Task {
 	
 	private IProject project = null;
 	private String projectName;
-	//private String buildTypeString = "INCREMENTAL";
-	private String buildTypeString = "FULL";
+	private String buildTypeString = "INCREMENTAL";
 	private String failonerror = "true";
 	private boolean failOnError = true;
 	private String debugcompilation = "";
-	private boolean debugCompilation;
-	//private int buildTypeInt = IncrementalProjectBuilder.INCREMENTAL_BUILD;
-	private int buildTypeInt = IncrementalProjectBuilder.FULL_BUILD;
+	private int buildTypeInt = IncrementalProjectBuilder.INCREMENTAL_BUILD;
 	private File compileErrorsOut;
 	private String compileErrorsFormat;
 
@@ -296,16 +293,6 @@ public class ProjectBuild extends Task {
 				 displayError("error output format must be txt or xml");
 				 return;
 			}
-		}
-		if (debugcompilation.equals("true"))
-			debugCompilation = true;
-		else if (debugcompilation.equals("false"))
-			debugCompilation = false;
-		else if (debugcompilation.equals(""))
-			debugCompilation = true;
-		else {
-			displayError("Invalid debugCompilation=" + debugcompilation	+ ", must be \"true\" or \"false\" ");
-			return;
 		}
 	}
 }

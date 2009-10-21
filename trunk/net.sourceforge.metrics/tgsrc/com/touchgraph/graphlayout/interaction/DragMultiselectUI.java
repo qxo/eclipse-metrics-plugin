@@ -61,7 +61,7 @@ import com.touchgraph.graphlayout.TGPoint2D;
   * by enclosing them in a dotted box.
   *   
   * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: DragMultiselectUI.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: DragMultiselectUI.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
   */
 public class DragMultiselectUI extends TGAbstractDragUI implements TGPaintListener {
         
@@ -111,22 +111,22 @@ public class DragMultiselectUI extends TGAbstractDragUI implements TGPaintListen
         
         int x,y,w,h;
         
-        if (startPos.x<mousePos.x) {
-            x=(int) startPos.x;
-            w=(int) (mousePos.x-startPos.x);
+        if (startPos.getX()<mousePos.getX()) {
+            x=(int) startPos.getX();
+            w=(int) (mousePos.getX()-startPos.getX());
         }
         else {
-            x=(int) mousePos.x;
-            w=(int) (startPos.x-mousePos.x);
+            x=(int) mousePos.getX();
+            w=(int) (startPos.getX()-mousePos.getX());
         }
 
-        if (startPos.y<mousePos.y) {
-            y=(int) startPos.y;
-            h=(int) (mousePos.y-startPos.y);
+        if (startPos.getY()<mousePos.getY()) {
+            y=(int) startPos.getY();
+            h=(int) (mousePos.getY()-startPos.getY());
         }
         else {
-            y=(int) mousePos.y;
-            h=(int) (startPos.y-mousePos.y);
+            y=(int) mousePos.getY();
+            h=(int) (startPos.getY()-mousePos.getY());
         }
         
         //God, where are the line styles when you need them

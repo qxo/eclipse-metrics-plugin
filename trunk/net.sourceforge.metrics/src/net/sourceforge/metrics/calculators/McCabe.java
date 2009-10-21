@@ -27,16 +27,22 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
+import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.ConditionalExpression;
 import org.eclipse.jdt.core.dom.DoStatement;
+import org.eclipse.jdt.core.dom.EnhancedForStatement;
+import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SwitchCase;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
 /** 
@@ -82,6 +88,19 @@ public class McCabe extends Calculator implements Constants {
 		McCabeVisitor(String source) {
 			this.source = source;
 		}
+		// McCabe CC is computed as method level. there fore while parsing code if we found TypeDeclaration, AnnotationTypeDeclaration, EnumDeclaration or AnonymousClassDeclaration
+		public boolean visit(AnonymousClassDeclaration node) {
+			return false; // XXX
+		}
+		public boolean visit(TypeDeclaration node) {
+			return false; // XXX same as above
+		}
+		public boolean visit(AnnotationTypeDeclaration node) {
+			return false; // XXX same as above
+		}
+		public boolean visit(EnumDeclaration node) {
+			return false; // XXX same as above
+		}
 		
 		public boolean visit(CatchClause node) {
 			cyclomatic++;
@@ -93,6 +112,11 @@ public class McCabe extends Calculator implements Constants {
 			return true;
 		}
 		public boolean visit(DoStatement node) {
+			cyclomatic++;
+			inspectExpression(node.getExpression());
+			return true;
+		}
+		public boolean visit(EnhancedForStatement node) {
 			cyclomatic++;
 			inspectExpression(node.getExpression());
 			return true;
@@ -116,9 +140,13 @@ public class McCabe extends Calculator implements Constants {
 			inspectExpression(node.getExpression());
 			return true;
 		}
-		public boolean visit(ExpressionStatement exs) {
-			inspectExpression(exs.getExpression());
+		public boolean visit(ExpressionStatement node) {
+			inspectExpression(node.getExpression());
 			return false;
+		}
+		public boolean visit(VariableDeclarationFragment node) {
+			inspectExpression(node.getInitializer());
+			return true;
 		}
 		/**
 		 * Count occurrences of && and || (conditional and or)

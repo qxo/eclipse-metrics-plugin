@@ -29,17 +29,17 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
-import org.eclipse.jdt.core.search.IJavaSearchResultCollector;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.ISearchPattern;
 import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.core.search.SearchParticipant;
+import org.eclipse.jdt.core.search.SearchPattern;
+import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
@@ -136,10 +136,10 @@ public class TangleAnalyzer {
 			// fill in the packageName->{IType}* map by getting all type declarations in scope
 			IJavaElement[] packs = (IJavaElement[])packages.toArray(new IJavaElement[]{});
 			IJavaSearchScope scope = SearchEngine.createJavaSearchScope(packs);
-			ISearchPattern pattern = SearchEngine.createSearchPattern("*",IJavaSearchConstants.TYPE, IJavaSearchConstants.DECLARATIONS, false);			
+			SearchPattern pattern = SearchPattern.createPattern("*",IJavaSearchConstants.TYPE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);			
 			TypeCollector c = new TypeCollector(result);
 			monitor.subTask("Collecting types in packages");
-			searchEngine.search(ResourcesPlugin.getWorkspace(), pattern, scope, c);
+			searchEngine.search(pattern, new SearchParticipant[]{SearchEngine.getDefaultSearchParticipant()}, scope, c, monitor);
 			if (monitor.isCanceled()) return;
 			// get all type references to these types. 
 			// Have to do multiple searches to get proper relationship :-(
@@ -152,12 +152,12 @@ public class TangleAnalyzer {
 				String handle = (String)i.next();
 				IJavaElement type = JavaCore.create(handle);
 				searchEngine.searchDeclarationsOfReferencedTypes(
-					ResourcesPlugin.getWorkspace(), 
 					type,
-					new RefCollector((Set)result.get(handle), typesInScope, type));
+					new RefCollector((Set)result.get(handle), typesInScope, type),
+					monitor);
 				monitor.worked(scale);
 			}
-		} catch (JavaModelException e) {
+		} catch (CoreException e) {
 			e.printStackTrace();
 		}
 	}
@@ -170,13 +170,13 @@ public class TangleAnalyzer {
 		monitor.subTask("Finding Packages in tangle");
 		SearchEngine searchEngine = new SearchEngine();
 		IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
-		ISearchPattern pattern = SearchEngine.createSearchPattern("*",IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS, false);
+		SearchPattern pattern = SearchPattern.createPattern("*",IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH);
 		PackageCollector c = new PackageCollector(packageNames);
 		try {
-			searchEngine.search(ResourcesPlugin.getWorkspace(), pattern, scope, c);
+			searchEngine.search(pattern, new SearchParticipant[]{SearchEngine.getDefaultSearchParticipant()}, scope, c, monitor);
 			monitor.worked(100);
 			return c.getResult();
-		} catch (JavaModelException e) {
+		} catch (CoreException e) {
 			e.printStackTrace();
 			return new ArrayList();
 		}
@@ -185,7 +185,7 @@ public class TangleAnalyzer {
 	/**
 	 * Find IPackageFragment objects from package names in component
 	 */
-	public class PackageCollector implements IJavaSearchResultCollector {
+	public class PackageCollector extends SearchRequestor {
 
 		private List packages = new ArrayList();
 		private List packageNames = null;
@@ -201,12 +201,6 @@ public class TangleAnalyzer {
 			return packages;			
 		}
 
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#aboutToStart()
-		 */
-		public void aboutToStart() {
-		}
-
 		/* count package references <em>outside</em>the current package
 		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#accept(org.eclipse.core.resources.IResource, int, int, org.eclipse.jdt.core.IJavaElement, int)
 		 */
@@ -217,23 +211,22 @@ public class TangleAnalyzer {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#done()
+		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org.eclipse.jdt.core.search.SearchMatch)
 		 */
-		public void done() {
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#getProgressMonitor()
-		 */
-		public IProgressMonitor getProgressMonitor() {
-			return null;
+		public void acceptSearchMatch(SearchMatch match) {
+			IJavaElement enclosingElement = (IJavaElement) match.getElement();
+			if ((enclosingElement != null)&&(packageNames.contains(enclosingElement.getElementName()))) {
+				packages.add(enclosingElement);
+			}
 		}
 	}
 	
 	/**
 	 * Collect all type declarations in the packages of the component
 	 */
-	public class TypeCollector implements IJavaSearchResultCollector {
+	public class TypeCollector extends SearchRequestor 
+	//implements IJavaSearchResultCollector 
+	{
 
 		Map store = null;
 		
@@ -242,40 +235,25 @@ public class TangleAnalyzer {
 		}
 		
 		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#aboutToStart()
+		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org.eclipse.jdt.core.search.SearchMatch)
 		 */
-		public void aboutToStart() {
-		}
-
-		/* count package references <em>outside</em>the current package.
-		 * Does not include local (anonymous) types
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#accept(org.eclipse.core.resources.IResource, int, int, org.eclipse.jdt.core.IJavaElement, int)
-		 */
-		public void accept(IResource resource, int start, int end, IJavaElement enclosingElement, int accuracy) throws CoreException {
-			if ((enclosingElement != null)&&(enclosingElement.getElementType() == IJavaElement.TYPE)) {
-				String packName = enclosingElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT).getElementName();
-				Set deps = new HashSet();
-				store.put(enclosingElement.getHandleIdentifier(), deps);
-				Set typesInPackage = (Set)packages.get(packName);
-				if (typesInPackage == null) {
-					typesInPackage = new HashSet();
-					packages.put(packName, typesInPackage);
+		public void acceptSearchMatch(SearchMatch match) {
+			IJavaElement enclosingElement = (IJavaElement) match.getElement();
+			try {
+				if ((enclosingElement != null)&&(enclosingElement.getElementType() == IJavaElement.TYPE)) {
+					String packName = enclosingElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT).getElementName();
+					Set deps = new HashSet();
+					store.put(enclosingElement.getHandleIdentifier(), deps);
+					Set typesInPackage = (Set)packages.get(packName);
+					if (typesInPackage == null) {
+						typesInPackage = new HashSet();
+						packages.put(packName, typesInPackage);
+					}
+					typesInPackage.add(enclosingElement.getHandleIdentifier());
 				}
-				typesInPackage.add(enclosingElement.getHandleIdentifier());
+			} catch (Throwable e) {
+				e.printStackTrace();
 			}
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#done()
-		 */
-		public void done() {
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#getProgressMonitor()
-		 */
-		public IProgressMonitor getProgressMonitor() {
-			return null;
 		}
 	}
 	
@@ -284,7 +262,7 @@ public class TangleAnalyzer {
 	 * Only collect references to/from classes in these packages (both to AND
 	 * from must be in the scope)
 	 */
-	public class RefCollector implements IJavaSearchResultCollector {
+	public class RefCollector extends SearchRequestor {
 
 		Set store = null;
 		Set types = null;
@@ -299,37 +277,19 @@ public class TangleAnalyzer {
 		}
 		
 		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#aboutToStart()
+		 * @see org.eclipse.jdt.core.search.SearchRequestor#acceptSearchMatch(org.eclipse.jdt.core.search.SearchMatch)
 		 */
-		public void aboutToStart() {
-		}
-
-		/* count package references <em>outside</em>the current package
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#accept(org.eclipse.core.resources.IResource, int, int, org.eclipse.jdt.core.IJavaElement, int)
-		 */
-		public void accept(IResource resource, int start, int end, IJavaElement enclosingElement, int accuracy) throws CoreException {
+		public void acceptSearchMatch(SearchMatch match) throws CoreException {
+			IJavaElement enclosingElement = (IJavaElement) match.getElement();
 			if ((enclosingElement != null)&&(enclosingElement.getElementType() == IJavaElement.TYPE)) {
 				// found type declaration is of one of the types we want
 				if (types.contains(enclosingElement.getHandleIdentifier())) {
 					// it's in a different package than the from type
-					if (!fromPackage.equals(enclosingElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT))) {
+					//if (!fromPackage.equals(enclosingElement.getAncestor(IJavaElement.PACKAGE_FRAGMENT))) {
 						store.add(enclosingElement.getHandleIdentifier());
-					}
+					//}
 				}
 			}
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#done()
-		 */
-		public void done() {
-		}
-
-		/* (non-Javadoc)
-		 * @see org.eclipse.jdt.core.search.IJavaSearchResultCollector#getProgressMonitor()
-		 */
-		public IProgressMonitor getProgressMonitor() {
-			return null;
 		}
 	}
 	

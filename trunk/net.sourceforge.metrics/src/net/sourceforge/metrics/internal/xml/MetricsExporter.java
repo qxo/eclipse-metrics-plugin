@@ -35,6 +35,7 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IType;
 
 /**
  * @author Frank Sauer
@@ -52,13 +53,13 @@ public abstract class MetricsExporter implements Constants {
 	private static String format(double value) {
 		if (nf == null) {
 			nf = NumberFormat.getInstance();
-			int decimals = MetricsPlugin.getDefault().getPreferenceStore().getInt("METRICS.decimals");
+			int decimals = MetricsPlugin.getDefault().getPluginPreferences().getInt("METRICS.decimals");
 			nf.setMaximumFractionDigits(decimals);
 			nf.setGroupingUsed(false);
 		}
 		return nf.format(value);
 	}
-
+	
 	protected void printMetrics(AbstractMetricSource source, XMLPrintStream out, int level) {
 		out.indent(level);
 		out.println("<Metrics>");
@@ -89,9 +90,9 @@ public abstract class MetricsExporter implements Constants {
 			String value = attributes.getProperty(name);
 			if (value != null) {
 				out.print(' ');
-				out.print(name);
+				out.print(formatAttribut(name));
 				out.print(" =\"");
-				out.print(value);
+				out.print(formatAttribut(value));
 				out.print('"');
 			}
 		}
@@ -99,15 +100,11 @@ public abstract class MetricsExporter implements Constants {
 
 	protected String formatHandle(String handle) {
 		// the following is JDK1.4 specific
-		//return handle.replaceAll("<", "&lt;");
-		StringTokenizer str = new StringTokenizer(handle, "<");
-		StringBuffer b = new StringBuffer();
-		while (str.hasMoreTokens()) {
-			b.append(str.nextToken());
-			b.append("&lt;");
-		}
-		int lastEntity = b.toString().lastIndexOf("&lt;");
-		return b.substring(0,lastEntity);
+		return handle.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+	}
+	
+	protected String formatAttribut(String value){
+		return formatHandle(value);
 	}
 	
 	/**
@@ -165,7 +162,7 @@ public abstract class MetricsExporter implements Constants {
 		out.print('<');
 		out.print(getTagName());
 		out.print(" name = \"");
-		out.print(getElementName(element));
+		out.print(formatHandle(getElementName(element)));
 		out.print("\" handle = \"");
 		out.print(formatHandle(source.getHandle()));
 		out.println("\">");
@@ -173,7 +170,13 @@ public abstract class MetricsExporter implements Constants {
 
 	protected String getElementName(IJavaElement element) {
 		String name = element.getElementName();
-		if ("".equals(name)) name = "(default package)";
+		if ("".equals(name)){
+			if(element instanceof IType){
+				name = "anonymous";
+			}else {
+				name = "(default package)";
+			}
+		}
 		return name;
 	}
 	

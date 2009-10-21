@@ -55,6 +55,9 @@ import net.sourceforge.metrics.ui.dependencies.PackageAttributes;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IType;
 
 import classycle.graph.AtomicVertex;
 import classycle.graph.StrongComponent;
@@ -78,17 +81,21 @@ public class MetricsFirstExporter implements IExporter, Constants {
 		cache = new SoftCache();
 	}
 	
+	protected String formatXMLStr(String handle) {
+		return handle.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+	}
+	
 	public void export(IJavaElement element, File outputFile, IProgressMonitor monitor) throws InvocationTargetException {
 		try {
 			FileOutputStream out = new FileOutputStream(outputFile);
 			XMLPrintStream pOut = new XMLPrintStream(out);
-			NumberFormat nf = NumberFormat.getInstance();
-			int decimals = plugin.getPluginPreferences().getInt("METRICS.decimals");
-			nf.setMaximumFractionDigits(decimals);
-			nf.setGroupingUsed(false);
 			monitor.beginTask("Exporting metrics to flat per Metric XML format...", names.length);
 			AbstractMetricSource root = getData(element);			
 			pOut.printXMLHeader();
+			NumberFormat nf = NumberFormat.getInstance();
+			int decimals = MetricsPlugin.getDefault().getPluginPreferences().getInt("METRICS.decimals");
+			nf.setMaximumFractionDigits(decimals);
+			nf.setGroupingUsed(false);
 			printRoot(root, pOut, monitor, nf);
 			pOut.close();		
 		} catch (FileNotFoundException e) {
@@ -123,7 +130,8 @@ public class MetricsFirstExporter implements IExporter, Constants {
 		maybePrintCycles(root, pOut, monitor);
 		for (int i = 0; i < names.length; i++) {
 			monitor.subTask("Exporting: " + descriptions[i]);
-			MetricDescriptor md = plugin.getMetricDescriptor(names[i]);			pOut.indent(1);
+			MetricDescriptor md = plugin.getMetricDescriptor(names[i]);
+			pOut.indent(1);
 			pOut.print("<Metric ");
 			pOut.print("id = \"");
 			pOut.print(names[i]);
@@ -375,9 +383,55 @@ public class MetricsFirstExporter implements IExporter, Constants {
 	}
 	
 	protected String getName(IJavaElement element) {
-		String name = element.getElementName();
-		if ("".equals(name)) name = "(default package)";
-		return name;
+		return formatXMLStr(getNotBlankName(buildName(element), element));
+	}
+	
+	protected String getNotBlankName(String currentName , IJavaElement element){
+		String l_return = currentName;
+		if ("".equals(l_return)){
+			if(element instanceof IType){
+				IJavaElement parentType = element.getParent().getAncestor(IJavaElement.TYPE);
+				String handle = element.getHandleIdentifier();
+				int start = handle.lastIndexOf(parentType.getElementName());
+				if(start != -1){
+					handle = handle.substring(start + parentType.getElementName().length());
+				}
+				l_return = "anonymous#" + handle;
+			} else {
+				l_return = "(default package)";
+			}
+		}
+		return l_return;
+	}
+	
+	protected String buildName(IJavaElement element){
+		String l_return = element.getElementName();
+		if(element instanceof IType){
+			IJavaElement container = element.getParent();
+			if(container != null && container.getAncestor(IJavaElement.TYPE) != null){
+				l_return =buildParentTypeNamePart(element);
+			}
+		} else if(element instanceof IMethod){
+			IJavaElement container = element.getAncestor(IJavaElement.TYPE); 
+			if(container != null && container.getParent() != null && container.getParent().getAncestor(IJavaElement.TYPE) != null){
+				l_return =buildParentTypeNamePart(container) + "#" + element.getElementName();
+			}
+		}
+		return l_return;
+	}
+	
+	protected String buildParentTypeNamePart(IJavaElement element){
+		StringBuffer l_strBuffer = new StringBuffer(getNotBlankName(element.getElementName(), element));
+		IJavaElement l_current = element.getParent().getAncestor(IJavaElement.TYPE);
+		while(l_current != null){
+			l_strBuffer.insert(0,'.' );
+			l_strBuffer.insert(0,getNotBlankName(l_current.getElementName(), l_current));
+			l_current = l_current.getParent();
+			if(l_current != null){
+				l_current = l_current.getAncestor(IJavaElement.TYPE);
+			}
+		}
+		return l_strBuffer.toString();
 	}
 	
 	/**

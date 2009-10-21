@@ -48,7 +48,7 @@ public class PackageFragmentMetrics extends AbstractMetricSource {
 		super();
 	}
 	
-	protected void initializeChildren() {
+	protected void initializeChildren(AbstractMetricSource parentMetric) {
 		IPackageFragment pack = (IPackageFragment)getJavaElement();
 		try {
 			IJavaElement[] children = pack.getChildren();
@@ -65,8 +65,8 @@ public class PackageFragmentMetrics extends AbstractMetricSource {
 		}	
 	}
 	
-	public void recurse() {
-		initializeChildren();
+	public void recurse(AbstractMetricSource parentMetric) {
+		initializeChildren(parentMetric);
 		calculate();
 		save();
 	}

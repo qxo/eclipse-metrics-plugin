@@ -52,28 +52,54 @@ package com.touchgraph.graphlayout;
 /** TGPoint2D is only needed for java 1.1.
   *   
   * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: TGPoint2D.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: TGPoint2D.java,v 1.2 2004/10/25 06:57:41 donv70 Exp $
   */
 public class TGPoint2D {
 
-    public double x,y;
+    private double x;
+    private double y;
     
     public TGPoint2D( double xpos, double ypos ) {
-        x=xpos;
-        y=ypos;
+        setX(xpos);
+        setY(ypos);
     }
 
     public TGPoint2D( TGPoint2D p ) {
-        x=p.x;
-        y=p.y;
+        setX(p.getX());
+        setY(p.getY());
     }
     
     public void setLocation( double xpos,double ypos ) {
-        x=xpos;
-        y=ypos;
+        setX(xpos);
+        setY(ypos);
+    }
+
+    public void setX(double x) {
+        if (Double.isInfinite(x)) {
+            x = x > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
+        }
+        if (Double.isNaN(x) || x == Double.NaN) {
+            System.err.println("Argh!");
+        }
+        this.x = x;
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public void setY(double y) {
+        if (Double.isInfinite(y)) {
+            y = y > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
+        }
+        if (Double.isNaN(y) || Double.isInfinite(y) || y == Double.NaN) {
+            System.err.println("Argh!");
+        }
+        this.y = y;
+    }
+
+    public double getY() {
+        return y;
     }
     
-    public void setX( double xpos ) { x=xpos; }
-    public void setY( double ypos ) { y=ypos; }
-
 } // end com.touchgraph.graphlayout.TGPoint2D

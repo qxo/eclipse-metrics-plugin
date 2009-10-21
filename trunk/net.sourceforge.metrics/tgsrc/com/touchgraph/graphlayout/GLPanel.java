@@ -84,7 +84,7 @@ import com.touchgraph.graphlayout.interaction.ZoomScroll;
   * will probably need to be rewritten for other applications.
   *
   * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: GLPanel.java,v 1.7 2004/05/01 19:02:16 sauerf Exp $
+  * @version  1.22-jre1.1  $Id: GLPanel.java,v 1.8 2004/05/05 03:42:27 sauerf Exp $
   */
 public class GLPanel extends Panel {
 
@@ -353,10 +353,10 @@ public class GLPanel extends Panel {
       firstRow.add(lbl,c);
       	
       class radioItemListener implements ItemListener{
-        private String scrollBarName;
-        public radioItemListener(String str2Act){
-          this.scrollBarName=str2Act;
+
+      	public radioItemListener(String str2Act){
         }
+
         public void itemStateChanged(ItemEvent e){
           Scrollbar selectedSB = (Scrollbar) scrollBarHash.get((String) bg.getSelectedCheckbox().getLabel());		 
           if (e.getStateChange()==ItemEvent.SELECTED){

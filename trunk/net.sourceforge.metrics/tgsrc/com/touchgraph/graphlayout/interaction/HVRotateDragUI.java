@@ -87,14 +87,14 @@ public class HVRotateDragUI extends TGAbstractDragUI implements TGPaintListener 
     }
 
     double graphDist(double x, double y) {
-        double adjx=(x-this.tgPanel.getDrawCenter().x);
-        double adjy=(y-this.tgPanel.getDrawCenter().y);
+        double adjx=(x-this.tgPanel.getDrawCenter().getX());
+        double adjy=(y-this.tgPanel.getDrawCenter().getY());
         return Math.sqrt(adjx*adjx+adjy*adjy);
     }
 
     double getMouseAngle(double x, double y) {
-        double adjx=(x-this.tgPanel.getDrawCenter().x);
-        double adjy=(y-this.tgPanel.getDrawCenter().y);
+        double adjx=(x-this.tgPanel.getDrawCenter().getX());
+        double adjy=(y-this.tgPanel.getDrawCenter().getY());
         double ang = Math.atan(adjy/adjx);
         if (adjx==0)
             if(adjy>0) ang=Math.PI/2;
@@ -175,20 +175,20 @@ public class HVRotateDragUI extends TGAbstractDragUI implements TGPaintListener 
             double ang = Math.PI*2*i/16;
             double rayX = 1000*Math.cos(ang);
             double rayY = 1000*Math.sin(ang);
-            g.drawLine((int) drawCenter.x, (int) drawCenter.y,
-                       (int) (rayX+drawCenter.x),(int) (rayY+drawCenter.y));
-            g.drawLine((int) drawCenter.x+1, (int) drawCenter.y,
-                       (int) (rayX+drawCenter.x+1),(int) (rayY+drawCenter.y));
-            g.drawLine((int) drawCenter.x, (int) drawCenter.y+1,
-                       (int) (rayX+drawCenter.x),(int) (rayY+drawCenter.y+1));
-            g.drawLine((int) drawCenter.x+1, (int) drawCenter.y+1,
-                       (int) (rayX+drawCenter.x+1),(int) (rayY+drawCenter.y+1));
+            g.drawLine((int) drawCenter.getX(), (int) drawCenter.getY(),
+                       (int) (rayX+drawCenter.getX()),(int) (rayY+drawCenter.getY()));
+            g.drawLine((int) drawCenter.getX()+1, (int) drawCenter.getY(),
+                       (int) (rayX+drawCenter.getX()+1),(int) (rayY+drawCenter.getY()));
+            g.drawLine((int) drawCenter.getX(), (int) drawCenter.getY()+1,
+                       (int) (rayX+drawCenter.getX()),(int) (rayY+drawCenter.getY()+1));
+            g.drawLine((int) drawCenter.getX()+1, (int) drawCenter.getY()+1,
+                       (int) (rayX+drawCenter.getX()+1),(int) (rayY+drawCenter.getY()+1));
         }
 
 
-        g.fillOval((int)drawCenter.x-60, (int) drawCenter.y-60, 120,120);
-        g.setColor(tgPanel.BACK_COLOR);
-        g.fillOval((int)drawCenter.x-58, (int) drawCenter.y-58, 116,116);
+        g.fillOval((int)drawCenter.getX()-60, (int) drawCenter.getY()-60, 120,120);
+        g.setColor(TGPanel.BACK_COLOR);
+        g.fillOval((int)drawCenter.getX()-58, (int) drawCenter.getY()-58, 116,116);
 
     }
 
