@@ -25,12 +25,9 @@
 package classycle.graph;
 
 /**
- *  Marker interface of any general set of attributes a {@link Vertex} may
- *  have. These attributes are neither used or modified by any parsing or
- *  searching process.
- *
- *  @author Franz-Josef Elmer
+ * Marker interface of any general set of attributes a {@link Vertex} may have. These attributes are neither used or modified by any parsing or searching process.
+ * 
+ * @author Franz-Josef Elmer
  */
-public interface Attributes
-{
-} //interface
+public interface Attributes {
+} // interface

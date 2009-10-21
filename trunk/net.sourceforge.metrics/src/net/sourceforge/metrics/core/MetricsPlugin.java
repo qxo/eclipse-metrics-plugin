@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -35,14 +36,16 @@ import net.sourceforge.metrics.core.sources.Cache;
 import net.sourceforge.metrics.propagators.Propagator;
 import net.sourceforge.metrics.propagators.Sum;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.util.ListenerList;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -51,58 +54,56 @@ import org.osgi.framework.BundleContext;
  * 
  * @author Frank Sauer
  */
-public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IPropertyChangeListener, Constants {
+public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeListener, Constants {
 
-	
-	private HashMap metricsDependencies;
+	private Map<String, List<String>> metricsDependencies;
 	private String[] descriptions;
 	private String[] ids;
-	//The shared instance.
+	// The shared instance.
 	private static MetricsPlugin plugin;
-	//Resource bundle.
+	// Resource bundle.
 	private ResourceBundle resourceBundle;
-	
-	private boolean listenerAdded = false;
-	
-	private HashMap calculators = new HashMap();
-	private HashMap metrics = new HashMap();
-	private HashMap exporters = new HashMap();
-	private ListenerList listeners = new ListenerList();
-	
+
+	private Map<String, List<ICalculator>> calculators = new HashMap<String, List<ICalculator>>();
+	private Map<String, MetricDescriptor> metrics = new HashMap<String, MetricDescriptor>();
+	private Map<String, ExportDescriptor> exporters = new HashMap<String, ExportDescriptor>();
+	private ListenerList listeners = new ListenerList(ListenerList.IDENTITY);
+
 	public static ImageDescriptor createImage(String name) {
 		return ImageDescriptor.createFromURL(makeImageURL(name));
 	}
 
 	private static URL makeImageURL(String name) {
 		try {
-			return Platform.resolve(Platform.find(getDefault().getBundle(), new Path("icons/" + name)));
+			return FileLocator.resolve(FileLocator.find(getDefault().getBundle(), new Path("icons/" + name), null));
 		} catch (IOException e) {
 			Log.logError("Can't find image with name " + name, e);
 			return null;
 		}
-	}	
+	}
 
 	public MetricsPlugin() {
 		super();
 		if (plugin == null) {
 			plugin = this;
 			try {
-				resourceBundle= ResourceBundle.getBundle("net.sourceforge.metrics.core.MetricsPluginResources");
+				resourceBundle = ResourceBundle.getBundle("net.sourceforge.metrics.core.MetricsPluginResources");
 			} catch (MissingResourceException x) {
 				resourceBundle = null;
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns the shared instance.
 	 */
 	public static MetricsPlugin getDefault() {
 		return plugin;
 	}
-	
+
 	/**
 	 * get a list of all installed metric ids
+	 * 
 	 * @return String[]
 	 */
 	public String[] getMetricIds() {
@@ -111,9 +112,10 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 		}
 		return ids;
 	}
-	
+
 	/**
 	 * get a list of all installed metric descriptions
+	 * 
 	 * @return String[]
 	 */
 	public String[] getMetricDescriptions() {
@@ -122,13 +124,13 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 		}
 		return descriptions;
 	}
-	
+
 	public MetricDescriptor getMetricDescriptor(String id) {
-		return (MetricDescriptor) metrics.get(id);
+		return metrics.get(id);
 	}
-	
+
 	private String[] parsePrefString(boolean description) {
-		String stringList = getPluginPreferences().getString("METRICS.displayOrder");
+		String stringList = getPreferenceStore().getString("METRICS.displayOrder");
 		StringTokenizer t = new StringTokenizer(stringList, ",");
 		int length = t.countTokens();
 		String[] items = new String[length];
@@ -136,20 +138,19 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 			String next = t.nextToken();
 			int dash = next.indexOf('-');
 			if (description) {
-				items[i] = next.substring(dash+1).trim();
+				items[i] = next.substring(dash + 1).trim();
 			} else {
-				items[i] = next.substring(0,dash).trim();
+				items[i] = next.substring(0, dash).trim();
 			}
 		}
 		return items;
 	}
-	
+
 	/**
-	 * Returns the string from the plugin's resource bundle,
-	 * or 'key' if not found.
+	 * Returns the string from the plugin's resource bundle, or 'key' if not found.
 	 */
 	public static String getResourceString(String key) {
-		ResourceBundle bundle= MetricsPlugin.getDefault().getResourceBundle();
+		ResourceBundle bundle = MetricsPlugin.getDefault().getResourceBundle();
 		try {
 			return bundle.getString(key);
 		} catch (MissingResourceException e) {
@@ -163,30 +164,26 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 	public ResourceBundle getResourceBundle() {
 		return resourceBundle;
 	}
-	
+
 	public static long lastTimePreferencesChanged() {
-		return getDefault().getPluginPreferences().getLong("METRICS.lastPrefChange");
+		return getDefault().getPreferenceStore().getLong("METRICS.lastPrefChange");
 	}
-	
+
 	/**
-	 * record the last time the preferences were change to force recalculation
-	 * after a change.
+	 * record the last time the preferences were change to force recalculation after a change.
 	 */
 	public static void recordTimeAndClearCache() {
-		//System.err.println("Recording preference change timestamp.");
-		getDefault().getPluginPreferences().setValue("METRICS.lastPrefChange", String.valueOf(new Date().getTime()));
-		//Cache.singleton.clear();
+		// System.err.println("Recording preference change timestamp.");
+		getDefault().getPreferenceStore().setValue("METRICS.lastPrefChange", String.valueOf(new Date().getTime()));
+		// Cache.singleton.clear();
 	}
-	
 
 	public static boolean isWarningsEnabled() {
-		return getDefault().getPluginPreferences().getBoolean("METRICS.enablewarnings");
+		return getDefault().getPreferenceStore().getBoolean("METRICS.enablewarnings");
 	}
-	
-	/**
-	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
-	 */
-	public void propertyChange(Preferences.PropertyChangeEvent event) {
+
+	@Override
+	public void propertyChange(PropertyChangeEvent event) {
 		if (!event.getProperty().startsWith("METRICS")) {
 			recordTimeAndClearCache();
 		} else {
@@ -194,9 +191,10 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 			descriptions = null;
 		}
 		Object[] l = listeners.getListeners();
-		for (int i = 0; i < l.length; i++) {
-			if (l[i] instanceof Preferences.IPropertyChangeListener)
-			((Preferences.IPropertyChangeListener)l[i]).propertyChange(event);
+		for (Object element : l) {
+			if (element instanceof IPropertyChangeListener) {
+				((IPropertyChangeListener) element).propertyChange(event);
+			}
 		}
 	}
 
@@ -204,19 +202,18 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 		installMetrics();
 		installExporters();
 	}
-	
+
 	/**
 	 * scan plugins for metrics and calculators and install them.
 	 */
 	private void installMetrics() {
-		//System.err.println("Discovering and installing metrics");
+		// System.err.println("Discovering and installing metrics");
 		IExtensionPoint p = Platform.getExtensionRegistry().getExtensionPoint(pluginId + ".metrics");
 		if (p != null) {
 			IExtension[] x = p.getExtensions();
-			for (int i = 0; i < x.length;i++) {
-				IConfigurationElement[] elements = x[i].getConfigurationElements();
-				for (int j = 0; j < elements.length; j++) {
-					IConfigurationElement next = elements[j];
+			for (IExtension element : x) {
+				IConfigurationElement[] elements = element.getConfigurationElements();
+				for (IConfigurationElement next : elements) {
 					String kind = next.getName();
 					if (kind.equals("calculator")) {
 						installCalculator(next);
@@ -228,25 +225,24 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 			initDisplayOrderPreference();
 		}
 	}
-	
+
 	private void installExporters() {
-		//System.err.println("Discovering and installing metrics");
+		// System.err.println("Discovering and installing metrics");
 		IExtensionPoint p = Platform.getExtensionRegistry().getExtensionPoint(pluginId + ".exporters");
 		if (p != null) {
 			IExtension[] x = p.getExtensions();
-			for (int i = 0; i < x.length;i++) {
-				IConfigurationElement[] elements = x[i].getConfigurationElements();
-				for (int j = 0; j < elements.length; j++) {
-					IConfigurationElement next = elements[j];
+			for (IExtension element : x) {
+				IConfigurationElement[] elements = element.getConfigurationElements();
+				for (IConfigurationElement next : elements) {
 					String kind = next.getName();
 					if (kind.equals("exporter")) {
 						installExporter(next);
-					} 
+					}
 				}
 			}
 		}
 	}
-	
+
 	private void installExporter(IConfigurationElement element) {
 		ExportDescriptor xd = ExportDescriptor.createFrom(element);
 		if (xd != null) {
@@ -255,22 +251,22 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 	}
 
 	public ExportDescriptor[] getExporters() {
-		return (ExportDescriptor[])exporters.values().toArray(new ExportDescriptor[]{});
+		return exporters.values().toArray(new ExportDescriptor[] {});
 	}
-	
+
 	public ExportDescriptor getExporter(String className) {
-		return (ExportDescriptor)exporters.get(className);
+		return exporters.get(className);
 	}
-	
+
 	public IExporter getCurrentExporter() {
-		String format = getPluginPreferences().getString("METRICS.xmlformat");
+		String format = getPreferenceStore().getString("METRICS.xmlformat");
 		return createExporter(format);
 	}
-	
+
 	public boolean showProjectOnCompletion() {
-		return getPluginPreferences().getBoolean("METRICS.showProject");
+		return getPreferenceStore().getBoolean("METRICS.showProject");
 	}
-	
+
 	public IExporter createExporter(String className) {
 		ExportDescriptor xd = getExporter(className);
 		if (xd != null) {
@@ -278,25 +274,25 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Set the default display order.
 	 */
 	private void initDisplayOrderPreference() {
 		StringBuffer list = new StringBuffer();
-		for (Iterator i = metrics.keySet().iterator();i.hasNext();) {
-			String id = (String)i.next();
-			String desc = ((MetricDescriptor)metrics.get(id)).getName();
+		for (Object element : metrics.keySet()) {
+			String id = (String) element;
+			String desc = (metrics.get(id)).getName();
 			list.append(id).append(" - ").append(desc).append(',');
 		}
-		String def = list.substring(0,list.length()-1);
-		getPluginPreferences().setDefault("METRICS.displayOrder", def);
+		String def = list.substring(0, list.length() - 1);
+		getPreferenceStore().setDefault("METRICS.displayOrder", def);
 		// if metrics were added/removed, reset the value
 		if (getMetricIds().length != metrics.size()) {
-			getPluginPreferences().setToDefault("METRICS.displayOrder");
+			getPreferenceStore().setToDefault("METRICS.displayOrder");
 		}
 	}
-	
+
 	private void installMetric(IConfigurationElement element) {
 		MetricDescriptor m = MetricDescriptor.createFrom(element);
 		if (m != null) {
@@ -305,7 +301,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 				// of some other metric, make sure it gets calculated
 				Sum s = new Sum(m.getId(), m.getSumOf());
 				getCalculators(m.getLevel()).add(s);
-				//System.err.println("Added a sum: " + s);
+				// System.err.println("Added a sum: " + s);
 			}
 			metrics.put(m.getId(), m);
 			installPropagators(m);
@@ -319,16 +315,16 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 	 */
 	private void recordDependencies(String id, String[] requires) {
 		if (metricsDependencies == null) {
-			metricsDependencies = new HashMap();
+			metricsDependencies = new HashMap<String, List<String>>();
 		}
 		if (requires != null && requires.length > 0) {
-			for (int i = 0; i < requires.length; i++) {
-				List existing = (List)metricsDependencies.get(requires[i]);
+			for (String require : requires) {
+				List<String> existing = metricsDependencies.get(require);
 				if (existing == null) {
-					existing = new ArrayList();
+					existing = new ArrayList<String>();
 				}
 				existing.add(id);
-				metricsDependencies.put(requires[i], existing);
+				metricsDependencies.put(require, existing);
 			}
 		}
 	}
@@ -337,15 +333,16 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 		CalculatorDescriptor c = createDescriptorFrom(nextCalculator);
 		addCalculator(c);
 	}
-		
+
 	private void addCalculator(CalculatorDescriptor c) {
-		List calcs = getCalculators(c.getLevel());
+		List<ICalculator> calcs = getCalculators(c.getLevel());
 		calcs.add(c.createCalculator());
-		//System.err.println(c);
+		// System.err.println(c);
 	}
-	
+
 	/**
 	 * Install all propagators required by m
+	 * 
 	 * @param m
 	 */
 	private void installPropagators(MetricDescriptor m) {
@@ -353,7 +350,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 		if (nextLevel != null) {
 			List props = m.createPropagators();
 			for (Iterator i = props.iterator(); i.hasNext();) {
-				Propagator p = (Propagator)i.next();
+				Propagator p = (Propagator) i.next();
 				getCalculators(nextLevel).add(p);
 				propagatePropagator(nextLevel, p, m);
 			}
@@ -361,18 +358,19 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 			if (newAvgMaxAt != null) {
 				props = m.createIntroducedAvgMax();
 				for (Iterator i = props.iterator(); i.hasNext();) {
-					Propagator p = (Propagator)i.next();
-					//System.err.println("Installing a " + p + " at level " + newAvgMaxAt);
+					Propagator p = (Propagator) i.next();
+					// System.err.println("Installing a " + p + " at level " +
+					// newAvgMaxAt);
 					getCalculators(newAvgMaxAt).add(p);
 					propagatePropagator(newAvgMaxAt, p, m);
 				}
 			}
 		}
 	}
-	
+
 	/**
-	 * Create MaxMax, AvgAvg and Sum calculators at each level above
-	 * the given level
+	 * Create MaxMax, AvgAvg and Sum calculators at each level above the given level
+	 * 
 	 * @param level
 	 * @param p
 	 */
@@ -381,37 +379,42 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 		Propagator nextP = p.createNextLevel();
 		while (nextLevel != null) {
 			getCalculators(nextLevel).add(nextP);
-			//System.err.println("Added a " + nextP + " at level " + nextLevel);
+			// System.err.println("Added a " + nextP + " at level " +
+			// nextLevel);
 			nextLevel = MetricDescriptor.getNextLevel(nextLevel);
 			nextP = nextP.createNextLevel();
 		}
 	}
-	
+
 	/**
 	 * Get the list of calculators for the given level
-	 * @param level	as specified in the xml attribute level
+	 * 
+	 * @param level
+	 *            as specified in the xml attribute level
 	 * @return List
 	 */
-	public List getCalculators(String level) {
-		List result = (List) calculators.get(level);
+	public List<ICalculator> getCalculators(String level) {
+		List<ICalculator> result = calculators.get(level);
 		if (result == null) {
-			result = new ArrayList();
+			result = new ArrayList<ICalculator>();
 			calculators.put(level, result);
 		}
 		return result;
 	}
-	
+
 	/**
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop()
 	 */
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		Cache.singleton.close();
 		super.stop(context);
 	}
-	
+
 	/**
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start()
 	 */
+	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		installExtensions();
@@ -419,36 +422,42 @@ public class MetricsPlugin extends AbstractUIPlugin implements Preferences.IProp
 
 	/**
 	 * Method createCalculatorDescriptorFrom.
+	 * 
 	 * @param iConfigurationElement
 	 */
 	private CalculatorDescriptor createDescriptorFrom(IConfigurationElement element) {
 		return CalculatorDescriptor.createFrom(element);
 	}
-	
+
 	/**
 	 * @param listener
 	 */
-	public void addPropertyChangeListener(Preferences.IPropertyChangeListener listener) {
-		listeners.add(listener);		
+	public void addPropertyChangeListener(IPropertyChangeListener listener) {
+		listeners.add(listener);
 	}
 
 	/**
 	 * @param listener
 	 */
-	public void removePropertyChangeListener(Preferences.IPropertyChangeListener listener) {
-		listeners.remove(listener);		
+	public void removePropertyChangeListener(IPropertyChangeListener listener) {
+		listeners.remove(listener);
 	}
 
 	/**
 	 * returns a list of metric ids that depend on the given metric being available
+	 * 
 	 * @param descriptor
 	 * @return array of metric ids or null if none depend on the given metric
 	 */
 	public String[] getDependentMetrics(MetricDescriptor descriptor) {
-		if (descriptor == null) return null;
-		List dependents = (List)metricsDependencies.get(descriptor.getId());
-		if (dependents != null) return (String[]) dependents.toArray(new String[]{});
+		if (descriptor == null) {
+			return null;
+		}
+		List<String> dependents = metricsDependencies.get(descriptor.getId());
+		if (dependents != null) {
+			return dependents.toArray(new String[] {});
+		}
 		return null;
 	}
-	
+
 }

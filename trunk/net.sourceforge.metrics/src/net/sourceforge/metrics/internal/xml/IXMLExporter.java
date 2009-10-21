@@ -35,7 +35,8 @@ public interface IXMLExporter {
 	static final IXMLExporter COMPILATIONUNIT_EXPORTER = new CompilationUnitXMLExporter();
 	static final IXMLExporter TYPE_EXPORTER = new TypeXMLExporter();
 	static final IXMLExporter METHOD_EXPORTER = new MethodXMLExporter();
-	
+
 	void export(AbstractMetricSource source, XMLPrintStream out, int level, IProgressMonitor monitor);
+
 	String getTagName();
 }

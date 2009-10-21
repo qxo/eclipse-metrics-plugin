@@ -18,11 +18,10 @@
  *
  * $Id: ProgressQueue.java,v 1.7 2003/07/03 04:05:10 sauerf Exp $
  */
- package net.sourceforge.metrics.builder;
+package net.sourceforge.metrics.builder;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,33 +33,35 @@ import org.eclipse.jdt.core.IJavaProject;
 
 /**
  * Decouples the calculation thread from the others. Internal use only
+ * 
  * @author Frank Sauer
  */
-public class ProgressQueue extends LinkedList {
+public class ProgressQueue extends LinkedList<ProgressQueueCommand> {
+
+	private static final long serialVersionUID = 1L;
 
 	private boolean paused;
 	private Collection items;
-	private List listeners = new ArrayList();
+	private List<IMetricsProgressListener> listeners = new ArrayList<IMetricsProgressListener>();
 	private Semaphore sem = new Semaphore(0);
 	private Thread notifier = new NotifierThread();
-	
+
 	public ProgressQueue(Collection c) {
 		this.items = c;
 		notifier.start();
 	}
-	
+
 	/**
-	 * Add listener l to be notified of metrics progress.
-	 * If there are any calculations already ongoing, l will be caught up
-	 * by the immediate receipt on the current thread of a queued event
-	 * with the current number of outstanding calculations.
+	 * Add listener l to be notified of metrics progress. If there are any calculations already ongoing, l will be caught up by the immediate receipt on the current thread of a queued event with the current number of outstanding
+	 * calculations.
+	 * 
 	 * @param l
 	 */
 	public void addMetricsProgressListener(IMetricsProgressListener l) {
-		if ((l != null)&&(!listeners.contains(l))) {
+		if ((l != null) && (!listeners.contains(l))) {
 			listeners.add(l);
-			synchronized(items) {
-				if (items.size()>0) {
+			synchronized (items) {
+				if (items.size() > 0) {
 					Log.logMessage("Catching up new metrics progress listener with " + items.size() + " items.");
 					// play catch up with l
 					l.queued(items.size());
@@ -68,81 +69,92 @@ public class ProgressQueue extends LinkedList {
 			}
 		}
 	}
-	
+
 	public void removeMetricsProgressListener(IMetricsProgressListener l) {
-		if (l != null) listeners.remove(l);
+		if (l != null) {
+			listeners.remove(l);
+		}
 	}
-	
+
 	public void firePending(IJavaElement element) {
 		queue(new PendingCommand(element));
 	}
-	
+
 	public void fireCompleted(IJavaElement element, Object data) {
 		queue(new CompletedCommand(element, data));
 	}
-	
+
 	public void fireProjectCompleted(IJavaProject project, boolean aborted) {
 		if (aborted) {
 			clear();
 			new ProjectCompleteCommand(project, aborted).execute();
-		} else queue(new ProjectCompleteCommand(project, aborted));
+		} else {
+			queue(new ProjectCompleteCommand(project, aborted));
+		}
 	}
-	
+
 	public void firePaused() {
 		queue(new PausedCommand());
 	}
 
-	public void fireMoved(IJavaElement element, IPath from) {		
+	public void fireMoved(IJavaElement element, IPath from) {
 		queue(new MovedCommand(element, from));
 	}
 
 	public void fireQueued(int count) {
 		queue(new QueuedCommand(count));
 	}
-	
+
 	/**
-	 * Queue the command unless queue is paused and the command is not
-	 * a command that triggers resume (QueueCommand)
+	 * Queue the command unless queue is paused and the command is not a command that triggers resume (QueueCommand)
+	 * 
 	 * @param command
 	 */
-	private void queue(Command command) {
-		synchronized(this) {
-			if (command.isResume()) paused = false;
-			if (!paused) addLast(command);				
+	private void queue(ProgressQueueCommand command) {
+		synchronized (this) {
+			if (command.isResume()) {
+				paused = false;
+			}
+			if (!paused) {
+				addLast(command);
+			}
 		}
 		sem.V();
 	}
-	
+
 	/**
-	 * Get the first queued command. Pauses the queue if this command
-	 * is a pausing command (AbortCommand). Throws InterruptedException
-	 * if the Queue is blocked on its Semaphore and the thread was interrupted.
+	 * Get the first queued command. Pauses the queue if this command is a pausing command (AbortCommand). Throws InterruptedException if the Queue is blocked on its Semaphore and the thread was interrupted.
+	 * 
 	 * @return Command to be executed
 	 * @throws InterruptedException
 	 */
-	private Command dequeue() throws InterruptedException {
+	private ProgressQueueCommand dequeue() throws InterruptedException {
 		sem.P();
-		synchronized(this) {
-			Command c = (Command)super.removeFirst();
-			if (c.isPause()) paused = true;
+		synchronized (this) {
+			ProgressQueueCommand c = super.removeFirst();
+			if (c.isPause()) {
+				paused = true;
+			}
 			return c;
 		}
-	}		
-	
+	}
+
 	/**
 	 * This Thread delivers the notification events to the listeners
+	 * 
 	 * @author Frank Sauer
 	 */
 	private class NotifierThread extends Thread {
-		
+
 		public NotifierThread() {
 			super("Metrics Notifier Thread");
 		}
-		
+
+		@Override
 		public void run() {
 			try {
 				while (notifier == Thread.currentThread()) {
-					Command next = dequeue(); //blocks!
+					ProgressQueueCommand next = dequeue(); // blocks!
 					try {
 						next.execute();
 					} catch (Throwable e) {
@@ -152,25 +164,9 @@ public class ProgressQueue extends LinkedList {
 			} catch (InterruptedException e) {
 			}
 		}
-	}	
-	
-	private abstract class Command {
-		
-		public Command() {
-		}
-		
-		abstract void execute();
-		
-		boolean isResume() {
-			return false;
-		}	
-		
-		boolean isPause() {
-			return false;
-		}
 	}
-	
-	private class PendingCommand extends Command {
+
+	private class PendingCommand extends ProgressQueueCommand {
 
 		private IJavaElement element;
 
@@ -178,15 +174,16 @@ public class ProgressQueue extends LinkedList {
 			this.element = element;
 		}
 
+		@Override
 		void execute() {
-			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				IMetricsProgressListener next = (IMetricsProgressListener)i.next();
+			for (Object element2 : listeners) {
+				IMetricsProgressListener next = (IMetricsProgressListener) element2;
 				next.pending(element);
 			}
 		}
 	}
-	
-	private class CompletedCommand extends Command {
+
+	private class CompletedCommand extends ProgressQueueCommand {
 
 		private Object data;
 
@@ -197,15 +194,16 @@ public class ProgressQueue extends LinkedList {
 			this.data = data;
 		}
 
+		@Override
 		void execute() {
-			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				IMetricsProgressListener next = (IMetricsProgressListener)i.next();
+			for (Object element2 : listeners) {
+				IMetricsProgressListener next = (IMetricsProgressListener) element2;
 				next.completed(element, data);
 			}
 		}
 	}
-	
-	private class MovedCommand extends Command {
+
+	private class MovedCommand extends ProgressQueueCommand {
 
 		private IPath path;
 
@@ -216,28 +214,30 @@ public class ProgressQueue extends LinkedList {
 			this.path = path;
 		}
 
+		@Override
 		void execute() {
-			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				IMetricsProgressListener next = (IMetricsProgressListener)i.next();
+			for (Object element2 : listeners) {
+				IMetricsProgressListener next = (IMetricsProgressListener) element2;
 				next.moved(element, path);
 			}
 		}
 	}
-	
-	private class PausedCommand extends Command {
+
+	private class PausedCommand extends ProgressQueueCommand {
 
 		PausedCommand() {
 		}
 
+		@Override
 		void execute() {
-			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				IMetricsProgressListener next = (IMetricsProgressListener)i.next();
+			for (Object element : listeners) {
+				IMetricsProgressListener next = (IMetricsProgressListener) element;
 				next.paused();
 			}
-		}		
-	}	
-	
-	private class QueuedCommand extends Command {
+		}
+	}
+
+	private class QueuedCommand extends ProgressQueueCommand {
 
 		private int count;
 
@@ -245,39 +245,46 @@ public class ProgressQueue extends LinkedList {
 			this.count = count;
 		}
 
+		@Override
 		void execute() {
-			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				IMetricsProgressListener next = (IMetricsProgressListener)i.next();
+			for (Object element : listeners) {
+				IMetricsProgressListener next = (IMetricsProgressListener) element;
 				next.queued(count);
 			}
 		}
-		
+
+		@Override
 		boolean isResume() {
 			return true;
 		}
-	}	
-	
-	private class ProjectCompleteCommand extends Command {
+	}
+
+	private class ProjectCompleteCommand extends ProgressQueueCommand {
 		private boolean aborted = false;
 		IJavaProject project;
-		
+
 		ProjectCompleteCommand(IJavaProject project, boolean aborted) {
 			this.aborted = aborted;
 			this.project = project;
 		}
 
+		@Override
 		void execute() {
-			for (Iterator i = listeners.iterator(); i.hasNext();) {
-				IMetricsProgressListener next = (IMetricsProgressListener)i.next();
+			for (Object element : listeners) {
+				IMetricsProgressListener next = (IMetricsProgressListener) element;
 				next.projectComplete(project, aborted);
 			}
 		}
 	}
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.util.Collection#clear()
 	 */
+	@Override
 	public void clear() {
-		synchronized(this) {
+		synchronized (this) {
 			super.clear();
 			sem.reset();
 		}

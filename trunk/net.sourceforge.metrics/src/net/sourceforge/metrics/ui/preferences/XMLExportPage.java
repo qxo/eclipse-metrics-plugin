@@ -41,41 +41,45 @@ public class XMLExportPage extends FieldEditorPreferencePage implements IWorkben
 		setPreferenceStore(MetricsPlugin.getDefault().getPreferenceStore());
 	}
 
+	@Override
 	protected void createFieldEditors() {
 		ExportDescriptor[] exporters = MetricsPlugin.getDefault().getExporters();
-		if (exporters.length>0) {
+		if (exporters.length > 0) {
 			String[][] labels = new String[exporters.length][2];
-			for (int i = 0; i < exporters.length;i++) {
+			for (int i = 0; i < exporters.length; i++) {
 				ExportDescriptor next = exporters[i];
 				labels[i][0] = next.getName();
 				labels[i][1] = next.getClassName();
 			}
-			editor= new RadioGroupFieldEditor(
-						"METRICS.xmlformat", "XML Export format", 1,
-						labels,
-						getFieldEditorParent(),
-					  	true);		
+			editor = new RadioGroupFieldEditor("METRICS.xmlformat", "XML Export format", 1, labels, getFieldEditorParent(), true);
 			addField(editor);
 		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
 		getPreferenceStore().setDefault("METRICS.xmlformat", "net.sourceforge.metrics.internal.xml.MetricsFirstExporter");
 		String current = getPreferenceStore().getString("METRICS.xmlformat");
 		ExportDescriptor xd = MetricsPlugin.getDefault().getExporter(current);
-		if (xd != null) setDescription(xd);
+		if (xd != null) {
+			setDescription(xd);
+		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse.jface.util.PropertyChangeEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.util.IPropertyChangeListener#propertyChange(org.eclipse .jface.util.PropertyChangeEvent)
 	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent event) {
-		super.propertyChange(event);		
+		super.propertyChange(event);
 		if (event.getSource() == editor) {
-			String className = (String)event.getNewValue();
+			String className = (String) event.getNewValue();
 			ExportDescriptor xd = MetricsPlugin.getDefault().getExporter(className);
 			if (xd != null) {
 				setDescription(xd);

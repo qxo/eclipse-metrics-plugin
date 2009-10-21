@@ -54,6 +54,7 @@ import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -64,285 +65,292 @@ import com.touchgraph.graphlayout.Node;
 import com.touchgraph.graphlayout.TGException;
 import com.touchgraph.graphlayout.TGPanel;
 
-/** GLEditUI:  User Interface for editing the graph.
-  *
-  * @author   Alexander Shapiro
-  * @version  1.22-jre1.1  $Id: GLEditUI.java,v 1.3 2004/05/05 03:42:31 sauerf Exp $
-  */
+/**
+ * GLEditUI: User Interface for editing the graph.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: GLEditUI.java,v 1.3 2004/05/05 03:42:31 sauerf Exp $
+ */
 public class GLEditUI extends TGUserInterface {
 
-    /** True when the current UI is active. */
-    
-    TGPanel tgPanel;
-    DragAddUI dragAddUI;
-    DragNodeUI dragNodeUI;
-    DragMultiselectUI dragMultiselectUI;
-    TGAbstractClickUI switchSelectUI;
-    TGAbstractDragUI hvDragUI;
+	/** True when the current UI is active. */
 
-    GLEditMouseListener ml;
-    GLEditMouseMotionListener mml;
+	TGPanel tgPanel;
+	DragAddUI dragAddUI;
+	DragNodeUI dragNodeUI;
+	DragMultiselectUI dragMultiselectUI;
+	TGAbstractClickUI switchSelectUI;
+	TGAbstractDragUI hvDragUI;
 
-    PopupMenu nodePopup;
-    PopupMenu edgePopup;
-    PopupMenu backPopup;
-    Node popupNode;
-    Edge popupEdge;
+	GLEditMouseListener ml;
+	GLEditMouseMotionListener mml;
 
-//    AbstractAction deleteSelectAction;
-//    final KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0);
+	PopupMenu nodePopup;
+	PopupMenu edgePopup;
+	PopupMenu backPopup;
+	Node popupNode;
+	Edge popupEdge;
 
-  // ............
+	// AbstractAction deleteSelectAction;
+	// final KeyStroke deleteKey = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE,
+	// 0);
 
-   /** Constructor with TGPanel <tt>tgp</tt>.
-     */
-    public GLEditUI( TGPanel tgp ) {
-        active = false;
-        tgPanel = tgp;
+	// ............
 
-        ml = new GLEditMouseListener();
-        mml = new GLEditMouseMotionListener();
+	/**
+	 * Constructor with TGPanel <tt>tgp</tt>.
+	 */
+	public GLEditUI(TGPanel tgp) {
+		active = false;
+		tgPanel = tgp;
 
-        dragAddUI = new DragAddUI(tgPanel);
-        dragNodeUI = new DragNodeUI(tgPanel);
-        dragMultiselectUI = new DragMultiselectUI(tgPanel);
-        switchSelectUI = tgPanel.getSwitchSelectUI();
+		ml = new GLEditMouseListener();
+		mml = new GLEditMouseMotionListener();
 
-        setUpNodePopup(tgp);
-        setUpEdgePopup(tgp);
-        setUpBackPopup(tgp);
-    }
+		dragAddUI = new DragAddUI(tgPanel);
+		dragNodeUI = new DragNodeUI(tgPanel);
+		dragMultiselectUI = new DragMultiselectUI(tgPanel);
+		switchSelectUI = tgPanel.getSwitchSelectUI();
 
-    public GLEditUI( GLPanel glPanel ) {
-        this(glPanel.getTGPanel());
-        hvDragUI = glPanel.hvScroll.getHVDragUI();
-    }
+		setUpNodePopup(tgp);
+		setUpEdgePopup(tgp);
+		setUpBackPopup(tgp);
+	}
 
-    public void activate() {
-        tgPanel.addMouseListener(ml);
-        tgPanel.addMouseMotionListener(mml);
-//        tgPanel.getActionMap().put("DeleteSelect", deleteSelectAction);
-//        ComponentInputMap cim = new ComponentInputMap(tgPanel);
-//        cim.put(deleteKey, "DeleteSelect");
-//        tgPanel.setInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW, cim);
-        active = true;
-    }
+	public GLEditUI(GLPanel glPanel) {
+		this(glPanel.getTGPanel());
+		hvDragUI = glPanel.hvScroll.getHVDragUI();
+	}
 
-    public void deactivate() {
-        //A hack.  Want to prevent dragMultiselect from remaining active when user switches to
-        //navigate mode.  Keeping an "active" variable resolves some comlex issues with the flow
-        //of controll, caused by dragMultiselect calling it's parents deactivate method when it
-        //is activated.
-        if (!active) dragMultiselectUI.deactivate();
+	@Override
+	public void activate() {
+		tgPanel.addMouseListener(ml);
+		tgPanel.addMouseMotionListener(mml);
+		// tgPanel.getActionMap().put("DeleteSelect", deleteSelectAction);
+		// ComponentInputMap cim = new ComponentInputMap(tgPanel);
+		// cim.put(deleteKey, "DeleteSelect");
+		// tgPanel.setInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW, cim);
+		active = true;
+	}
 
-        tgPanel.removeMouseListener(ml);
-        tgPanel.removeMouseMotionListener(mml);
- //       tgPanel.getInputMap().put(deleteKey, null);
- //       tgPanel.getActionMap().put("DeleteSelect", null);
-        active = false;
-    }
+	@Override
+	public void deactivate() {
+		// A hack. Want to prevent dragMultiselect from remaining active when
+		// user switches to
+		// navigate mode. Keeping an "active" variable resolves some comlex
+		// issues with the flow
+		// of controll, caused by dragMultiselect calling it's parents
+		// deactivate method when it
+		// is activated.
+		if (!active) {
+			dragMultiselectUI.deactivate();
+		}
 
-    class GLEditMouseListener extends MouseAdapter {
-        public void mousePressed(MouseEvent e) {
-            Node mouseOverN = tgPanel.getMouseOverN();
-            Node select = tgPanel.getSelect();
+		tgPanel.removeMouseListener(ml);
+		tgPanel.removeMouseMotionListener(mml);
+		// tgPanel.getInputMap().put(deleteKey, null);
+		// tgPanel.getActionMap().put("DeleteSelect", null);
+		active = false;
+	}
 
+	class GLEditMouseListener extends MouseAdapter {
+		@Override
+		public void mousePressed(MouseEvent e) {
+			Node mouseOverN = tgPanel.getMouseOverN();
+			Node select = tgPanel.getSelect();
 
-            if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-                if (mouseOverN != null) {
-                    if(mouseOverN!=select)
-                        dragNodeUI.activate(e);
-                    else
-                        dragAddUI.activate(e);
-                }
-                else
-                    if(hvDragUI!=null) hvDragUI.activate(e);
-            }
+			if (e.getModifiers() == InputEvent.BUTTON1_MASK) {
+				if (mouseOverN != null) {
+					if (mouseOverN != select) {
+						dragNodeUI.activate(e);
+					} else {
+						dragAddUI.activate(e);
+					}
+				} else if (hvDragUI != null) {
+					hvDragUI.activate(e);
+				}
+			}
 
-        }
+		}
 
-        public void mouseClicked(MouseEvent e) {
-            if (e.getModifiers() == MouseEvent.BUTTON1_MASK)
-                switchSelectUI.activate(e);
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if (e.getModifiers() == InputEvent.BUTTON1_MASK) {
+				switchSelectUI.activate(e);
+			}
 
-        }
+		}
 
-        public void mouseReleased(MouseEvent e) {
-              if (e.isPopupTrigger()) {
-                   popupNode = tgPanel.getMouseOverN();
-                   popupEdge = tgPanel.getMouseOverE();
-                   if (popupNode!=null) {
-                       tgPanel.setMaintainMouseOver(true);
-						popupNode.aboutToShow(nodePopup);
-						nodePopup.show(tgPanel, e.getX(), e.getY());
-                }
-                else if (popupEdge!=null) {
-                    tgPanel.setMaintainMouseOver(true);
-                    edgePopup.show(e.getComponent(), e.getX(), e.getY());
-                }
-                else {
-                    backPopup.show(e.getComponent(), e.getX(), e.getY());
-                }
-               }
-         }
-    }
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				popupNode = tgPanel.getMouseOverN();
+				popupEdge = tgPanel.getMouseOverE();
+				if (popupNode != null) {
+					tgPanel.setMaintainMouseOver(true);
+					popupNode.aboutToShow(nodePopup);
+					nodePopup.show(tgPanel, e.getX(), e.getY());
+				} else if (popupEdge != null) {
+					tgPanel.setMaintainMouseOver(true);
+					edgePopup.show(e.getComponent(), e.getX(), e.getY());
+				} else {
+					backPopup.show(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		}
+	}
 
-    class GLEditMouseMotionListener extends MouseMotionAdapter {
-        public void mouseMoved(MouseEvent e) {
-            //tgPanel.startDamper();
-        }
-    }
+	class GLEditMouseMotionListener extends MouseMotionAdapter {
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			// tgPanel.startDamper();
+		}
+	}
 
-    private void setUpNodePopup( TGPanel tgp ) {
+	private void setUpNodePopup(TGPanel tgp) {
 		nodePopup = new PopupMenu();
 
 		// For JDK1.1 Compatibility...
 		tgp.add(nodePopup);
 
 		MenuItem menuItem;
-        Menu navigateMenu = new Menu("Navigate");
+		Menu navigateMenu = new Menu("Navigate");
 
-        menuItem = new MenuItem("Delete Node");
-        ActionListener deleteNodeAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupNode!=null) {
-                        tgPanel.deleteNode(popupNode);
-                    }
-                }
-            };
+		menuItem = new MenuItem("Delete Node");
+		ActionListener deleteNodeAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					tgPanel.deleteNode(popupNode);
+				}
+			}
+		};
 
-        menuItem.addActionListener(deleteNodeAction);
-        nodePopup.add(menuItem);
+		menuItem.addActionListener(deleteNodeAction);
+		nodePopup.add(menuItem);
 
-        menuItem = new MenuItem("Expand Node");
-        ActionListener expandAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupNode!=null) {
-                        tgPanel.expandNode(popupNode);
-                    }
-                }
-            };
+		menuItem = new MenuItem("Expand Node");
+		ActionListener expandAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					tgPanel.expandNode(popupNode);
+				}
+			}
+		};
 
-        menuItem.addActionListener(expandAction);
-        navigateMenu.add(menuItem);
+		menuItem.addActionListener(expandAction);
+		navigateMenu.add(menuItem);
 
-        menuItem = new MenuItem("Collapse Node");
-        ActionListener collapseAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {                    
-                    if(popupNode!=null) {
-                        tgPanel.collapseNode(popupNode );
-                    }
-                }
-            };
+		menuItem = new MenuItem("Collapse Node");
+		ActionListener collapseAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					tgPanel.collapseNode(popupNode);
+				}
+			}
+		};
 
-        menuItem.addActionListener(collapseAction);
-        navigateMenu.add(menuItem);
-            
-        menuItem = new MenuItem("Hide Node");
-        ActionListener hideAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupNode!=null) {
-                        tgPanel.hideNode(popupNode);
-                    }
-                }
-            };
-                               
-        menuItem.addActionListener(hideAction);
-        navigateMenu.add(menuItem);
+		menuItem.addActionListener(collapseAction);
+		navigateMenu.add(menuItem);
 
-        nodePopup.add(navigateMenu);
+		menuItem = new MenuItem("Hide Node");
+		ActionListener hideAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					tgPanel.hideNode(popupNode);
+				}
+			}
+		};
 
-    }
+		menuItem.addActionListener(hideAction);
+		navigateMenu.add(menuItem);
 
-    private void setUpEdgePopup( TGPanel tgp ) {
-        edgePopup = new PopupMenu();
+		nodePopup.add(navigateMenu);
+
+	}
+
+	private void setUpEdgePopup(TGPanel tgp) {
+		edgePopup = new PopupMenu();
 
 		// JDK1.1 Compatibility
 		tgp.add(edgePopup);
 
-        MenuItem menuItem;
+		MenuItem menuItem;
 
-        menuItem = new MenuItem("Relax Edge");
-        ActionListener relaxEdgeAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupEdge!=null) {
-                        popupEdge.setLength(popupEdge.getLength()*4);
-                        tgPanel.resetDamper();
-                    }
-                }
-            };
-        menuItem.addActionListener(relaxEdgeAction);
-        edgePopup.add(menuItem);
+		menuItem = new MenuItem("Relax Edge");
+		ActionListener relaxEdgeAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupEdge != null) {
+					popupEdge.setLength(popupEdge.getLength() * 4);
+					tgPanel.resetDamper();
+				}
+			}
+		};
+		menuItem.addActionListener(relaxEdgeAction);
+		edgePopup.add(menuItem);
 
-        menuItem = new MenuItem("Tighten Edge");
-        ActionListener tightenEdgeAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupEdge!=null) {
-                        popupEdge.setLength(popupEdge.getLength()/4);
-                        tgPanel.resetDamper();
-                    }
-                }
-            };
-        menuItem.addActionListener(tightenEdgeAction);
-        edgePopup.add(menuItem);
+		menuItem = new MenuItem("Tighten Edge");
+		ActionListener tightenEdgeAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupEdge != null) {
+					popupEdge.setLength(popupEdge.getLength() / 4);
+					tgPanel.resetDamper();
+				}
+			}
+		};
+		menuItem.addActionListener(tightenEdgeAction);
+		edgePopup.add(menuItem);
 
-        menuItem = new MenuItem("Delete Edge");
-        ActionListener deleteEdgeAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupEdge!=null) {
-                        tgPanel.deleteEdge(popupEdge);
-                    }
-                }
-            };
-        menuItem.addActionListener(deleteEdgeAction);
-        edgePopup.add(menuItem);
+		menuItem = new MenuItem("Delete Edge");
+		ActionListener deleteEdgeAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupEdge != null) {
+					tgPanel.deleteEdge(popupEdge);
+				}
+			}
+		};
+		menuItem.addActionListener(deleteEdgeAction);
+		edgePopup.add(menuItem);
 
- /*       edgePopup.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuCanceled(PopupMenuEvent e) {}
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                tgPanel.setMaintainMouseOver(false);
-                tgPanel.setMouseOverE(null);
-                tgPanel.repaint();
-            }
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-        });
-*/    
+		/*
+		 * edgePopup.addPopupMenuListener(new PopupMenuListener() { public void popupMenuCanceled(PopupMenuEvent e) {} public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { tgPanel.setMaintainMouseOver(false);
+		 * tgPanel.setMouseOverE(null); tgPanel.repaint(); } public void popupMenuWillBecomeVisible(PopupMenuEvent e) {} });
+		 */
 	}
 
-    private void setUpBackPopup( TGPanel tgp ) {
-        backPopup = new PopupMenu();
+	private void setUpBackPopup(TGPanel tgp) {
+		backPopup = new PopupMenu();
 
 		// For JDK1.1 Compatibility...
 		tgp.add(backPopup);
 
 		MenuItem menuItem;
 
-        menuItem = new MenuItem("Multi-Select");
-        ActionListener multiselectAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    dragMultiselectUI.activate(GLEditUI.this);
-                }
-            };
-        menuItem.addActionListener(multiselectAction);
-        backPopup.add(menuItem);
+		menuItem = new MenuItem("Multi-Select");
+		ActionListener multiselectAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dragMultiselectUI.activate(GLEditUI.this);
+			}
+		};
+		menuItem.addActionListener(multiselectAction);
+		backPopup.add(menuItem);
 
-        menuItem = new MenuItem("Start Over");
-        ActionListener startOverAction = new ActionListener() {
-                public void actionPerformed( ActionEvent e ) {
-                    tgPanel.clearAll();
-                    tgPanel.clearSelect();
-                    try {
-                        tgPanel.addNode();
-                    } catch ( TGException tge ) {
-                        System.err.println(tge.getMessage());
-                        tge.printStackTrace(System.err);
-                    }
-                    tgPanel.fireResetEvent();
-                    tgPanel.repaint();
-                }
-            };
-        menuItem.addActionListener(startOverAction);
-        backPopup.add(menuItem);
-    }
+		menuItem = new MenuItem("Start Over");
+		ActionListener startOverAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				tgPanel.clearAll();
+				tgPanel.clearSelect();
+				try {
+					tgPanel.addNode();
+				} catch (TGException tge) {
+					System.err.println(tge.getMessage());
+					tge.printStackTrace(System.err);
+				}
+				tgPanel.fireResetEvent();
+				tgPanel.repaint();
+			}
+		};
+		menuItem.addActionListener(startOverAction);
+		backPopup.add(menuItem);
+	}
 
 } // end com.touchgraph.graphlayout.interaction.GLEditUI

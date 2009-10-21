@@ -27,12 +27,14 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
 /**
  * Calculate an average value
+ * 
  * @author Frank Sauer
  */
 public class AvgValue extends Propagator {
 
 	/**
 	 * Constructor for AvgValue.
+	 * 
 	 * @param name
 	 */
 	public AvgValue(String name, String per) {
@@ -41,6 +43,7 @@ public class AvgValue extends Propagator {
 
 	/**
 	 * Constructor for AvgValue.
+	 * 
 	 * @param name
 	 */
 	public AvgValue(String name, String per, String x) {
@@ -50,21 +53,25 @@ public class AvgValue extends Propagator {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) {
-		if (source.getSize() == 0) 
-			source.setAverage(new Avg(getName(), per, 0,0,0));
+		if (source.getSize() == 0) {
+			source.setAverage(new Avg(getName(), per, 0, 0, 0));
+		}
 		List metrics = source.getMetricsFromChildren(x);
 		source.setAverage(Avg.createFromMetrics(name, per, metrics));
 	}
-	
+
 	/**
 	 * @see net.sourceforge.metrics.propagators.Propagator#createNextLevel()
 	 */
+	@Override
 	public Propagator createNextLevel() {
 		return new AvgAvg(name, per);
 	}
-	
+
+	@Override
 	public String toString() {
 		return "AvgValue(" + name + "," + per + ")";
-	}	
+	}
 }

@@ -57,66 +57,77 @@ import com.touchgraph.graphlayout.GraphListener;
 import com.touchgraph.graphlayout.TGAbstractLens;
 import com.touchgraph.graphlayout.TGPanel;
 import com.touchgraph.graphlayout.TGPoint2D;
-//import  javax.swing.*;
 
-/** ZoomScroll:  Contains code for enlarging the graph by zooming in.
-  *
-  * @author   Alexander Shapiro
-  * @version  1.21  $Id: ZoomScroll.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
-  */
+/**
+ * ZoomScroll: Contains code for enlarging the graph by zooming in.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.21 $Id: ZoomScroll.java,v 1.2 2004/10/25 06:57:32 donv70 Exp $
+ */
 public class ZoomScroll implements GraphListener {
 
-    protected ZoomLens zoomLens;
-    private Scrollbar zoomSB;
-    private TGPanel tgPanel;
+	protected ZoomLens zoomLens;
+	private Scrollbar zoomSB;
+	private TGPanel tgPanel;
 
-  // ............
+	// ............
 
-   /** Constructor with TGPanel <tt>tgp</tt>.
-     */
-    public ZoomScroll( TGPanel tgp ) {
-        tgPanel=tgp;
-        zoomSB = new Scrollbar(Scrollbar.HORIZONTAL, -4, 7, -31, 19);
-        zoomSB.addAdjustmentListener(new zoomAdjustmentListener());
-        zoomLens=new ZoomLens();
-        tgPanel.addGraphListener(this);
-    }
+	/**
+	 * Constructor with TGPanel <tt>tgp</tt>.
+	 */
+	public ZoomScroll(TGPanel tgp) {
+		tgPanel = tgp;
+		zoomSB = new Scrollbar(Scrollbar.HORIZONTAL, -4, 7, -31, 19);
+		zoomSB.addAdjustmentListener(new zoomAdjustmentListener());
+		zoomLens = new ZoomLens();
+		tgPanel.addGraphListener(this);
+	}
 
-    public Scrollbar getZoomSB() { return zoomSB; }
+	public Scrollbar getZoomSB() {
+		return zoomSB;
+	}
 
-    public ZoomLens getLens() { return zoomLens; }
+	public ZoomLens getLens() {
+		return zoomLens;
+	}
 
-    public void graphMoved() {} //From GraphListener interface
-    public void graphReset() { zoomSB.setValue(-10); } //From GraphListener interface
+	public void graphMoved() {
+	} // From GraphListener interface
 
-    public int getZoomValue() {
-        double orientedValue = zoomSB.getValue()-zoomSB.getMinimum();
-        double range = zoomSB.getMaximum()-zoomSB.getMinimum()-zoomSB.getVisibleAmount();
-        return (int) ((orientedValue/range)*200-100);
-    }
+	public void graphReset() {
+		zoomSB.setValue(-10);
+	} // From GraphListener interface
 
-    public void setZoomValue(int value) {
-        double range = zoomSB.getMaximum()-zoomSB.getMinimum()-zoomSB.getVisibleAmount();
-        zoomSB.setValue((int) ((value+100)/200.0 * range+0.5)+zoomSB.getMinimum());
-    }
-    
-    private class zoomAdjustmentListener implements AdjustmentListener {
-        public void adjustmentValueChanged(AdjustmentEvent e) {
-        tgPanel.repaintAfterMove();
-        }
-    }
+	public int getZoomValue() {
+		double orientedValue = zoomSB.getValue() - zoomSB.getMinimum();
+		double range = zoomSB.getMaximum() - zoomSB.getMinimum() - zoomSB.getVisibleAmount();
+		return (int) ((orientedValue / range) * 200 - 100);
+	}
 
-    class ZoomLens extends TGAbstractLens {
-        protected void applyLens(TGPoint2D p) {
-            p.setX(p.getX()*Math.pow(2,zoomSB.getValue()/10.0));
-            p.setY(p.getY()*Math.pow(2,zoomSB.getValue()/10.0));
+	public void setZoomValue(int value) {
+		double range = zoomSB.getMaximum() - zoomSB.getMinimum() - zoomSB.getVisibleAmount();
+		zoomSB.setValue((int) ((value + 100) / 200.0 * range + 0.5) + zoomSB.getMinimum());
+	}
 
-        }
+	private class zoomAdjustmentListener implements AdjustmentListener {
+		public void adjustmentValueChanged(AdjustmentEvent e) {
+			tgPanel.repaintAfterMove();
+		}
+	}
 
-        protected void undoLens(TGPoint2D p) {
-            p.setX(p.getX()/Math.pow(2,zoomSB.getValue()/10.0));
-            p.setY(p.getY()/Math.pow(2,zoomSB.getValue()/10.0));
-        }
-    }
+	class ZoomLens extends TGAbstractLens {
+		@Override
+		protected void applyLens(TGPoint2D p) {
+			p.setX(p.getX() * Math.pow(2, zoomSB.getValue() / 10.0));
+			p.setY(p.getY() * Math.pow(2, zoomSB.getValue() / 10.0));
+
+		}
+
+		@Override
+		protected void undoLens(TGPoint2D p) {
+			p.setX(p.getX() / Math.pow(2, zoomSB.getValue() / 10.0));
+			p.setY(p.getY() / Math.pow(2, zoomSB.getValue() / 10.0));
+		}
+	}
 
 } // end com.touchgraph.graphlayout.interaction.ZoomScroll

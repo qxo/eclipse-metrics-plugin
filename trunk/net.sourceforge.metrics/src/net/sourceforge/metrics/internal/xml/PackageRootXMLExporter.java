@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * Export package root (source folder) metrics to an XML report
+ * 
  * @author Frank Sauer
  */
 public class PackageRootXMLExporter extends MetricsExporter implements IXMLExporter {
@@ -34,19 +35,24 @@ public class PackageRootXMLExporter extends MetricsExporter implements IXMLExpor
 	public PackageRootXMLExporter() {
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.metrics.export.xml.IExporter#export(net.sourceforge.metrics.core.sources.AbstractMetricSource, net.sourceforge.metrics.export.xml.XMLPrintStream, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sourceforge.metrics.export.xml.IExporter#export(net.sourceforge.metrics .core.sources.AbstractMetricSource, net.sourceforge.metrics.export.xml.XMLPrintStream, int)
 	 */
 	public void export(AbstractMetricSource source, XMLPrintStream out, int level, IProgressMonitor monitor) {
-		printOpeningTag(source, out, level);	
-		printMetrics(source, out, level+1);
-		exportChildren(out, source.getHandle(), level+1, PackageFragmentMetrics.class, monitor);
+		printOpeningTag(source, out, level);
+		printMetrics(source, out, level + 1);
+		exportChildren(out, source.getHandle(), level + 1, PackageFragmentMetrics.class, monitor);
 		printClosingTag(out, level);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.internal.xml.MetricsExporter#getTagName()
 	 */
+	@Override
 	public String getTagName() {
 		return "PackageRoot";
 	}

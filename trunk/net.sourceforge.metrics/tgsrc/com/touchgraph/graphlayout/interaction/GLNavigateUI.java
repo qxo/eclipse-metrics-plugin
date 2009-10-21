@@ -53,6 +53,7 @@ import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -61,225 +62,219 @@ import com.touchgraph.graphlayout.GLPanel;
 import com.touchgraph.graphlayout.Node;
 import com.touchgraph.graphlayout.TGException;
 import com.touchgraph.graphlayout.TGPanel;
-//import  javax.swing.*;
-//import  javax.swing.event.*;
 
-/** GLNavigateUI. User interface for moving around the graph, as opposed
-  * to editing.
-  *
-  * @author   Alexander Shapiro
-  * @author   Murray Altheim (abstracted GLPanel to TGScrollPane interface)
-  * @version  1.22-jre1.1 $Id: GLNavigateUI.java,v 1.3 2003/05/13 16:03:38 sauerf Exp $
-  */
+/**
+ * GLNavigateUI. User interface for moving around the graph, as opposed to editing.
+ * 
+ * @author Alexander Shapiro
+ * @author Murray Altheim (abstracted GLPanel to TGScrollPane interface)
+ * @version 1.22-jre1.1 $Id: GLNavigateUI.java,v 1.3 2003/05/13 16:03:38 sauerf Exp $
+ */
 public class GLNavigateUI extends TGUserInterface {
 
-    GLPanel glPanel;
-    TGPanel tgPanel;
+	GLPanel glPanel;
+	TGPanel tgPanel;
 
-    GLNavigateMouseListener ml;
+	GLNavigateMouseListener ml;
 
-    TGAbstractDragUI hvDragUI;
-    TGAbstractDragUI rotateDragUI;
-    //TGAbstractDragUI hvRotateDragUI;
+	TGAbstractDragUI hvDragUI;
+	TGAbstractDragUI rotateDragUI;
+	// TGAbstractDragUI hvRotateDragUI;
 
-    DragNodeUI dragNodeUI;
-    LocalityScroll localityScroll;
-    PopupMenu nodePopup;
-    PopupMenu edgePopup;
-    Node popupNode;
-    Edge popupEdge;
+	DragNodeUI dragNodeUI;
+	LocalityScroll localityScroll;
+	PopupMenu nodePopup;
+	PopupMenu edgePopup;
+	Node popupNode;
+	Edge popupEdge;
 
-    public GLNavigateUI( GLPanel glp ) {
-        glPanel = glp;
-        tgPanel = glPanel.getTGPanel();
+	public GLNavigateUI(GLPanel glp) {
+		glPanel = glp;
+		tgPanel = glPanel.getTGPanel();
 
-        localityScroll = glPanel.getLocalityScroll();
-        hvDragUI = glPanel.getHVScroll().getHVDragUI();
-        rotateDragUI = glPanel.getRotateScroll().getRotateDragUI();
-        //hvRotateDragUI = new HVRotateDragUI(tgPanel,
-        //        glPanel.getHVScroll(), glPanel.getRotateScroll());        
-        dragNodeUI = new DragNodeUI(tgPanel);
+		localityScroll = glPanel.getLocalityScroll();
+		hvDragUI = glPanel.getHVScroll().getHVDragUI();
+		rotateDragUI = glPanel.getRotateScroll().getRotateDragUI();
+		// hvRotateDragUI = new HVRotateDragUI(tgPanel,
+		// glPanel.getHVScroll(), glPanel.getRotateScroll());
+		dragNodeUI = new DragNodeUI(tgPanel);
 
-        ml = new GLNavigateMouseListener();
-        setUpNodePopup(glp);
-        setUpEdgePopup(glp);
-    }
+		ml = new GLNavigateMouseListener();
+		setUpNodePopup(glp);
+		setUpEdgePopup(glp);
+	}
 
-    public void activate() {
-        tgPanel.addMouseListener(ml);
-    }
+	@Override
+	public void activate() {
+		tgPanel.addMouseListener(ml);
+	}
 
-    public void deactivate() {
-        tgPanel.removeMouseListener(ml);
-    }
+	@Override
+	public void deactivate() {
+		tgPanel.removeMouseListener(ml);
+	}
 
-    class GLNavigateMouseListener extends MouseAdapter {
+	class GLNavigateMouseListener extends MouseAdapter {
 
-        public void mousePressed(MouseEvent e) {
-            Node mouseOverN = tgPanel.getMouseOverN();
+		@Override
+		public void mousePressed(MouseEvent e) {
+			Node mouseOverN = tgPanel.getMouseOverN();
 
-            if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-                if (mouseOverN == null)
-                    hvDragUI.activate(e);
-                else
-                    dragNodeUI.activate(e);
-            }
-        }
+			if (e.getModifiers() == InputEvent.BUTTON1_MASK) {
+				if (mouseOverN == null) {
+					hvDragUI.activate(e);
+				} else {
+					dragNodeUI.activate(e);
+				}
+			}
+		}
 
-        public void mouseClicked(MouseEvent e) {
-            Node mouseOverN = tgPanel.getMouseOverN();
-            if (e.getModifiers() == MouseEvent.BUTTON1_MASK) {
-                if ( mouseOverN != null) {
-                        tgPanel.setSelect(mouseOverN);						
-			            glPanel.getHVScroll().slowScrollToCenter(mouseOverN);
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			Node mouseOverN = tgPanel.getMouseOverN();
+			if (e.getModifiers() == InputEvent.BUTTON1_MASK) {
+				if (mouseOverN != null) {
+					tgPanel.setSelect(mouseOverN);
+					glPanel.getHVScroll().slowScrollToCenter(mouseOverN);
 
-                        try {
-                            tgPanel.setLocale(mouseOverN, localityScroll.getLocalityRadius());
-                        }
-                        catch (TGException ex) {
-                           System.out.println("Error setting locale");
-                            ex.printStackTrace();
-                        }                        
-                }
-            }
-        }
+					try {
+						tgPanel.setLocale(mouseOverN, localityScroll.getLocalityRadius());
+					} catch (TGException ex) {
+						System.out.println("Error setting locale");
+						ex.printStackTrace();
+					}
+				}
+			}
+		}
 
-        public void mouseReleased(MouseEvent e) {
-            if (e.isPopupTrigger()) {
-                popupNode = tgPanel.getMouseOverN();
-                popupEdge = tgPanel.getMouseOverE();
-                if (popupNode!=null) {
-                    tgPanel.setMaintainMouseOver(true);
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				popupNode = tgPanel.getMouseOverN();
+				popupEdge = tgPanel.getMouseOverE();
+				if (popupNode != null) {
+					tgPanel.setMaintainMouseOver(true);
 					popupNode.aboutToShow(nodePopup);
 					nodePopup.show(tgPanel, e.getX(), e.getY());
-               } else if (popupEdge!=null) {
-                    tgPanel.setMaintainMouseOver(true);
+				} else if (popupEdge != null) {
+					tgPanel.setMaintainMouseOver(true);
 					edgePopup.show(tgPanel, e.getX(), e.getY());
-                  } else {
+				} else {
 					glPanel.glPopup.show(tgPanel, e.getX(), e.getY());
-                }
-            } /* else removed to prevent sticky nodes when switching graphs from popup */
-            tgPanel.setMaintainMouseOver(false);
-        }
+				}
+			} /*
+			 * else removed to prevent sticky nodes when switching graphs from popup
+			 */
+			tgPanel.setMaintainMouseOver(false);
+		}
 
-    }
+	}
 
-    private void setUpNodePopup( GLPanel glp) {
-        nodePopup = new PopupMenu();
-				glp.add(nodePopup);
-				MenuItem menuItem;
+	private void setUpNodePopup(GLPanel glp) {
+		nodePopup = new PopupMenu();
+		glp.add(nodePopup);
+		MenuItem menuItem;
 
-        menuItem = new MenuItem("Expand Node");
-        ActionListener expandAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupNode!=null) {
-                        tgPanel.expandNode(popupNode);
-                    }
-// JDK11 Change .. because of MenuBecomesInvisible
-					tgPanel.setMaintainMouseOver(false);
-					tgPanel.setMouseOverN(null);
-					tgPanel.repaint();
-// JDK11 Change .. because of MenuBecomesInvisible
-                }
-            };
+		menuItem = new MenuItem("Expand Node");
+		ActionListener expandAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					tgPanel.expandNode(popupNode);
+				}
+				// JDK11 Change .. because of MenuBecomesInvisible
+				tgPanel.setMaintainMouseOver(false);
+				tgPanel.setMouseOverN(null);
+				tgPanel.repaint();
+				// JDK11 Change .. because of MenuBecomesInvisible
+			}
+		};
 
-        menuItem.addActionListener(expandAction);
-        nodePopup.add(menuItem);
+		menuItem.addActionListener(expandAction);
+		nodePopup.add(menuItem);
 
-        menuItem = new MenuItem("Collapse Node");
-        ActionListener collapseAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupNode!=null) {
-                        tgPanel.collapseNode(popupNode );
-                    }
-// JDK11 Change .. because of MenuBecomesInvisible
-									tgPanel.setMaintainMouseOver(false);
-									tgPanel.setMouseOverN(null);
-									tgPanel.repaint();
-// JDK11 Change .. because of MenuBecomesInvisible
-                }
-            };
+		menuItem = new MenuItem("Collapse Node");
+		ActionListener collapseAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					tgPanel.collapseNode(popupNode);
+				}
+				// JDK11 Change .. because of MenuBecomesInvisible
+				tgPanel.setMaintainMouseOver(false);
+				tgPanel.setMouseOverN(null);
+				tgPanel.repaint();
+				// JDK11 Change .. because of MenuBecomesInvisible
+			}
+		};
 
-        menuItem.addActionListener(collapseAction);
-        nodePopup.add(menuItem);
+		menuItem.addActionListener(collapseAction);
+		nodePopup.add(menuItem);
 
-        menuItem = new MenuItem("Hide Node");
-        ActionListener hideAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupNode!=null) {
-                        tgPanel.hideNode(popupNode );
-                    }
-// JDK11 Change .. because of MenuBecomesInvisible
-										tgPanel.setMaintainMouseOver(false);
-										tgPanel.setMouseOverN(null);
-										tgPanel.repaint();
-// JDK11 Change .. because of MenuBecomesInvisible
-                }
-            };
+		menuItem = new MenuItem("Hide Node");
+		ActionListener hideAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					tgPanel.hideNode(popupNode);
+				}
+				// JDK11 Change .. because of MenuBecomesInvisible
+				tgPanel.setMaintainMouseOver(false);
+				tgPanel.setMouseOverN(null);
+				tgPanel.repaint();
+				// JDK11 Change .. because of MenuBecomesInvisible
+			}
+		};
 
-        menuItem.addActionListener(hideAction);
-        nodePopup.add(menuItem);
+		menuItem.addActionListener(hideAction);
+		nodePopup.add(menuItem);
 
-      menuItem = new MenuItem("Center Node");
-      ActionListener centerAction = new ActionListener() {
-              public void actionPerformed(ActionEvent e) {
-                  if(popupNode!=null) {
-                      glPanel.getHVScroll().slowScrollToCenter(popupNode);
-                  }
-// JDK11 Change .. because of MenuBecomesInvisible
-                  tgPanel.setMaintainMouseOver(false);
-                  tgPanel.setMouseOverN(null);
-                  tgPanel.repaint();
-// JDK11 Change .. because of MenuBecomesInvisible
-              }
-          };
-      menuItem.addActionListener(centerAction);
-      nodePopup.add(menuItem);
+		menuItem = new MenuItem("Center Node");
+		ActionListener centerAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupNode != null) {
+					glPanel.getHVScroll().slowScrollToCenter(popupNode);
+				}
+				// JDK11 Change .. because of MenuBecomesInvisible
+				tgPanel.setMaintainMouseOver(false);
+				tgPanel.setMouseOverN(null);
+				tgPanel.repaint();
+				// JDK11 Change .. because of MenuBecomesInvisible
+			}
+		};
+		menuItem.addActionListener(centerAction);
+		nodePopup.add(menuItem);
 
+		/*
+		 * nodePopup.addPopupMenuListener(new PopupMenuListener() { public void popupMenuCanceled(PopupMenuEvent e) {} public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { tgPanel.setMaintainMouseOver(false);
+		 * tgPanel.setMouseOverN(null); tgPanel.repaint(); } public void popupMenuWillBecomeVisible(PopupMenuEvent e) {} });
+		 */
 
-			/*       nodePopup.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuCanceled(PopupMenuEvent e) {}
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                tgPanel.setMaintainMouseOver(false);
-                tgPanel.setMouseOverN(null);
-                tgPanel.repaint();
-            }
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-        });*/
+	}
 
-    }
+	private void setUpEdgePopup(GLPanel glp) {
+		edgePopup = new PopupMenu();
+		glp.add(edgePopup);
+		MenuItem menuItem;
 
-    private void setUpEdgePopup( GLPanel glp) {
-        edgePopup = new PopupMenu();
-				glp.add(edgePopup);
-        MenuItem menuItem;
+		menuItem = new MenuItem("Hide Edge");
+		ActionListener hideAction = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (popupEdge != null) {
+					tgPanel.hideEdge(popupEdge);
+				}
+				// JDK11 Change .. because of MenuBecomesInvisible
+				tgPanel.setMaintainMouseOver(false);
+				tgPanel.setMouseOverN(null);
+				tgPanel.repaint();
+				// JDK11 Change .. because of MenuBecomesInvisible
+			}
+		};
 
-        menuItem = new MenuItem("Hide Edge");
-        ActionListener hideAction = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if(popupEdge!=null) {
-                        tgPanel.hideEdge(popupEdge);
-                    }
-// JDK11 Change .. because of MenuBecomesInvisible
-									tgPanel.setMaintainMouseOver(false);
-									tgPanel.setMouseOverN(null);
-									tgPanel.repaint();
-// JDK11 Change .. because of MenuBecomesInvisible
-                }
-            };
+		menuItem.addActionListener(hideAction);
+		edgePopup.add(menuItem);
 
-        menuItem.addActionListener(hideAction);
-        edgePopup.add(menuItem);
-
-/*        edgePopup.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuCanceled(PopupMenuEvent e) {}
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                tgPanel.setMaintainMouseOver(false);
-                tgPanel.setMouseOverE(null);
-                tgPanel.repaint();
-            }
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {}
-        });*/
-    }
+		/*
+		 * edgePopup.addPopupMenuListener(new PopupMenuListener() { public void popupMenuCanceled(PopupMenuEvent e) {} public void popupMenuWillBecomeInvisible(PopupMenuEvent e) { tgPanel.setMaintainMouseOver(false);
+		 * tgPanel.setMouseOverE(null); tgPanel.repaint(); } public void popupMenuWillBecomeVisible(PopupMenuEvent e) {} });
+		 */
+	}
 
 } // end com.touchgraph.graphlayout.interaction.GLNavigateUI

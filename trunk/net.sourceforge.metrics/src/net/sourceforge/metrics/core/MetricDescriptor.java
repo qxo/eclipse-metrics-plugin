@@ -26,10 +26,10 @@ import java.util.StringTokenizer;
 
 import net.sourceforge.metrics.propagators.AvgValue;
 import net.sourceforge.metrics.propagators.MaxValue;
+import net.sourceforge.metrics.propagators.Propagator;
 import net.sourceforge.metrics.propagators.Sum;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Preferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
@@ -39,16 +39,14 @@ import org.eclipse.jface.preference.IPreferenceStore;
  */
 public class MetricDescriptor {
 
-	private static String[] levels = new String[] {
-		"method", "type", "compilationUnit", "packageFragment", "packageFragmentRoot", "project"
-	};
-	
+	private static String[] levels = new String[] { "method", "type", "compilationUnit", "packageFragment", "packageFragmentRoot", "project" };
+
 	private String defaultHint;
 	private Double defaultMax;
 	private Double defaultMin;
 	private String hint;
 	private Double max;
-	private Double min;	
+	private Double min;
 	private String id = null;
 	private String name = null;
 	private String sumOf = null;
@@ -58,10 +56,11 @@ public class MetricDescriptor {
 	private boolean propagateAvg = true;
 	private boolean propagateMax = true;
 	private boolean allowDisable = true;
-	private String[] requires = null; 
-	
+	private String[] requires = null;
+
 	/**
 	 * Constructor MetricDescriptor.
+	 * 
 	 * @param id
 	 * @param name
 	 * @param propagate
@@ -73,46 +72,48 @@ public class MetricDescriptor {
 	}
 
 	/**
-	 * create a list of propagators (AvgValue, MaxValue, Sum) applicable to
-	 * this metric as specified in the manifest xml.
+	 * create a list of propagators (AvgValue, MaxValue, Sum) applicable to this metric as specified in the manifest xml.
+	 * 
 	 * @return List
 	 */
-	public List createPropagators() {
-		List result = new ArrayList();
+	public List<Propagator> createPropagators() {
+		List<Propagator> result = new ArrayList<Propagator>();
 		String nextLevel = getParentLevel();
 		if (nextLevel != null) {
 			if (isPropagateAvg()) {
-				AvgValue v = new AvgValue(getId(),getLevel());
+				AvgValue v = new AvgValue(getId(), getLevel());
 				result.add(v);
 			}
 			if (isPropagateMax()) {
-				MaxValue max = new MaxValue(getId(),getLevel());
+				MaxValue max = new MaxValue(getId(), getLevel());
 				result.add(max);
 			}
 			if (isPropagateSum()) {
-				Sum s = new Sum(getId(),getId());
+				Sum s = new Sum(getId(), getId());
 				result.add(s);
 			}
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Create a new AvgValue based on the newAvgMaxAt attribute in the xml
+	 * 
 	 * @return List
 	 */
-	public List createIntroducedAvgMax() {
-		List result = new ArrayList();
+	public List<Propagator> createIntroducedAvgMax() {
+		List<Propagator> result = new ArrayList<Propagator>();
 		if (newAvgMaxAt != null) {
 			String per = getPreviousLevel(newAvgMaxAt);
-			result.add(new AvgValue(getId(),per));
-			result.add(new MaxValue(getId(),per));
+			result.add(new AvgValue(getId(), per));
+			result.add(new MaxValue(getId(), per));
 		}
 		return result;
 	}
-	
+
 	/**
 	 * create a new MetricDescriptor from the &lt;metric&gt; element
+	 * 
 	 * @param element
 	 * @return MetricDescriptor
 	 */
@@ -122,38 +123,40 @@ public class MetricDescriptor {
 		String level = element.getAttribute("level");
 		String sumOf = element.getAttribute("sumOf");
 		String newAvgMaxAt = element.getAttribute("newAvgMaxAt");
-		boolean doSum = getBooleanAttribute(element,"propagateSum",true);
-		boolean doAvg = getBooleanAttribute(element,"propagateAvg",true);
-		boolean doMax = getBooleanAttribute(element,"propagateMax",true);		
-		String requires = element.getAttribute("requires");	
+		boolean doSum = getBooleanAttribute(element, "propagateSum", true);
+		boolean doAvg = getBooleanAttribute(element, "propagateAvg", true);
+		boolean doMax = getBooleanAttribute(element, "propagateMax", true);
+		String requires = element.getAttribute("requires");
 		if ((id != null) && (name != null) && (level != null)) {
-			MetricDescriptor m =  new MetricDescriptor(id, name, level);
+			MetricDescriptor m = new MetricDescriptor(id, name, level);
 			m.propagateAvg = doAvg;
 			m.propagateMax = doMax;
 			m.propagateSum = doSum;
 			m.sumOf = sumOf;
 			m.newAvgMaxAt = newAvgMaxAt;
-			m.allowDisable = getBooleanAttribute(element,"allowDisable",true);
+			m.allowDisable = getBooleanAttribute(element, "allowDisable", true);
 			IConfigurationElement[] ranges = element.getChildren("range");
-			if (ranges.length>0) {
+			if (ranges.length > 0) {
 				IConfigurationElement range = ranges[0];
 				String minStr = range.getAttribute("min");
 				String maxStr = range.getAttribute("max");
-				String hint   = range.getAttribute("hint");
+				String hint = range.getAttribute("hint");
 				m.setRange(minStr, maxStr, hint);
 			}
-			if (requires != null && requires.length()>0) {
+			if (requires != null && requires.length() > 0) {
 				StringTokenizer t = new StringTokenizer(requires, ",");
-				List result = new ArrayList();
+				List<String> result = new ArrayList<String>();
 				while (t.hasMoreTokens()) {
 					result.add(t.nextToken().trim());
-				} 
-				m.requires = (String[]) result.toArray(new String[]{});
-			} 
+				}
+				m.requires = result.toArray(new String[] {});
+			}
 			return m;
-		} else return null;
+		} /* else { */
+		return null;
+		/* } */
 	}
-	
+
 	/**
 	 * @param minStr
 	 * @param maxStr
@@ -183,6 +186,7 @@ public class MetricDescriptor {
 
 	/**
 	 * workaround for Eclipse ignoring default values in the extension schema
+	 * 
 	 * @param element
 	 * @param name
 	 * @param defaultValue
@@ -190,46 +194,54 @@ public class MetricDescriptor {
 	 */
 	private static boolean getBooleanAttribute(IConfigurationElement element, String name, boolean defaultValue) {
 		String val = element.getAttribute(name);
-		if (val == null) return defaultValue;
+		if (val == null) {
+			return defaultValue;
+		}
 		return "true".equals(val);
 	}
-	
+
 	/**
 	 * get the next higher level from level or null if level is project
+	 * 
 	 * @param level
 	 * @return String
 	 */
 	public static String getNextLevel(String level) {
-		for (int i = 0; i < levels.length-1;i++) {
-			if (levels[i].equals(level)) return levels[i+1];
+		for (int i = 0; i < levels.length - 1; i++) {
+			if (levels[i].equals(level)) {
+				return levels[i + 1];
+			}
 		}
 		return null;
 	}
-	
+
 	/**
 	 * get the next lower level from level or null if level is method
+	 * 
 	 * @param level
 	 * @return String
 	 */
 	public static String getPreviousLevel(String level) {
-		for (int i = 1; i < levels.length;i++) {
-			if (levels[i].equals(level)) return levels[i-1];
+		for (int i = 1; i < levels.length; i++) {
+			if (levels[i].equals(level)) {
+				return levels[i - 1];
+			}
 		}
 		return null;
 	}
-	
+
 	/**
-	 * Get the next higher level from lvl, e.g. method returns type, type
-	 * returns compilationUnit, etc. project returns null.
+	 * Get the next higher level from lvl, e.g. method returns type, type returns compilationUnit, etc. project returns null.
+	 * 
 	 * @return String
 	 */
 	public String getParentLevel() {
 		return getNextLevel(level);
 	}
-	
-	
+
 	/**
 	 * Returns the id.
+	 * 
 	 * @return String
 	 */
 	public String getId() {
@@ -238,6 +250,7 @@ public class MetricDescriptor {
 
 	/**
 	 * Returns the name.
+	 * 
 	 * @return String
 	 */
 	public String getName() {
@@ -246,6 +259,7 @@ public class MetricDescriptor {
 
 	/**
 	 * Returns the propagateAvg.
+	 * 
 	 * @return boolean
 	 */
 	public boolean isPropagateAvg() {
@@ -254,6 +268,7 @@ public class MetricDescriptor {
 
 	/**
 	 * Returns the propagateMax.
+	 * 
 	 * @return boolean
 	 */
 	public boolean isPropagateMax() {
@@ -262,6 +277,7 @@ public class MetricDescriptor {
 
 	/**
 	 * Returns the propagateSum.
+	 * 
 	 * @return boolean
 	 */
 	public boolean isPropagateSum() {
@@ -271,13 +287,14 @@ public class MetricDescriptor {
 	public boolean isAllowDisable() {
 		return allowDisable;
 	}
-	
+
 	public String[] getRequiredMetricIds() {
 		return requires;
 	}
-	
+
 	/**
 	 * Returns the sumOf.
+	 * 
 	 * @return String
 	 */
 	public String getSumOf() {
@@ -285,29 +302,32 @@ public class MetricDescriptor {
 	}
 
 	public boolean isSum() {
-		return (sumOf != null)&&(sumOf.length()>0);
+		return (sumOf != null) && (sumOf.length() > 0);
 	}
-	
+
 	/**
 	 * Returns the newAvgMaxAt.
+	 * 
 	 * @return String
 	 */
 	public String getNewAvgMaxAt() {
 		return newAvgMaxAt;
 	}
-	
+
 	/**
 	 * Returns the level.
+	 * 
 	 * @return String
 	 */
 	public String getLevel() {
 		return level;
 	}
 
+	@Override
 	public String toString() {
 		return "<metric id=\"" + id + "\" name=\"" + name + "\"/>";
 	}
-	
+
 	/**
 	 * @return String
 	 */
@@ -320,7 +340,9 @@ public class MetricDescriptor {
 	 */
 	public Double getMax() {
 		double max = getPreferences().getDouble(getPrefName("MAX"));
-		if (max == IPreferenceStore.DOUBLE_DEFAULT_DEFAULT) return null;
+		if (max == IPreferenceStore.DOUBLE_DEFAULT_DEFAULT) {
+			return null;
+		}
 		return new Double(max);
 	}
 
@@ -329,26 +351,33 @@ public class MetricDescriptor {
 	 */
 	public Double getMin() {
 		double min = getPreferences().getDouble(getPrefName("MIN"));
-		if (min == IPreferenceStore.DOUBLE_DEFAULT_DEFAULT) return null;
+		if (min == IPreferenceStore.DOUBLE_DEFAULT_DEFAULT) {
+			return null;
+		}
 		return new Double(min);
 	}
 
 	/**
 	 * Check if the given value is within the safe range (boundaries inclusive) of this metric
+	 * 
 	 * @param value
 	 * @return true if value is within safe boundaries (inclusive)
 	 */
 	public boolean isValueInRange(double value) {
-		if ((getMin() != null) && (value < getMin().doubleValue())) return false;
-		if ((getMax() != null) && (value > getMax().doubleValue())) return false;
+		if ((getMin() != null) && (value < getMin().doubleValue())) {
+			return false;
+		}
+		if ((getMax() != null) && (value > getMax().doubleValue())) {
+			return false;
+		}
 		return true;
 	}
-	
+
 	/**
 	 * @param string
 	 */
 	public void setHint(String hint) {
-		this.hint = hint;		
+		this.hint = hint;
 	}
 
 	/**
@@ -364,7 +393,7 @@ public class MetricDescriptor {
 	public void setMin(Double min) {
 		this.min = min;
 	}
-	
+
 	/**
 	 * @param string
 	 * @return
@@ -376,22 +405,34 @@ public class MetricDescriptor {
 	}
 
 	private void initPreferences() {
-		if (hint != null) getPreferences().setDefault(getPrefName("HINT"), hint);
-		if (min != null) getPreferences().setDefault(getPrefName("MIN"), min.doubleValue());
-		if (max != null) getPreferences().setDefault(getPrefName("MAX"), max.doubleValue());
+		if (hint != null) {
+			getPreferences().setDefault(getPrefName("HINT"), hint);
+		}
+		if (min != null) {
+			getPreferences().setDefault(getPrefName("MIN"), min.doubleValue());
+		}
+		if (max != null) {
+			getPreferences().setDefault(getPrefName("MAX"), max.doubleValue());
+		}
 	}
-	
+
 	public void copyToPreferences() {
-		if (hint != null) getPreferences().setValue(getPrefName("HINT"), hint);
-		if (min != null) getPreferences().setValue(getPrefName("MIN"), min.doubleValue());
-		if (max != null) getPreferences().setValue(getPrefName("MAX"), max.doubleValue());
+		if (hint != null) {
+			getPreferences().setValue(getPrefName("HINT"), hint);
+		}
+		if (min != null) {
+			getPreferences().setValue(getPrefName("MIN"), min.doubleValue());
+		}
+		if (max != null) {
+			getPreferences().setValue(getPrefName("MAX"), max.doubleValue());
+		}
 	}
-	
+
 	/**
 	 * @return
 	 */
-	private Preferences getPreferences() {
-		return MetricsPlugin.getDefault().getPluginPreferences();
+	private IPreferenceStore getPreferences() {
+		return MetricsPlugin.getDefault().getPreferenceStore();
 	}
 
 	public void resetToDefaults() {

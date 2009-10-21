@@ -28,15 +28,19 @@ import org.eclipse.jdt.core.IJavaElement;
 
 /**
  * interface used by classes specified in exporter extension points
+ * 
  * @author Frank Sauer
  */
 public interface IExporter {
-	
+
 	/**
 	 * 
-	 * @param element		selected IJavaElement in the MetricsView
-	 * @param outputFile	result of the Save Dialog file selection
-	 * @param monitor		progress monitor
+	 * @param element
+	 *            selected IJavaElement in the MetricsView
+	 * @param outputFile
+	 *            result of the Save Dialog file selection
+	 * @param monitor
+	 *            progress monitor
 	 * @throws InvocationTargetException
 	 */
 	public abstract void export(IJavaElement element, File outputFile, IProgressMonitor monitor) throws InvocationTargetException;

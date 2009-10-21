@@ -38,10 +38,11 @@ import org.eclipse.jdt.core.IJavaElement;
 
 /**
  * Create an XML report of the metrics
+ * 
  * @author Frank Sauer
  */
 public class XMLSourceTreeExporter implements IExporter {
-	
+
 	private String handle;
 
 	public XMLSourceTreeExporter() {
@@ -58,13 +59,13 @@ public class XMLSourceTreeExporter implements IExporter {
 			pOut.printXMLHeader();
 			pOut.println("<Metrics>");
 			monitor.beginTask("Exporting metrics to XML...", calculateTotalWork(handle));
-			printDescriptions(pOut, monitor);			
-			AbstractMetricSource root = Cache.singleton.get(element);			
+			printDescriptions(pOut, monitor);
+			AbstractMetricSource root = Cache.singleton.get(element);
 			IXMLExporter exporter = root.getExporter();
 			exporter.export(root, pOut, 1, monitor);
 			monitor.worked(1);
-			pOut.println("</Metrics>");	
-			pOut.close();		
+			pOut.println("</Metrics>");
+			pOut.close();
 		} catch (Throwable e) {
 			throw new InvocationTargetException(e);
 		}
@@ -75,7 +76,7 @@ public class XMLSourceTreeExporter implements IExporter {
 	 */
 	private void printDescriptions(XMLPrintStream pOut, IProgressMonitor monitor) {
 		MetricsPlugin plugin = MetricsPlugin.getDefault();
-		String[] names = plugin.getMetricIds(); 
+		String[] names = plugin.getMetricIds();
 		String[] descriptions = plugin.getMetricDescriptions();
 		pOut.indent(1);
 		pOut.println("<MetricDescriptions>");
@@ -90,26 +91,30 @@ public class XMLSourceTreeExporter implements IExporter {
 		pOut.indent(1);
 		pOut.println("</MetricDescriptions>");
 	}
-	
+
 	private int calculateTotalWork(String handle) {
 		int result = 0;
 		Set handles = Cache.singleton.getKeysForHandle(handle);
 		for (Iterator i = handles.iterator(); i.hasNext();) {
 			String next = (String) i.next();
-			if (next.startsWith(handle)) result++;
+			if (next.startsWith(handle)) {
+				result++;
+			}
 		}
 		MetricsPlugin plugin = MetricsPlugin.getDefault();
 		return result + plugin.getMetricIds().length;
 	}
-	
-	protected static List getChildren(String handle, Class filter) {
+
+	protected static List<AbstractMetricSource> getChildren(String handle, Class filter) {
 		Set handles = Cache.singleton.getKeysForHandle(handle);
-		List result = new ArrayList();
-		for (Iterator i = handles.iterator();i.hasNext();) {
-			String next = (String)i.next();
+		List<AbstractMetricSource> result = new ArrayList<AbstractMetricSource>();
+		for (Iterator i = handles.iterator(); i.hasNext();) {
+			String next = (String) i.next();
 			if (next.startsWith(handle) && (!next.equals(handle))) {
 				AbstractMetricSource p = Cache.singleton.get(next);
-				if (filter.isInstance(p)) result.add(p);
+				if (filter.isInstance(p)) {
+					result.add(p);
+				}
 			}
 		}
 		return result;

@@ -27,12 +27,14 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
 /**
  * Propagate a maximum value
+ * 
  * @author Frank Sauer
  */
 public class MaxMax extends Propagator {
 
 	/**
 	 * Constructor for MaxMax.
+	 * 
 	 * @param name
 	 */
 	public MaxMax(String name, String per) {
@@ -42,19 +44,24 @@ public class MaxMax extends Propagator {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) {
 		List values = source.getMaximaFromChildren(name, per);
-		Max max = Max.createFromMaxes(name, per,values);
-		if (max != null) source.setMaximum(max);
+		Max max = Max.createFromMaxes(name, per, values);
+		if (max != null) {
+			source.setMaximum(max);
+		}
 	}
-	
+
 	/**
 	 * @see net.sourceforge.metrics.propagators.Propagator#createNextLevel()
 	 */
+	@Override
 	public Propagator createNextLevel() {
 		return this;
 	}
-	
+
+	@Override
 	public String toString() {
 		return "MaxMax(" + name + "," + per + ")";
 	}

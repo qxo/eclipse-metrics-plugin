@@ -18,7 +18,7 @@
  *
  * $Id: ExportMetricsTask.java,v 1.1 2003/06/23 04:13:24 sauerf Exp $
  */
- package net.sourceforge.metrics.ant;
+package net.sourceforge.metrics.ant;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -32,7 +32,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 
-
 /**
  * Export the metrics to an xml file according to the task parameters
  * 
@@ -41,14 +40,17 @@ import org.eclipse.jdt.core.JavaCore;
 public class ExportMetricsTask extends Task {
 
 	private boolean failOnError;
-	private static final String TASKNAME="metrics.export";
+	private static final String TASKNAME = "metrics.export";
 	private String projectName;
 
 	private File outFile;
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.apache.tools.ant.Task#execute()
 	 */
+	@Override
 	public void execute() throws BuildException {
 		if (projectName == null) {
 			displayError(TASKNAME + " projectName==null");
@@ -70,7 +72,7 @@ public class ExportMetricsTask extends Task {
 			MetricsFirstExporter exporter = new MetricsFirstExporter();
 			IJavaProject p = JavaCore.create(project);
 			if (p != null) {
-				AntConsoleProgressMonitor monitor =	new AntConsoleProgressMonitor(this);
+				AntConsoleProgressMonitor monitor = new AntConsoleProgressMonitor(this);
 				try {
 					exporter.export(p, outFile, monitor);
 				} catch (InvocationTargetException e) {
@@ -79,29 +81,33 @@ public class ExportMetricsTask extends Task {
 			} else {
 				displayError("Project is not a Java project.");
 			}
-		} else throw new BuildException("Must specify an output file using file=");
+		} else {
+			throw new BuildException("Must specify an output file using file=");
+		}
 	}
-	
+
 	protected void displayError(String msg) throws BuildException {
 		System.out.println(msg);
-		if (failOnError) throw new BuildException(msg, getLocation());
+		if (failOnError) {
+			throw new BuildException(msg, getLocation());
+		}
 	}
-	
+
 	public void setFailonerror(String str) {
-		if (str.equals("true"))
+		if (str.equals("true")) {
 			failOnError = true;
-		else if (str.equals("false"))
+		} else if (str.equals("false")) {
 			failOnError = false;
-		else {
+		} else {
 			failOnError = true;
-			displayError("Invalid failonerror="	+ str + ", must be \"true\" or \"false\" ");
+			displayError("Invalid failonerror=" + str + ", must be \"true\" or \"false\" ");
 		}
 	}
 
 	public void setFile(File outFile) {
 		this.outFile = outFile;
 	}
-	
+
 	public void setProjectName(String projectName) {
 		this.projectName = projectName;
 	}

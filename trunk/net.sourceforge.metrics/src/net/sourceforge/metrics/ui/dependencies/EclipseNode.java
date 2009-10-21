@@ -40,8 +40,7 @@ import org.eclipse.ui.PartInitException;
 import com.touchgraph.graphlayout.Node;
 
 /**
- * Adds the "Open In Editor" popup item to a node if its ID is a
- * handle identifier for a IJavaElement
+ * Adds the "Open In Editor" popup item to a node if its ID is a handle identifier for a IJavaElement
  * 
  * @author Frank Sauer
  */
@@ -79,9 +78,12 @@ public class EclipseNode extends Node {
 		super(id, type, color, label);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.touchgraph.graphlayout.Node#aboutToShow(java.awt.PopupMenu)
 	 */
+	@Override
 	public void aboutToShow(PopupMenu nodePopup) {
 		super.aboutToShow(nodePopup);
 		// if id is a IJavaElement handleIdentifier add open in Editor item
@@ -96,6 +98,7 @@ public class EclipseNode extends Node {
 			});
 		}
 	}
+
 	private void openInEditor() {
 		Display d = Display.getDefault();
 		d.asyncExec(new Runnable() {
@@ -113,6 +116,6 @@ public class EclipseNode extends Node {
 				}
 			}
 		});
-	}	
+	}
 
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.0"?>
+<?eclipse version="3.4"?>
 <plugin>
-
-     <extension-point id="metrics" name="metrics" schema="schema/net.sourceforge.metrics.exsd"/>
+  
+   <extension-point id="metrics" name="metrics" schema="schema/net.sourceforge.metrics.exsd"/>
    <extension-point id="exporters" name="exporters" schema="schema/exporters.exsd"/>
 
    <extension
@@ -390,7 +390,7 @@
             name="Windows Compliant"
             namespace="http://metrics.sourceforge.net/2003/Metrics-First-Flat"
             description="exports each metric with a flat list of values for the appropriate descendants compatible with windows naming schema"
-            class="net.sourceforge.metrics.internal.xml.WindowsCompliant">
+            class="net.sourceforge.metrics.internal.xml.WinCompliantExporter">
       </exporter>
       <exporter
             name="Source tree"

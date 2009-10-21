@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ import jdbm.RecordManagerOptions;
 import jdbm.helper.FastIterator;
 import jdbm.helper.IterationException;
 import jdbm.htree.HTree;
+import net.sourceforge.metrics.core.Constants;
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.MetricsPlugin;
 
@@ -40,8 +42,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 
 /**
- * public API to the private database. Currently the database is a jdbm
- * persistent hashtable with MRU cache.
+ * public API to the private database. Currently the database is a jdbm persistent hashtable with MRU cache.
  * 
  * @author Frank Sauer
  */
@@ -50,20 +51,20 @@ public class Cache {
 	private static final String DBNAME = "/metricsdb";
 	private RecordManager recman;
 
-
 	private String pluginDir;
 
 	public final static Cache singleton = new Cache();
-	
+
 	// keep roots (projectName -> HTree)
-	private HashMap projects = new HashMap();
-	private HashMap keys = new HashMap();
-	
+	private Map<String, HTree> projects = new HashMap<String, HTree>();
+	private Map<String, Set<String>> keys = new HashMap<String, Set<String>>();
+
 	private Cache() {
 		super();
 		// the follwing fixes a bug submitted outside of SF by Parasoft
 		pluginDir = MetricsPlugin.getDefault().getStateLocation().toString();
-		//pluginDir = Platform.getPlugin(Log.pluginId).getStateLocation().toString();
+		// pluginDir =
+		// Platform.getPlugin(Log.pluginId).getStateLocation().toString();
 		initRecordManager();
 	}
 
@@ -73,24 +74,24 @@ public class Cache {
 			props.put(RecordManagerOptions.CACHE_SIZE, "500");
 			props.put(RecordManagerOptions.AUTO_COMMIT, "false");
 			props.put(RecordManagerOptions.THREAD_SAFE, "true");
-			recman = RecordManagerFactory.createRecordManager( pluginDir + DBNAME, props );				
+			recman = RecordManagerFactory.createRecordManager(pluginDir + DBNAME, props);
 		} catch (Throwable e) {
 			Log.logError("Could not open/create jdbm database", e);
 		}
 	}
-	
+
 	private HTree getHashtableForProject(String projectName) {
-		HTree hashtable = (HTree) projects.get(projectName);
+		HTree hashtable = projects.get(projectName);
 		if (hashtable == null) {
 			try {
-				long recid = recman.getNamedObject( projectName );
-				if ( recid != 0 ) {
-					hashtable = HTree.load( recman, recid );
+				long recid = recman.getNamedObject(projectName);
+				if (recid != 0) {
+					hashtable = HTree.load(recman, recid);
 				} else {
-					hashtable = HTree.createInstance( recman );
-					recman.setNamedObject( projectName, hashtable.getRecid() );
+					hashtable = HTree.createInstance(recman);
+					recman.setNamedObject(projectName, hashtable.getRecid());
 				}
-				projects.put(projectName, hashtable);	
+				projects.put(projectName, hashtable);
 			} catch (Throwable e) {
 				Log.logError("Could not get/create HTree for " + projectName, e);
 			}
@@ -103,71 +104,74 @@ public class Cache {
 		String projectName = getProjectName(element);
 		return getHashtableForProject(projectName);
 	}
-	
+
 	/**
 	 * @param element
 	 * @return
 	 */
 	private String getProjectName(IJavaElement element) {
-		if (element.getElementType() == IJavaElement.JAVA_PROJECT)
+		if (element.getElementType() == IJavaElement.JAVA_PROJECT) {
 			return element.getElementName();
-		else {
-			IJavaElement p = element.getAncestor(IJavaElement.JAVA_PROJECT);
-			return p.getElementName();
-		}
+		} /* else { */
+		IJavaElement p = element.getAncestor(IJavaElement.JAVA_PROJECT);
+		return p.getElementName();
+		/* } */
 	}
 
 	public void put(AbstractMetricSource source) {
-		if (source == null) return;
+		if (source == null) {
+			return;
+		}
 		try {
 			String handle = source.getHandle();
 			getHashtableForHandle(handle).put(handle, source);
 			getKeysForHandle(handle).add(handle);
-			if (source.getLevel() >= AbstractMetricSource.PACKAGEFRAGMENT)
+			if (source.getLevel() >= Constants.PACKAGEFRAGMENT) {
 				recman.commit();
+			}
 		} catch (Throwable e) {
-			Log.logError("Could not store " + source.getHandle(),e );
+			Log.logError("Could not store " + source.getHandle(), e);
 		}
-	}	
-	
+	}
+
 	/**
 	 * @param handle
 	 */
-	public Set getKeysForHandle(String handle) {
+	public Set<String> getKeysForHandle(String handle) {
 		IJavaElement element = JavaCore.create(handle);
 		String projectName = getProjectName(element);
-		Set s = (Set)keys.get(projectName);
+		Set<String> s = keys.get(projectName);
 		if (s == null) {
 			s = getKeys(handle);
 			keys.put(projectName, s);
 		}
 		return s;
-		
+
 	}
-	
-	private Set getKeys(String handle) {
+
+	private Set<String> getKeys(String handle) {
 		HTree map = getHashtableForHandle(handle);
-		Set result = new HashSet();
+		Set<String> result = new HashSet<String>();
 		try {
 			FastIterator it = map.keys();
-			String next = (String)it.next();
+			String next = (String) it.next();
 			while (next != null) {
 				result.add(next);
-				next = (String)it.next();
+				next = (String) it.next();
 			}
 		} catch (IterationException e) {
 			// ok
 		} catch (Throwable e) {
 			Log.logError("Error iterating over database keys", e);
 		}
-		
+
 		return result;
 	}
 
 	public AbstractMetricSource get(IJavaElement element) {
-		return (AbstractMetricSource) get(element.getHandleIdentifier());
+		return get(element.getHandleIdentifier());
 	}
-	
+
 	public AbstractMetricSource get(String handle) {
 		try {
 			return (AbstractMetricSource) getHashtableForHandle(handle).get(handle);
@@ -176,7 +180,7 @@ public class Cache {
 			return null;
 		}
 	}
-		
+
 	public void remove(String handle) {
 		try {
 			getHashtableForHandle(handle).remove(handle);
@@ -185,24 +189,26 @@ public class Cache {
 			Log.logError("Could not remove " + handle, e);
 		}
 	}
-	
+
 	public void removeSubtree(String handle) {
 		HTree h = getHashtableForHandle(handle);
 		if (h != null) {
 			Set handles = getKeysForHandle(handle);
 			for (Iterator i = handles.iterator(); i.hasNext();) {
-				String next = (String)i.next();
-				if (next.startsWith(handle)) try {
-					h.remove(next);
-					i.remove();
-				} catch (Throwable e) {
-					// doesn't seem to be a severe problem, don't log
-					Log.logError("Could not remove " + next, e);
+				String next = (String) i.next();
+				if (next.startsWith(handle)) {
+					try {
+						h.remove(next);
+						i.remove();
+					} catch (Throwable e) {
+						// doesn't seem to be a severe problem, don't log
+						Log.logError("Could not remove " + next, e);
+					}
 				}
 			}
 		}
 	}
-	
+
 	public void close() {
 		try {
 			recman.close();
@@ -212,10 +218,10 @@ public class Cache {
 			Log.logError("Could not close jdbm database", e);
 		}
 	}
-	
-	
+
 	/**
 	 * permanently remove all metrics related to given project
+	 * 
 	 * @param projectName
 	 */
 	public void clear(String projectName) {
@@ -224,15 +230,15 @@ public class Cache {
 			long id = recman.getNamedObject(projectName);
 			if (id != 0) {
 				recman.delete(id);
-				HTree hashtable = HTree.createInstance( recman );
-				recman.setNamedObject( projectName, hashtable.getRecid());
+				HTree hashtable = HTree.createInstance(recman);
+				recman.setNamedObject(projectName, hashtable.getRecid());
 				recman.commit();
 			}
 		} catch (Throwable e) {
 			Log.logError("Could not clear project " + projectName, e);
 		}
 	}
-	
+
 	/**
 	 * clean out entire database
 	 */
@@ -246,7 +252,7 @@ public class Cache {
 		} catch (Throwable e) {
 			Log.logError("Error deleting database", e);
 		}
-		
+
 	}
 
 	/**
@@ -258,6 +264,6 @@ public class Cache {
 		} catch (Throwable e) {
 			Log.logError("Could not commit latest changes.", e);
 		}
-		
+
 	}
 }

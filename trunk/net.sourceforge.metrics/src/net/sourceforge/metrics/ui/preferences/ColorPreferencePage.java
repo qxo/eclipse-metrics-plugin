@@ -44,9 +44,12 @@ public class ColorPreferencePage extends FieldEditorPreferencePage implements IW
 		setDescription("Color preferences for metrics and dependency graph view");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.preference.FieldEditorPreferencePage#createFieldEditors()
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.FieldEditorPreferencePage#createFieldEditors ()
 	 */
+	@Override
 	protected void createFieldEditors() {
 		addField(new ColorFieldEditor("METRICS.defaultColor", "Default within range color", getFieldEditorParent()));
 		addField(new ColorFieldEditor("METRICS.linkedColor", "Within range linked color", getFieldEditorParent()));
@@ -54,12 +57,12 @@ public class ColorPreferencePage extends FieldEditorPreferencePage implements IW
 		addField(new ColorFieldEditor("METRICS.depGR_background", "Dependency Graph Background Color", getFieldEditorParent()));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
 	 */
 	public void init(IWorkbench workbench) {
 	}
-
-
 
 }

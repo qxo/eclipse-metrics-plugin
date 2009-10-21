@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * Export compilation unit metrics to an XML report
+ * 
  * @author Frank Sauer
  */
 public class CompilationUnitXMLExporter extends MetricsExporter implements IXMLExporter {
@@ -34,19 +35,24 @@ public class CompilationUnitXMLExporter extends MetricsExporter implements IXMLE
 	public CompilationUnitXMLExporter() {
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sourceforge.metrics.export.xml.IExporter#export(net.sourceforge.metrics.core.sources.AbstractMetricSource, net.sourceforge.metrics.export.xml.XMLPrintStream, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sourceforge.metrics.export.xml.IExporter#export(net.sourceforge.metrics .core.sources.AbstractMetricSource, net.sourceforge.metrics.export.xml.XMLPrintStream, int)
 	 */
 	public void export(AbstractMetricSource source, XMLPrintStream out, int level, IProgressMonitor monitor) {
 		printOpeningTag(source, out, level);
-		printMetrics(source, out, level+1);
-		exportChildren(out, source.getHandle(), level+1, TypeMetrics.class, monitor);
+		printMetrics(source, out, level + 1);
+		exportChildren(out, source.getHandle(), level + 1, TypeMetrics.class, monitor);
 		printClosingTag(out, level);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sourceforge.metrics.internal.xml.IExporter#getTagName()
 	 */
+	@Override
 	public String getTagName() {
 		return "CompilationUnit";
 	}

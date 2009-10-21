@@ -22,16 +22,15 @@ package net.sourceforge.metrics.core;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 
-
 /**
  * Contains the specification of a calculator as contained in a plugin manifest
- *
+ * 
  * @author Frank Sauer
  */
 public class ExportDescriptor {
-	
+
 	private IConfigurationElement config;
-	
+
 	/**
 	 * Constructor for CalculatorDescriptor.
 	 */
@@ -41,6 +40,7 @@ public class ExportDescriptor {
 
 	/**
 	 * Returns the className.
+	 * 
 	 * @return String
 	 */
 	public String getClassName() {
@@ -49,30 +49,34 @@ public class ExportDescriptor {
 
 	/**
 	 * Returns the name.
+	 * 
 	 * @return String
 	 */
 	public String getName() {
 		return config.getAttribute("name");
 	}
-	
+
 	/**
 	 * Returns the name.
+	 * 
 	 * @return String
 	 */
 	public String getDescription() {
 		return config.getAttribute("description");
 	}
-	
+
 	/**
 	 * Returns the name.
+	 * 
 	 * @return String
 	 */
 	public String getNamespace() {
 		return config.getAttribute("namespace");
 	}
-	
+
 	/**
 	 * Returns the id.
+	 * 
 	 * @return String
 	 */
 	public String getId() {
@@ -80,35 +84,39 @@ public class ExportDescriptor {
 	}
 
 	/**
-	 * Uses reflection to create the calculator. Calculator class must have a
-	 * default no-argument constructor. If calculator cannot be created return null.
+	 * Uses reflection to create the calculator. Calculator class must have a default no-argument constructor. If calculator cannot be created return null.
+	 * 
 	 * @return ICalculator
 	 */
 	public IExporter createExporter() {
 		try {
-			IExporter x = (IExporter)config.createExecutableExtension("class");
+			IExporter x = (IExporter) config.createExecutableExtension("class");
 			return x;
 		} catch (Throwable e) {
 			Log.logError("ExportDescriptor::createExporter", e);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Create a CalculatorDescriptor from a &lt;calculator&gt; element
+	 * 
 	 * @param element
 	 * @return CalculatorDescriptor
 	 */
 	public static ExportDescriptor createFrom(IConfigurationElement element) {
 		String name = element.getAttribute("name");
 		String className = element.getAttribute("class");
-		if ((name != null)&&(className != null))
+		if ((name != null) && (className != null)) {
 			return new ExportDescriptor(element);
-		else return null;
-	}	
-	
+		} /* else { */
+		return null;
+		/* } */
+	}
+
+	@Override
 	public String toString() {
 		return "<exporter name=\"" + getName() + "\" class=\"" + getClassName() + "\">";
 	}
-	
+
 }

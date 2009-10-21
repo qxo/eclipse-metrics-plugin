@@ -39,69 +39,71 @@ public interface Constants {
 	public final static int TYPE = 2;
 	/** method level source */
 	public final static int METHOD = 1;
-	
+
 	// basic metric ids
-	
-	/** "LOC" */
-	public final static String LINES      	   = "LOC";
+
 	/** "NBD" */
-	public final static String NESTEDBLOCKDEPTH  = "NBD";
+	public final static String NESTEDBLOCKDEPTH = "NBD";
 	/** "PAR" */
-	public final static String PARMS             = "PAR";
+	public final static String PARMS = "PAR";
 	/** "VG" */
-	public final static String MCCABE            = "VG";
-	/** "LOC" */
-	public final static String NUM_METHODS       = "NOM";
+	public final static String MCCABE = "VG";
+	/** "NOM" */
+	public final static String NUM_METHODS = "NOM";
 	/** "NSM" */
-	public final static String NUM_STAT_METHODS  = "NSM";
+	public final static String NUM_STAT_METHODS = "NSM";
 	/** "NSF" */
-	public final static String NUM_STAT_FIELDS   = "NSF";
+	public final static String NUM_STAT_FIELDS = "NSF";
 	/** "NOF" */
-	public final static String NUM_FIELDS        = "NOF";
+	public final static String NUM_FIELDS = "NOF";
 	/** "NOC" */
-	public final static String NUM_TYPES         = "NOC";
+	public final static String NUM_TYPES = "NOC";
 	/** "NOP" */
-	public final static String NUM_PACKAGES      = "NOP";
+	public final static String NUM_PACKAGES = "NOP";
 	/** "NOI" */
-	public final static String NUM_INTERFACES    = "NOI";
+	public final static String NUM_INTERFACES = "NOI";
 	/** "DIT" */
 	public final static String INHERITANCE_DEPTH = "DIT";
 	/** "NSC" */
-	public final static String SUBCLASSES        = "NSC";
+	public final static String SUBCLASSES = "NSC";
 	/** "NUC" */
-	public final static String SUPERCLASSES      = "NUC";
+	public final static String SUPERCLASSES = "NUC";
 	/** "U" */
-	public final static String REUSE_RATIO       = "U";
+	public final static String REUSE_RATIO = "U";
 	/** "SIX" */
 	public final static String SPECIALIZATION_IN = "SIX";
 	/** "NORM" */
-	public final static String NORM              = "NORM";
+	public final static String NORM = "NORM";
 	/** "WMC" */
-	public final static String WMC               = "WMC";
+	public final static String WMC = "WMC";
 	/** "LCOM" */
-	public final static String LCOM              = "LCOM";
+	public final static String LCOM = "LCOM";
 	/** "RMC" */
-	public final static String RMC               = "RMC";
+	public final static String RMC = "RMC";
 	/** "CA" */
-	public final static String CA                = "CA";
+	public final static String CA = "CA";
 	/** "CE" */
-	public final static String CE                = "CE";
+	public final static String CE = "CE";
 	/** "RMI" */
-	public final static String RMI               = "RMI";
+	public final static String RMI = "RMI";
 	/** "RMA" */
-	public final static String RMA               = "RMA";
+	public final static String RMA = "RMA";
 	/** "RMD" */
-	public final static String RMD               = "RMD";
+	public final static String RMD = "RMD";
+	/** "MLOC" */
+	public final static String MLOC = "MLOC";
+	/** "TLOC" */
+	public final static String TLOC = "TLOC";
 
 	// scopes for averages and maxima
 	/** "method" */
-	public final static String PER_METHOD        = "method";
+	public final static String PER_METHOD = "method";
 	/** "type" */
-	public final static String PER_CLASS         = "type";
+	public final static String PER_CLASS = "type";
 	/** "packageFragment" */
-	public final static String PER_PACKAGE       = "packageFragment";
+	public final static String PER_PACKAGE = "packageFragment";
 
-	public static final String[] pers = new String[] {PER_PACKAGE, PER_CLASS, PER_METHOD};
+	public static final String[] pers = new String[] { PER_PACKAGE, PER_CLASS, PER_METHOD };
 
 	// namespaces for persistent storage and in-memory caching
 	public final static String pluginId = "net.sourceforge.metrics";

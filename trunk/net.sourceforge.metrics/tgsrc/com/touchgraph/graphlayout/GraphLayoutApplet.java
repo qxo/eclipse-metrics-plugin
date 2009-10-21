@@ -52,29 +52,33 @@ package com.touchgraph.graphlayout;
 import java.applet.Applet;
 import java.awt.BorderLayout;
 
-/**  GraphLayoutApplet.  
-  *
-  * @author   Alexander Shapiro                                        
-  * @version  1.21  $Id: GraphLayoutApplet.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
-  */
+/**
+ * GraphLayoutApplet.
+ * 
+ * @author Alexander Shapiro
+ * @version 1.21 $Id: GraphLayoutApplet.java,v 1.1 2003/05/05 01:25:43 sauerf Exp $
+ */
 public class GraphLayoutApplet extends Applet {
 
-    public String getAppletInfo()
-    {
-        String s = "";
-        s += "***************************************************************************\n";
-        s += "*   TouchGraph GraphLayout                                                *\n"; 
-        s += "*   (c) 2001-2002 TouchGraph LLC                                          *\n";
-        s += "*   Author: Alexander Shapiro     Email: alex@touchgraph.com              *\n";
-        s += "***************************************************************************\n";
-        return s;
-    }
+	private static final long serialVersionUID = 551651222050437518L;
 
-    public void init() {
-        System.out.println(getAppletInfo());
-        setLayout(new BorderLayout());
-        setSize(800,600);
-        add(new GLPanel(), BorderLayout.CENTER);
-    }
+	@Override
+	public String getAppletInfo() {
+		String s = "";
+		s += "***************************************************************************\n";
+		s += "*   TouchGraph GraphLayout                                                *\n";
+		s += "*   (c) 2001-2002 TouchGraph LLC                                          *\n";
+		s += "*   Author: Alexander Shapiro     Email: alex@touchgraph.com              *\n";
+		s += "***************************************************************************\n";
+		return s;
+	}
+
+	@Override
+	public void init() {
+		System.out.println(getAppletInfo());
+		setLayout(new BorderLayout());
+		setSize(800, 600);
+		add(new GLPanel(), BorderLayout.CENTER);
+	}
 
 } // end com.touchgraph.graphlayout.GraphLayoutApplet

@@ -30,15 +30,14 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 
 /**
- * Calculates Depth of Inheritance Tree, Number of Children
- * and sets superclasses to either 0 or 1 (if the source has subclasses)
+ * Calculates Depth of Inheritance Tree, Number of Children and sets superclasses to either 0 or 1 (if the source has subclasses)
  * 
  * @author Frank Sauer
  */
 public class InheritanceDepth extends Calculator implements Constants {
 
 	/**
-	 * Constructor for Dit. 
+	 * Constructor for Dit.
 	 */
 	public InheritanceDepth() {
 		super(INHERITANCE_DEPTH);
@@ -47,15 +46,18 @@ public class InheritanceDepth extends Calculator implements Constants {
 	/**
 	 * @see net.sourceforge.metrics.calculators.Calculator#calculate(net.sourceforge.metrics.core.sources.AbstractMetricSource)
 	 */
+	@Override
 	public void calculate(AbstractMetricSource source) throws InvalidSourceException {
-		if (source.getLevel() != TYPE) throw new InvalidSourceException("InheritanceDepth only applicable to types");
-		TypeMetrics tm = (TypeMetrics)source;
-		IType iType = (IType)source.getJavaElement();
+		if (source.getLevel() != TYPE) {
+			throw new InvalidSourceException("InheritanceDepth only applicable to types");
+		}
+		TypeMetrics tm = (TypeMetrics) source;
+		IType iType = (IType) source.getJavaElement();
 		ITypeHierarchy hierarchy = tm.getHierarchy();
 		IType[] supers = hierarchy.getAllSuperclasses(iType);
-		IType[] subs = hierarchy.getSubtypes(iType); // BUG #933209 
+		IType[] subs = hierarchy.getSubtypes(iType); // BUG #933209
 		source.setValue(new Metric(INHERITANCE_DEPTH, supers.length));
-		source.setValue(new Metric(SUBCLASSES,subs.length)); 
+		source.setValue(new Metric(SUBCLASSES, subs.length));
 	}
 
 }

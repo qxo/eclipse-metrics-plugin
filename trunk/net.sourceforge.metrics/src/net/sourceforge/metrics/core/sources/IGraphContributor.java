@@ -20,11 +20,12 @@
  */package net.sourceforge.metrics.core.sources;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Frank Sauer
  */
 public interface IGraphContributor {
 
-	Map getEfferent();
+	Map<String, Set<String>> getEfferent();
 }

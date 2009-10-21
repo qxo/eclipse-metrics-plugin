@@ -20,7 +20,6 @@
  */
 package net.sourceforge.metrics.builder;
 
-
 /**
  * Simple counting semaphore for queue blocking
  * 
@@ -29,28 +28,28 @@ package net.sourceforge.metrics.builder;
 public class Semaphore {
 	private int count = 0;
 	private int initial = 0;
-	
+
 	public Semaphore(int initialCount) {
 		count = initialCount;
 		initial = initialCount;
 	}
-	
+
 	public synchronized void P() throws InterruptedException {
 		while (count <= 0) {
 			wait();
 		}
 		count--;
 	}
-	
+
 	public synchronized void V() {
 		++count;
 		notify();
 	}
-	
+
 	public synchronized void reset() {
 		count = initial;
 	}
-	
+
 	public synchronized void reset(int value) {
 		count = value;
 	}

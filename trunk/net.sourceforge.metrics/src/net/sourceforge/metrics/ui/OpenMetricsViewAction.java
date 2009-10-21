@@ -28,9 +28,12 @@ public class OpenMetricsViewAction extends Action {
 		super();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.eclipse.jface.action.IAction#run()
 	 */
+	@Override
 	public void run() {
 		IWorkbenchWindow dw = PlatformUI.getWorkbench().getWorkbenchWindows()[0];
 		IWorkbenchPage page = dw.getActivePage();
@@ -42,8 +45,8 @@ public class OpenMetricsViewAction extends Action {
 				} catch (PartInitException e) {
 					Log.logError("Could not create metrics view", e);
 				}
-			} 
-		} 
+			}
+		}
 	}
 
 }

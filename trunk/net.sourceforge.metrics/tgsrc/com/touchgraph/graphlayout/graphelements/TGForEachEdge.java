@@ -51,13 +51,14 @@ package com.touchgraph.graphlayout.graphelements;
 
 import com.touchgraph.graphlayout.Edge;
 
-/** TGForEachEdge:  A dummy object for iterating through edges
-  *   
-  * @author   Alexander Shapiro                                        
-  * @version  1.22-jre1.1  $Id: TGForEachEdge.java,v 1.1 2003/05/05 01:25:44 sauerf Exp $
-  */
+/**
+ * TGForEachEdge: A dummy object for iterating through edges
+ * 
+ * @author Alexander Shapiro
+ * @version 1.22-jre1.1 $Id: TGForEachEdge.java,v 1.1 2003/05/05 01:25:44 sauerf Exp $
+ */
 public abstract class TGForEachEdge {
 
-    public abstract void forEachEdge( Edge e );
+	public abstract void forEachEdge(Edge e);
 
 } // end com.touchgraph.graphlayout.graphelements.TGForEachEdge

@@ -18,7 +18,7 @@
  *
  * $Id: EnableMetricsTask.java,v 1.3 2004/05/01 17:24:30 sauerf Exp $
  */
- package net.sourceforge.metrics.ant;
+package net.sourceforge.metrics.ant;
 
 import net.sourceforge.metrics.builder.MetricsNature;
 
@@ -28,7 +28,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 
-
 /**
  * Add metrics nature and build command to the project specified in the task parameters
  * 
@@ -36,15 +35,18 @@ import org.eclipse.core.runtime.CoreException;
  */
 public class EnableMetricsTask extends Task {
 
-	private static final String TASKNAME="metrics.enable";
+	private static final String TASKNAME = "metrics.enable";
 	public final static String pluginId = "net.sourceforge.metrics";
 
 	private String projectName;
 	private boolean failOnError;
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.apache.tools.ant.Task#execute()
 	 */
+	@Override
 	public void execute() throws BuildException {
 		if (projectName == null) {
 			displayError(TASKNAME + " projectName==null");
@@ -71,23 +73,25 @@ public class EnableMetricsTask extends Task {
 				log("Metrics already enabled");
 			}
 		} catch (CoreException e) {
-			displayError(TASKNAME+" Could not enable the metrics for the given project.");
+			displayError(TASKNAME + " Could not enable the metrics for the given project.");
 		}
 	}
-	
+
 	protected void displayError(String msg) throws BuildException {
 		System.out.println(msg);
-		if (failOnError) throw new BuildException(msg, getLocation());
+		if (failOnError) {
+			throw new BuildException(msg, getLocation());
+		}
 	}
-	
+
 	public void setFailonerror(String str) {
-		if (str.equals("true"))
+		if (str.equals("true")) {
 			failOnError = true;
-		else if (str.equals("false"))
+		} else if (str.equals("false")) {
 			failOnError = false;
-		else {
+		} else {
 			failOnError = true;
-			displayError("Invalid failonerror="	+ str + ", must be \"true\" or \"false\" ");
+			displayError("Invalid failonerror=" + str + ", must be \"true\" or \"false\" ");
 		}
 	}
 

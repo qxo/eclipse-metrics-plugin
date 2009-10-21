@@ -18,7 +18,7 @@
  *
  * $Id: EnableMetrics.java,v 1.12 2004/05/01 17:21:35 sauerf Exp $
  */
- 
+
 package net.sourceforge.metrics.ui;
 
 import java.lang.reflect.InvocationTargetException;
@@ -31,9 +31,9 @@ import net.sourceforge.metrics.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.core.Openable;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -46,9 +46,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * Action for the checked menu item in the IJavaproject popup.
- * Checks/Unchecks based on the presence of the metrics nature
- * and selection adds/removes the nature.
+ * Action for the checked menu item in the IJavaproject popup. Checks/Unchecks based on the presence of the metrics nature and selection adds/removes the nature.
  * 
  * @author Frank Sauer
  */
@@ -77,6 +75,7 @@ public class EnableMetrics implements IObjectActionDelegate, Constants {
 		if (project != null) {
 			IRunnableWithProgress op = new IRunnableWithProgress() {
 				public String error = "";
+
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					try {
 						if (!project.hasNature(pluginId + ".nature")) {
@@ -91,9 +90,11 @@ public class EnableMetrics implements IObjectActionDelegate, Constants {
 							error = "disable";
 							MetricsNature.removeNatureFromProject(project, monitor);
 							IJavaProject p = JavaCore.create(project);
-							// abort any ongoing or pending calculations for this project
-							if (p != null)
+							// abort any ongoing or pending calculations for
+							// this project
+							if (p != null) {
 								MetricsBuilder.abort(p.getHandleIdentifier());
+							}
 							monitor.worked(1);
 						}
 					} catch (CoreException e) {
@@ -105,15 +106,15 @@ public class EnableMetrics implements IObjectActionDelegate, Constants {
 			};
 			try {
 				new ProgressMonitorDialog(shell).run(true, false, op);
-			 } catch (MetricsNatureException e) {
-			 	Log.logError("Could not " + e.getTask() + " metrics", e);
+			} catch (MetricsNatureException e) {
+				Log.logError("Could not " + e.getTask() + " metrics", e);
 				MessageDialog.openInformation(shell, "Metrics", "Could not enable metrics.");
-			 } catch (InterruptedException e) {
-			 } catch (InvocationTargetException e) {
+			} catch (InterruptedException e) {
+			} catch (InvocationTargetException e) {
 				Log.logError("Could not change metrics enablement", e);
 			}
 		}
-}
+	}
 
 	/**
 	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
@@ -121,28 +122,32 @@ public class EnableMetrics implements IObjectActionDelegate, Constants {
 	public void selectionChanged(IAction action, ISelection selection) {
 		if ((!selection.isEmpty()) && (selection instanceof IStructuredSelection)) {
 			try {
-				Openable op = (Openable)((IStructuredSelection)selection).getFirstElement();
-				if (op != null) {
-					project = (IProject)op.getUnderlyingResource();
+				// Openable op =
+				// (Openable)((IStructuredSelection)selection).getFirstElement();
+				IJavaElement elem = (IJavaElement) ((IStructuredSelection) selection).getFirstElement();
+				if (elem != null) {
+					project = (IProject) elem.getUnderlyingResource();
 					action.setChecked(project.hasNature(pluginId + ".nature"));
-				} 
+				}
 			} catch (Throwable e) {
-				Log.logError("EnableMetrics: error getting project.", e);				
+				Log.logError("EnableMetrics: error getting project.", e);
 				project = null;
 			}
 		}
 	}
 
 	static class MetricsNatureException extends InvocationTargetException {
+
+		private static final long serialVersionUID = -8316949498780911023L;
 		private String task = "";
-		
+
 		MetricsNatureException(Throwable t, String task) {
 			super(t);
 			this.task = task;
 		}
-		
+
 		String getTask() {
 			return task;
 		}
-	} 
+	}
 }

@@ -23,6 +23,7 @@ package net.sourceforge.metrics.properties;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.sourceforge.metrics.builder.MetricsNature;
@@ -60,24 +61,20 @@ import org.eclipse.ui.dialogs.PropertyPage;
  */
 public class MetricsPropertyPage extends PropertyPage implements Constants {
 
-
 	private Button addPattern;
-
 
 	private EnableMetricsTable table;
 
-
 	private Button check;
-
 
 	public MetricsPropertyPage() {
 		super();
 	}
 
-
 	/**
 	 * @see PreferencePage#createContents(Composite)
 	 */
+	@Override
 	protected Control createContents(Composite parent) {
 		Composite composite = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
@@ -94,24 +91,22 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		} catch (Throwable e) {
 			Log.logError("Error gettng project nature.", e);
 		}
-		/* LATER, for 1.4 release
-		table = new EnableMetricsTable(p, composite, SWT.FULL_SELECTION | SWT.CHECK);
-		data = new GridData(GridData.FILL_BOTH | SWT.H_SCROLL | SWT.V_SCROLL);
-		data.grabExcessHorizontalSpace = true;
-		data.grabExcessVerticalSpace = true;
-		table.setLayoutData(data);
-		*/
+		/*
+		 * LATER, for 1.4 release table = new EnableMetricsTable(p, composite, SWT.FULL_SELECTION | SWT.CHECK); data = new GridData(GridData.FILL_BOTH | SWT.H_SCROLL | SWT.V_SCROLL); data.grabExcessHorizontalSpace = true;
+		 * data.grabExcessVerticalSpace = true; table.setLayoutData(data);
+		 */
 		return composite;
 	}
-
 
 	private IProject getProject() {
 		return (IProject) this.getElement().getAdapter(IProject.class);
 	}
 
+	@Override
 	protected void performDefaults() {
 	}
-	
+
+	@Override
 	public boolean performOk() {
 		try {
 			boolean checked = check.getSelection();
@@ -129,12 +124,15 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.jface.preference.PreferencePage#contributeButtons(org.eclipse.swt.widgets.Composite)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.preference.PreferencePage#contributeButtons(org.eclipse .swt.widgets.Composite)
 	 */
+	@Override
 	protected void contributeButtons(Composite parent) {
 		((GridLayout) parent.getLayout()).numColumns++;
-		addPattern = new Button(parent,SWT.PUSH);
+		addPattern = new Button(parent, SWT.PUSH);
 		addPattern.setText("Add Exclusion Filter(s)...");
 		addPattern.addSelectionListener(new SelectionListener() {
 
@@ -153,14 +151,14 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		});
 		addPattern.setEnabled(false);
 	}
-	
+
 	class EnableMetricsTable extends TableTree implements SelectionListener {
-		
+
 		private TableColumn exPatterns;
 		private TableColumn description;
 		private IProject project = null;
-		private HashMap rowLookup = new HashMap();
-		
+		private Map<String, TableTreeItem> rowLookup = new HashMap<String, TableTreeItem>();
+
 		public EnableMetricsTable(IProject p, Composite parent, int style) {
 			super(parent, style);
 			getTable().setLinesVisible(true);
@@ -175,28 +173,29 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 			this.project = p;
 			initMetrics();
 		}
-		
+
 		/**
 		 * Write all state to persistent properties in the given project
+		 * 
 		 * @param p
 		 */
 		public void persistState() {
 			TableTreeItem[] items = getItems();
-			for (int i = 0; i < items.length; i++) {
-				String id = (String)items[i].getData("id");
-				String val = (items[i].getChecked())?"true":"false";
-				String mPatterns = items[i].getText(1);
+			for (TableTreeItem item : items) {
+				String id = (String) item.getData("id");
+				String val = (item.getChecked()) ? "true" : "false";
+				String mPatterns = item.getText(1);
 				try {
-					project.setPersistentProperty(new QualifiedName(MetricsPlugin.pluginId, id+".enabled"), val);
-					project.setPersistentProperty(new QualifiedName(MetricsPlugin.pluginId, id+".patterns"), mPatterns);
-					TableTreeItem[] folders = items[i].getItems();
-					for (int j = 0; j < folders.length; j++) {
-						IPackageFragmentRoot f = (IPackageFragmentRoot) folders[j].getData("element");
+					project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + ".enabled"), val);
+					project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + ".patterns"), mPatterns);
+					TableTreeItem[] folders = item.getItems();
+					for (TableTreeItem folder : folders) {
+						IPackageFragmentRoot f = (IPackageFragmentRoot) folder.getData("element");
 						String handle = f.getHandleIdentifier();
-						String fVal = (folders[j].getChecked())?"true":"false";
-						String fPatterns = folders[j].getText(1);
-						project.setPersistentProperty(new QualifiedName(MetricsPlugin.pluginId, id+"_"+handle+".enabled"), fVal);
-						project.setPersistentProperty(new QualifiedName(MetricsPlugin.pluginId, id+"_"+handle+".patterns"), fPatterns);
+						String fVal = (folder.getChecked()) ? "true" : "false";
+						String fPatterns = folder.getText(1);
+						project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + "_" + handle + ".enabled"), fVal);
+						project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + "_" + handle + ".patterns"), fPatterns);
 					}
 				} catch (CoreException e) {
 					Log.logError("Could not persist property", e);
@@ -214,83 +213,97 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 			item.setData("patterns", patterns);
 			item.setText(1, concat(patterns));
 			rowLookup.put(md.getId(), item);
-			for (int i = 0; i < roots.length;i++) {
+			for (IPackageFragmentRoot root : roots) {
 				TableTreeItem next = new TableTreeItem(item, SWT.NONE);
-				next.setText(0, roots[i].getElementName());
+				next.setText(0, root.getElementName());
 				next.setData("id", md.getId());
-				next.setData("element", roots[i]);
-				next.setData("md", md);	
-				patterns = getExclusionPatterns(md.getId(), roots[i]);
+				next.setData("element", root);
+				next.setData("md", md);
+				patterns = getExclusionPatterns(md.getId(), root);
 				next.setData("patterns", patterns);
-				next.setText(1, concat(patterns));			
-				next.setChecked(isEnabled(md.getId(), roots[i]));
+				next.setText(1, concat(patterns));
+				next.setChecked(isEnabled(md.getId(), root));
 				next.setGrayed(!item.getChecked());
 			}
 			return item;
 		}
-		
+
 		/**
 		 * Get the stored exclusion patterns for the given metric
 		 * 
-		 * @param id metric-id
+		 * @param id
+		 *            metric-id
 		 */
 		private String[] getExclusionPatterns(String id) {
-			return getExclusionPatterns(new QualifiedName(MetricsPlugin.pluginId, id+".patterns"));
+			return getExclusionPatterns(new QualifiedName(Constants.pluginId, id + ".patterns"));
 		}
 
 		/**
 		 * Get the stored exclusion patterns for the given metric and source folder
 		 * 
-		 * @param id metric-id
+		 * @param id
+		 *            metric-id
 		 */
 		private String[] getExclusionPatterns(String id, IPackageFragmentRoot folder) {
 			String handle = folder.getHandleIdentifier();
-			return getExclusionPatterns(new QualifiedName(MetricsPlugin.pluginId, id+"_"+handle+".patterns"));
+			return getExclusionPatterns(new QualifiedName(Constants.pluginId, id + "_" + handle + ".patterns"));
 		}
-		
+
 		private String[] getExclusionPatterns(QualifiedName qn) {
 			try {
 				String val = project.getPersistentProperty(qn);
-				List result = new ArrayList();
+				List<String> result = new ArrayList<String>();
 				if (val != null) {
 					StringTokenizer t = new StringTokenizer(val, ";");
-					while (t.hasMoreTokens()) result.add(t.nextToken());
+					while (t.hasMoreTokens()) {
+						result.add(t.nextToken());
+					}
 				}
-				return (String[])result.toArray(new String[]{});
+				return result.toArray(new String[] {});
 			} catch (CoreException e) {
-				return new String[]{};
+				return new String[] {};
 			}
-		}
-		
-		/**
-		 * Checks persisted project property
-		 * @param id		metric to be checked
-		 * @param folder 	source folder to be checked
-		 * @return true if project properties indicate it is enabled or if such property does not exist
-		 */
-		private boolean isEnabled(String id, IPackageFragmentRoot folder) {
-			boolean mEnabled = isEnabled(id);
-			if (!mEnabled) return false;
-			String handle = folder.getHandleIdentifier();
-			try {
-				String val = project.getPersistentProperty(new QualifiedName(MetricsPlugin.pluginId, id+"_"+handle+".enabled"));
-				if (val == null) return true;
-				return val.equals("true");
-			} catch (CoreException e) {
-				return true;
-			}
-			
 		}
 
 		/**
 		 * Checks persisted project property
+		 * 
+		 * @param id
+		 *            metric to be checked
+		 * @param folder
+		 *            source folder to be checked
+		 * @return true if project properties indicate it is enabled or if such property does not exist
+		 */
+		private boolean isEnabled(String id, IPackageFragmentRoot folder) {
+			boolean mEnabled = isEnabled(id);
+			if (!mEnabled) {
+				return false;
+			}
+			String handle = folder.getHandleIdentifier();
+			try {
+				String val = project.getPersistentProperty(new QualifiedName(Constants.pluginId, id + "_" + handle + ".enabled"));
+				if (val == null) {
+					return true;
+				}
+				return val.equals("true");
+			} catch (CoreException e) {
+				return true;
+			}
+
+		}
+
+		/**
+		 * Checks persisted project property
+		 * 
 		 * @param id
 		 * @return true if project properties indicate it is enabled or if such property does not exist
 		 */
 		private boolean isEnabled(String id) {
 			try {
-				String val = project.getPersistentProperty(new QualifiedName(MetricsPlugin.pluginId, id+".enabled"));
-				if (val == null) return true;
+				String val = project.getPersistentProperty(new QualifiedName(Constants.pluginId, id + ".enabled"));
+				if (val == null) {
+					return true;
+				}
 				return val.equals("true");
 			} catch (CoreException e) {
 				return true;
@@ -302,10 +315,10 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		 */
 		private void initMetrics() {
 			MetricsPlugin plugin = MetricsPlugin.getDefault();
-			String[] names = plugin.getMetricIds(); 
+			String[] names = plugin.getMetricIds();
 			IPackageFragmentRoot[] roots = getPackageFragmentRoots(getProject());
-			for (int i = 0; i < names.length; i++) {
-				MetricDescriptor md = plugin.getMetricDescriptor(names[i]);
+			for (String name : names) {
+				MetricDescriptor md = plugin.getMetricDescriptor(name);
 				if (md.isAllowDisable()) {
 					createNewRow(md, roots);
 				}
@@ -313,43 +326,49 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 			// gray those that cannot be enabled
 			TableTreeItem[] items = getItems();
 			for (int i = 0; i < items.length; i++) {
-				if (!allowEnable(items[i])) items[i].setGrayed(true);
+				if (!allowEnable(items[i])) {
+					items[i].setGrayed(true);
+				}
 			}
 		}
 
 		/**
 		 * Get the source folder for the project
+		 * 
 		 * @param project
 		 */
 		private IPackageFragmentRoot[] getPackageFragmentRoots(IProject project) {
 			IJavaProject p = JavaCore.create(project);
-			List result = new ArrayList();
+			List<IPackageFragmentRoot> result = new ArrayList<IPackageFragmentRoot>();
 			try {
 				IPackageFragmentRoot[] candidates = p.getAllPackageFragmentRoots();
-				for (int i = 0; i < candidates.length; i++) {
-					if (candidates[i].getKind() == IPackageFragmentRoot.K_SOURCE)
-						result.add(candidates[i]);
+				for (IPackageFragmentRoot candidate : candidates) {
+					if (candidate.getKind() == IPackageFragmentRoot.K_SOURCE) {
+						result.add(candidate);
+					}
 				}
 			} catch (JavaModelException e) {
 			}
-			return (IPackageFragmentRoot[]) result.toArray(new IPackageFragmentRoot[]{});
+			return result.toArray(new IPackageFragmentRoot[] {});
 		}
 
-		/* (non-Javadoc)
-		 * react to check/uncheck events and check/uncheck and gray/ungray children and dependent metrics
-		 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse.swt.events.SelectionEvent)
+		/*
+		 * (non-Javadoc) react to check/uncheck events and check/uncheck and gray/ungray children and dependent metrics
+		 * 
+		 * @see org.eclipse.swt.events.SelectionListener#widgetSelected(org.eclipse .swt.events.SelectionEvent)
 		 */
 		public void widgetSelected(SelectionEvent e) {
 			TableTreeItem item = (TableTreeItem) e.item;
 			if (item != null) {
 				boolean checked = item.getChecked();
 				if (e.detail == 32) {
-					// check to see if metric can be enabled and undo check if it can't
+					// check to see if metric can be enabled and undo check if
+					// it can't
 					TableTreeItem parent = item.getParentItem();
 					if (parent == null) {
 						if (checked) {
 							if (allowEnable(item)) {
-								enableItem(item, true, false);							
+								enableItem(item, true, false);
 							} else { // undo damage done by UI
 								item.setChecked(false);
 								item.setGrayed(true);
@@ -357,7 +376,7 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 						} else {
 							enableItem(item, false, false);
 						}
-					} else { 
+					} else {
 						// disable and gray a folder if metric is disabled
 						if (!parent.getChecked()) {
 							item.setChecked(false);
@@ -365,14 +384,15 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 						}
 					}
 				}
-				addPattern.setEnabled(item.getChecked() && !item.getGrayed());				
+				addPattern.setEnabled(item.getChecked() && !item.getGrayed());
 			} else {
 				addPattern.setEnabled(false);
 			}
 		}
-		
+
 		/**
 		 * enable/disable an item, its children and dependents elsewhere
+		 * 
 		 * @param item
 		 * @param enable
 		 * @param gray
@@ -381,15 +401,16 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 			item.setChecked(enable);
 			item.setGrayed(gray);
 			TableTreeItem[] children = item.getItems();
-			for (int i = 0; i < children.length;i++) {
-				children[i].setChecked(enable);
-				children[i].setGrayed(!enable);
+			for (TableTreeItem element2 : children) {
+				element2.setChecked(enable);
+				element2.setGrayed(!enable);
 			}
-			enableDependentMetrics((MetricDescriptor)item.getData("md"), enable);			
+			enableDependentMetrics((MetricDescriptor) item.getData("md"), enable);
 		}
-		
+
 		/**
 		 * enable/disable all metrics that depend on the given metric
+		 * 
 		 * @param descriptor
 		 * @param enable
 		 */
@@ -398,15 +419,17 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 			String[] dependents = plugin.getDependentMetrics(descriptor);
 			TableTreeItem[] items = getItems();
 			if (dependents != null && dependents.length > 0) {
-				for (int i = 0; i < dependents.length; i++) {
-					for (int j = 0; j < items.length; j++) {
-						String id = (String) items[j].getData("id");
-						if (id.equals(dependents[i])) {
+				for (String dependent : dependents) {
+					for (TableTreeItem item : items) {
+						String id = (String) item.getData("id");
+						if (id.equals(dependent)) {
 							if (!enable) { // simply disable
-								enableItem(items[j], false, true);
-							} else { 
+								enableItem(item, false, true);
+							} else {
 								// check all requirements and if ok, enable
-								if (allowEnable(items[j])) enableItem(items[j], true, false);
+								if (allowEnable(item)) {
+									enableItem(item, true, false);
+								}
 							}
 						}
 					}
@@ -416,40 +439,48 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 
 		/**
 		 * Check to see that all required metrics for item are met.
-		 * @param item		item to be checked 
-		 * @param j		index of metric to check
-		 * @return			true if all required metrics of given metric are checked
+		 * 
+		 * @param item
+		 *            item to be checked
+		 * @param j
+		 *            index of metric to check
+		 * @return true if all required metrics of given metric are checked
 		 */
 		private boolean allowEnable(TableTreeItem item) {
 			MetricDescriptor md = (MetricDescriptor) item.getData("md");
 			String[] requires = md.getRequiredMetricIds();
-			if (requires != null && requires.length>0) {
-				for (int i = 0; i < requires.length; i++) {
-					TableTreeItem reqItem = (TableTreeItem) rowLookup.get(requires[i]);
-					if (!reqItem.getChecked()) return false;
+			if (requires != null && requires.length > 0) {
+				for (String require : requires) {
+					TableTreeItem reqItem = rowLookup.get(require);
+					if (!reqItem.getChecked()) {
+						return false;
+					}
 				}
 			}
 			return true;
 		}
 
-		/* (non-Javadoc)
-		 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org.eclipse.swt.events.SelectionEvent)
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.eclipse.swt.events.SelectionListener#widgetDefaultSelected(org .eclipse.swt.events.SelectionEvent)
 		 */
 		public void widgetDefaultSelected(SelectionEvent e) {
 		}
 	}
-	
+
 	private String concat(String[] patterns) {
 		StringBuffer b = new StringBuffer();
-		for (int i = 0; i < patterns.length; i++) {
-			b.append(patterns[i]);
+		for (String pattern : patterns) {
+			b.append(pattern);
 			b.append(";");
 		}
 		String result = b.toString();
-		if (result.length()>0)
-			return result.substring(0, b.length()-1);
-		else
-			return "";
+		if (result.length() > 0) {
+			return result.substring(0, b.length() - 1);
+		} /* else { */
+		return "";
+		/* } */
 	}
 
 }

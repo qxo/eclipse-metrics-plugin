@@ -18,7 +18,7 @@
  *
  * $Id: AbortMetrics.java,v 1.2 2004/04/30 20:21:17 sauerf Exp $
  */
- 
+
 package net.sourceforge.metrics.ui;
 
 import net.sourceforge.metrics.builder.MetricsBuilder;
@@ -26,9 +26,9 @@ import net.sourceforge.metrics.core.Constants;
 import net.sourceforge.metrics.core.Log;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.internal.core.Openable;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -37,9 +37,7 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * Action for the checked menu item in the IJavaproject popup.
- * Checks/Unchecks based on the presence of the metrics nature
- * and selection adds/removes the nature.
+ * Action for the checked menu item in the IJavaproject popup. Checks/Unchecks based on the presence of the metrics nature and selection adds/removes the nature.
  * 
  * @author Frank Sauer
  */
@@ -68,7 +66,7 @@ public class AbortMetrics implements IObjectActionDelegate, Constants {
 		// abort any ongoing or pending calculations for this project
 		if (p != null) {
 			MetricsBuilder.abort(p.getHandleIdentifier());
-		} 
+		}
 	}
 
 	/**
@@ -77,18 +75,24 @@ public class AbortMetrics implements IObjectActionDelegate, Constants {
 	public void selectionChanged(IAction action, ISelection selection) {
 		if ((!selection.isEmpty()) && (selection instanceof IStructuredSelection)) {
 			try {
-				Openable op = (Openable)((IStructuredSelection)selection).getFirstElement();
-				if (op != null) {
-					project = (IProject)op.getUnderlyingResource();
+				// Openable op =
+				// (Openable)((IStructuredSelection)selection).getFirstElement();
+				IJavaElement elem = (IJavaElement) ((IStructuredSelection) selection).getFirstElement();
+				if (elem != null) {
+					project = (IProject) elem.getUnderlyingResource();
 					if (project.hasNature(pluginId + ".nature")) {
 						IJavaProject p = JavaCore.create(project);
 						if (p != null) {
 							action.setEnabled(MetricsBuilder.isBuilding(p.getHandleIdentifier()));
-						} else action.setEnabled(false);
-					} else action.setEnabled(false);
-				} 
+						} else {
+							action.setEnabled(false);
+						}
+					} else {
+						action.setEnabled(false);
+					}
+				}
 			} catch (Throwable e) {
-				Log.logError("AbortMetrics: error getting project.", e);				
+				Log.logError("AbortMetrics: error getting project.", e);
 				project = null;
 			}
 		}

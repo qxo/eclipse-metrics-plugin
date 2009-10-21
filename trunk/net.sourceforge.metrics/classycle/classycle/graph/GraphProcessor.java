@@ -25,99 +25,89 @@
 package classycle.graph;
 
 /**
- *  Abstract class for all algorithms based on deep search first.
- *  This class is designed in accordance with the Template Method pattern.
- *  The basic algorithm (implemented in the method
- *  {@link #process}) reads:
- *  <pre>
- *    vertex.visit();
- *    processBefore(vertex);
- *    for (int i = 0, n = vertex.getNumberOfOutgoingArcs(); i &lt; n; i++)
- *    {
- *      processArc(vertex, vertex.getHeadVertex(i));
- *    }
- *    processAfter(vertex);
- *  </pre>
- *  The methods {@link #initializeProcessing}, {@link #processBefore},
- *  {@link #processArc}, and {@link #processAfter} have to be implemented
- *  by concrete classes.
- *  <p>
- *  The class will be used by creating an instance and invoking
- *  {@link #deepSearchFirst} one or several times. Either the graph will be
- *  modified or some result objects are created which can be obtained
- *  by special methods defined in concrete subclasses. Note, that
- *  a <tt>GraphProcessor</tt> is not thread-safe.
- *
- *  @author Franz-Josef Elmer
+ * Abstract class for all algorithms based on deep search first. This class is designed in accordance with the Template Method pattern. The basic algorithm (implemented in the method {@link #process}) reads:
+ * 
+ * <pre>
+ * vertex.visit();
+ * processBefore(vertex);
+ * for (int i = 0, n = vertex.getNumberOfOutgoingArcs(); i &lt; n; i++) {
+ * 	processArc(vertex, vertex.getHeadVertex(i));
+ * }
+ * processAfter(vertex);
+ * </pre>
+ * 
+ * The methods {@link #initializeProcessing}, {@link #processBefore}, {@link #processArc}, and {@link #processAfter} have to be implemented by concrete classes.
+ * <p>
+ * The class will be used by creating an instance and invoking {@link #deepSearchFirst} one or several times. Either the graph will be modified or some result objects are created which can be obtained by special methods defined in concrete
+ * subclasses. Note, that a <tt>GraphProcessor</tt> is not thread-safe.
+ * 
+ * @author Franz-Josef Elmer
  */
-public abstract class GraphProcessor
-{
-  /**
-   *  Performs a deep search first of the specified graph.
-   *  First, processing will be initialized and all vertices of the graph
-   *  will be reset. Then for all unvisited vertices the
-   *  private method <tt>process(Vertex)</tt>  will be invoked. At last,
-   *  processing will be finished.
-   *  @param graph A directed graph.
-   */
-  public void deepSearchFirst(Vertex[] graph)
-  {
-    initializeProcessing(graph);
-    for (int i = 0; i < graph.length; i++)
-    {
-      graph[i].reset();
-    }
+public abstract class GraphProcessor {
+	/**
+	 * Performs a deep search first of the specified graph. First, processing will be initialized and all vertices of the graph will be reset. Then for all unvisited vertices the private method <tt>process(Vertex)</tt> will be invoked. At
+	 * last, processing will be finished.
+	 * 
+	 * @param graph
+	 *            A directed graph.
+	 */
+	public void deepSearchFirst(Vertex[] graph) {
+		initializeProcessing(graph);
+		for (Vertex element : graph) {
+			element.reset();
+		}
 
-    for (int i = 0; i < graph.length; i++)
-    {
-      if (!graph[i].isVisited())
-      {
-        process(graph[i]);
-      }
-    }
-    finishProcessing(graph);
-  }
+		for (int i = 0; i < graph.length; i++) {
+			if (!graph[i].isVisited()) {
+				process(graph[i]);
+			}
+		}
+		finishProcessing(graph);
+	}
 
-  /** Processes the specified vertex. */
-  protected void process(Vertex vertex)
-  {
-    vertex.visit();
-    processBefore(vertex);
-    for (int i = 0, n = vertex.getNumberOfOutgoingArcs(); i < n; i++)
-    {
-      processArc(vertex, vertex.getHeadVertex(i));
-    }
-    processAfter(vertex);
-  }
+	/** Processes the specified vertex. */
+	protected void process(Vertex vertex) {
+		vertex.visit();
+		processBefore(vertex);
+		for (int i = 0, n = vertex.getNumberOfOutgoingArcs(); i < n; i++) {
+			processArc(vertex, vertex.getHeadVertex(i));
+		}
+		processAfter(vertex);
+	}
 
-  /**
-   *  Initializes processing. Will be called in method
-   *  {@link deepSearchFirst}.
-   */
-  protected abstract void initializeProcessing(Vertex[] graph);
+	/**
+	 * Initializes processing. Will be called in method {@link deepSearchFirst}.
+	 */
+	protected abstract void initializeProcessing(Vertex[] graph);
 
-  /**
-   *  Processes the specified vertex before its arcs are processed.
-   *  @param vertex Vertex to be processed.
-   */
-  protected abstract void processBefore(Vertex vertex);
+	/**
+	 * Processes the specified vertex before its arcs are processed.
+	 * 
+	 * @param vertex
+	 *            Vertex to be processed.
+	 */
+	protected abstract void processBefore(Vertex vertex);
 
-  /**
-   *  Processes the arc specified by tail and head vertices.
-   *  @param tail Tail vertex of the arc.
-   *  @param head Head vertex of the arc.
-   */
-  protected abstract void processArc(Vertex tail, Vertex head);
+	/**
+	 * Processes the arc specified by tail and head vertices.
+	 * 
+	 * @param tail
+	 *            Tail vertex of the arc.
+	 * @param head
+	 *            Head vertex of the arc.
+	 */
+	protected abstract void processArc(Vertex tail, Vertex head);
 
-  /**
-   *  Processes the specified vertex after its arcs have been processed.
-   *  @param vertex Vertex to be processed.
-   */
-  protected abstract void processAfter(Vertex vertex);
+	/**
+	 * Processes the specified vertex after its arcs have been processed.
+	 * 
+	 * @param vertex
+	 *            Vertex to be processed.
+	 */
+	protected abstract void processAfter(Vertex vertex);
 
-  /**
-   *  Finishes processing.  Will be called in method
-   *  {@link deepSearchFirst}.
-   */
-  protected abstract void finishProcessing(Vertex[] graph);
-} //interface
+	/**
+	 * Finishes processing. Will be called in method {@link deepSearchFirst}.
+	 */
+	protected abstract void finishProcessing(Vertex[] graph);
+} // interface

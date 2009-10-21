@@ -23,17 +23,18 @@ package net.sourceforge.metrics.propagators;
 import net.sourceforge.metrics.calculators.Calculator;
 
 /**
- * A Propagator propagates values up the source tree. 
- * Current implementations are Max, Avg and Sum.
+ * A Propagator propagates values up the source tree. Current implementations are Max, Avg and Sum.
+ * 
  * @author Frank Sauer
  */
 public abstract class Propagator extends Calculator {
 
 	protected String x = "";
 	protected String per = "";
-	
+
 	/**
 	 * Constructor for Propagator.
+	 * 
 	 * @param name
 	 */
 	public Propagator(String name, String per) {
@@ -43,16 +44,20 @@ public abstract class Propagator extends Calculator {
 
 	/**
 	 * Constructor for Propagator.
-	 * @param name	name of result
-	 * @param x	name of metric being propagated
+	 * 
+	 * @param name
+	 *            name of result
+	 * @param x
+	 *            name of metric being propagated
 	 */
 	public Propagator(String name, String per, String x) {
 		this(name, per);
 		this.x = x;
 	}
-	
+
 	/**
 	 * Returns the name of the metric being propagated.
+	 * 
 	 * @return String
 	 */
 	public String getX() {
@@ -61,7 +66,9 @@ public abstract class Propagator extends Calculator {
 
 	/**
 	 * Sets the name of the metric being propagated.
-	 * @param x The x to set
+	 * 
+	 * @param x
+	 *            The x to set
 	 */
 	public void setX(String x) {
 		this.x = x;
@@ -69,6 +76,7 @@ public abstract class Propagator extends Calculator {
 
 	/**
 	 * Returns the scope of the value, e.g. per method or per class.
+	 * 
 	 * @return String
 	 */
 	public String getPer() {
@@ -77,7 +85,9 @@ public abstract class Propagator extends Calculator {
 
 	/**
 	 * Sets the scope of the value, e.g. per method or per class.
-	 * @param per The per to set
+	 * 
+	 * @param per
+	 *            The per to set
 	 */
 	public void setPer(String per) {
 		this.per = per;
