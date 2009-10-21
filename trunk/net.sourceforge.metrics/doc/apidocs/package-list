@@ -1,0 +1,13 @@
+net.sourceforge.metrics.builder
+net.sourceforge.metrics.calculators
+net.sourceforge.metrics.core
+net.sourceforge.metrics.core.sources
+net.sourceforge.metrics.internal.persistence
+net.sourceforge.metrics.internal.prevayler
+net.sourceforge.metrics.internal.prevayler.implementation
+net.sourceforge.metrics.internal.tests
+net.sourceforge.metrics.internal.xml
+net.sourceforge.metrics.propagators
+net.sourceforge.metrics.ui
+net.sourceforge.metrics.ui.dependencies
+net.sourceforge.metrics.ui.preferences
