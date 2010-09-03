@@ -97,7 +97,7 @@ public class GESUtils {
 					if (adjNode.edgeCount() <= maxExpandEdgeCount) {
 						nodeQ.push(adjNode);
 					}
-					distHash.put(adjNode, new Integer(currDist + 1));
+					distHash.put(adjNode, Integer.valueOf(currDist + 1));
 				}
 			}
 		}
@@ -113,7 +113,7 @@ public class GESUtils {
 	 */
 
 	// public static Collection getLargestConnectedSubgraph(GraphEltSet ges) {
-	public static Hashtable getLargestConnectedSubgraph(GraphEltSet ges) {
+	public static Hashtable<Node, Integer> getLargestConnectedSubgraph(GraphEltSet ges) {
 		int nodeCount = ges.nodeCount();
 		if (nodeCount == 0) {
 			return null;
@@ -124,7 +124,7 @@ public class GESUtils {
 			Node n = ges.nodeAt(i);
 			boolean skipNode = false;
 			for (int j = 0; j < subgraphVector.size(); j++) {
-				if (((Hashtable) subgraphVector.elementAt(j)).contains(n)) {
+				if (( subgraphVector.elementAt(j)).contains(n)) {
 					skipNode = true;
 				}
 			}
@@ -142,8 +142,9 @@ public class GESUtils {
 		int maxSize = 0;
 		int maxIndex = 0;
 		for (int j = 0; j < subgraphVector.size(); j++) {
-			if (((Hashtable) subgraphVector.elementAt(j)).size() > maxSize) {
-				maxSize = ((Hashtable) subgraphVector.elementAt(j)).size();
+			int localSize = subgraphVector.elementAt(j).size();
+			if (localSize > maxSize) {
+				maxSize = localSize;
 				maxIndex = j;
 			}
 		}

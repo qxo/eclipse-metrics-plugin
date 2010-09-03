@@ -87,7 +87,7 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		check.setText("Enable Metrics");
 		IProject p = getProject();
 		try {
-			check.setSelection(p.hasNature(pluginId + ".nature"));
+			check.setSelection(p.hasNature(PLUGIN_ID + ".nature"));
 		} catch (Throwable e) {
 			Log.logError("Error gettng project nature.", e);
 		}
@@ -111,7 +111,7 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		try {
 			boolean checked = check.getSelection();
 			IProject p = (IProject) this.getElement().getAdapter(IProject.class);
-			boolean hasNature = p.hasNature(pluginId + ".nature");
+			boolean hasNature = p.hasNature(PLUGIN_ID + ".nature");
 			if (checked && !hasNature) {
 				MetricsNature.addNatureToProject(p, null);
 			} else if (!checked && hasNature) {
@@ -186,16 +186,16 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 				String val = (item.getChecked()) ? "true" : "false";
 				String mPatterns = item.getText(1);
 				try {
-					project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + ".enabled"), val);
-					project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + ".patterns"), mPatterns);
+					project.setPersistentProperty(new QualifiedName(Constants.PLUGIN_ID, id + ".enabled"), val);
+					project.setPersistentProperty(new QualifiedName(Constants.PLUGIN_ID, id + ".patterns"), mPatterns);
 					TableTreeItem[] folders = item.getItems();
 					for (TableTreeItem folder : folders) {
 						IPackageFragmentRoot f = (IPackageFragmentRoot) folder.getData("element");
 						String handle = f.getHandleIdentifier();
 						String fVal = (folder.getChecked()) ? "true" : "false";
 						String fPatterns = folder.getText(1);
-						project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + "_" + handle + ".enabled"), fVal);
-						project.setPersistentProperty(new QualifiedName(Constants.pluginId, id + "_" + handle + ".patterns"), fPatterns);
+						project.setPersistentProperty(new QualifiedName(Constants.PLUGIN_ID, id + "_" + handle + ".enabled"), fVal);
+						project.setPersistentProperty(new QualifiedName(Constants.PLUGIN_ID, id + "_" + handle + ".patterns"), fPatterns);
 					}
 				} catch (CoreException e) {
 					Log.logError("Could not persist property", e);
@@ -235,7 +235,7 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		 *            metric-id
 		 */
 		private String[] getExclusionPatterns(String id) {
-			return getExclusionPatterns(new QualifiedName(Constants.pluginId, id + ".patterns"));
+			return getExclusionPatterns(new QualifiedName(Constants.PLUGIN_ID, id + ".patterns"));
 		}
 
 		/**
@@ -246,7 +246,7 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		 */
 		private String[] getExclusionPatterns(String id, IPackageFragmentRoot folder) {
 			String handle = folder.getHandleIdentifier();
-			return getExclusionPatterns(new QualifiedName(Constants.pluginId, id + "_" + handle + ".patterns"));
+			return getExclusionPatterns(new QualifiedName(Constants.PLUGIN_ID, id + "_" + handle + ".patterns"));
 		}
 
 		private String[] getExclusionPatterns(QualifiedName qn) {
@@ -281,7 +281,7 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 			}
 			String handle = folder.getHandleIdentifier();
 			try {
-				String val = project.getPersistentProperty(new QualifiedName(Constants.pluginId, id + "_" + handle + ".enabled"));
+				String val = project.getPersistentProperty(new QualifiedName(Constants.PLUGIN_ID, id + "_" + handle + ".enabled"));
 				if (val == null) {
 					return true;
 				}
@@ -300,7 +300,7 @@ public class MetricsPropertyPage extends PropertyPage implements Constants {
 		 */
 		private boolean isEnabled(String id) {
 			try {
-				String val = project.getPersistentProperty(new QualifiedName(Constants.pluginId, id + ".enabled"));
+				String val = project.getPersistentProperty(new QualifiedName(Constants.PLUGIN_ID, id + ".enabled"));
 				if (val == null) {
 					return true;
 				}

@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sourceforge.metrics.builder.MetricsBuilder.Command;
 import net.sourceforge.metrics.core.Log;
 
 import org.eclipse.core.runtime.IPath;
@@ -41,12 +42,12 @@ public class ProgressQueue extends LinkedList<ProgressQueueCommand> {
 	private static final long serialVersionUID = 1L;
 
 	private boolean paused;
-	private Collection items;
+	private Collection<Command> items;
 	private List<IMetricsProgressListener> listeners = new ArrayList<IMetricsProgressListener>();
 	private Semaphore sem = new Semaphore(0);
 	private Thread notifier = new NotifierThread();
 
-	public ProgressQueue(Collection c) {
+	public ProgressQueue(Collection<Command> c) {
 		this.items = c;
 		notifier.start();
 	}

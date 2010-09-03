@@ -99,11 +99,11 @@ public class PathFinder {
 	 * @throws IllegalArgumentException
 	 *             if path cannot be constructed
 	 */
-	private void buildPath(Vertex from, Vertex to, Map p, List<Vertex> result) throws IllegalArgumentException {
+	private void buildPath(Vertex from, Vertex to, Map<Vertex, Vertex> p, List<Vertex> result) throws IllegalArgumentException {
 		if (from == to) {
 			result.add(from);
 		} else {
-			Vertex pv = (Vertex) p.get(to);
+			Vertex pv = p.get(to);
 			if (pv == null) {
 				throw new IllegalArgumentException("No path found");
 			}

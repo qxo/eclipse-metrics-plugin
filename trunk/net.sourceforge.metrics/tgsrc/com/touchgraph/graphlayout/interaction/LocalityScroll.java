@@ -53,6 +53,8 @@ import java.awt.Scrollbar;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 
+import net.sourceforge.metrics.core.Log;
+
 import com.touchgraph.graphlayout.GraphListener;
 import com.touchgraph.graphlayout.LocalityUtils;
 import com.touchgraph.graphlayout.Node;
@@ -117,7 +119,7 @@ public class LocalityScroll implements GraphListener {
 				try {
 					tgPanel.setLocale(select, getLocalityRadius());
 				} catch (TGException ex) {
-					System.out.println("Error setting locale");
+					Log.logWarrning("Error setting locale", ex);
 					ex.printStackTrace();
 				}
 			}

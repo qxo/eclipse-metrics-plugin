@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.ui.dependencies.DependencyGraphPanel;
@@ -79,7 +80,7 @@ public class DependencyGraphView extends ViewPart implements ArmListener {
 	private java.awt.Frame createAWTFrame(Composite parent) {
 		// try the final 3.0M7+ API
 		try {
-			Class clSWT_AWT = Class.forName("org.eclipse.swt.awt.SWT_AWT");
+			Class<?> clSWT_AWT = Class.forName("org.eclipse.swt.awt.SWT_AWT");
 			Method m = clSWT_AWT.getMethod("new_Frame", new Class[] { Composite.class });
 			java.awt.Frame f = (Frame) m.invoke(null, new Object[] { parent });
 			f.setLayout(new BorderLayout());
@@ -90,7 +91,7 @@ public class DependencyGraphView extends ViewPart implements ArmListener {
 		}
 	}
 
-	public void setDependencies(final Map dependencies) {
+	public void setDependencies(final Map<String, Set<String>> dependencies) {
 		try {
 			glPanel.createDependencies(dependencies);
 		} catch (TGException e) {
@@ -113,7 +114,7 @@ public class DependencyGraphView extends ViewPart implements ArmListener {
 	 * @see org.eclipse.swt.events.ArmListener#widgetArmed(org.eclipse.swt.events .ArmEvent)
 	 */
 	public void widgetArmed(ArmEvent e) {
-		Map deps = MetricsView.getDependencies();
+		Map<String, Set<String>> deps = MetricsView.getDependencies();
 		setDependencies(deps);
 	}
 

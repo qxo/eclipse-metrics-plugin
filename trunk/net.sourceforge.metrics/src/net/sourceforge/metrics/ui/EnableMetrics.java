@@ -78,7 +78,7 @@ public class EnableMetrics implements IObjectActionDelegate, Constants {
 
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 					try {
-						if (!project.hasNature(pluginId + ".nature")) {
+						if (!project.hasNature(PLUGIN_ID + ".nature")) {
 							monitor.beginTask("Enabling metrics", 2);
 							monitor.worked(1);
 							error = "enable";
@@ -127,7 +127,7 @@ public class EnableMetrics implements IObjectActionDelegate, Constants {
 				IJavaElement elem = (IJavaElement) ((IStructuredSelection) selection).getFirstElement();
 				if (elem != null) {
 					project = (IProject) elem.getUnderlyingResource();
-					action.setChecked(project.hasNature(pluginId + ".nature"));
+					action.setChecked(project.hasNature(PLUGIN_ID + ".nature"));
 				}
 			} catch (Throwable e) {
 				Log.logError("EnableMetrics: error getting project.", e);

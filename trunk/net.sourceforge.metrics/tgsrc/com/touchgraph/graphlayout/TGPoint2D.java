@@ -49,6 +49,8 @@
 
 package com.touchgraph.graphlayout;
 
+import net.sourceforge.metrics.core.Log;
+
 /**
  * TGPoint2D is only needed for java 1.1.
  * 
@@ -81,7 +83,7 @@ public class TGPoint2D {
 			x = newX > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
 		}
 		if (Double.isNaN(newX) || newX == Double.NaN) {
-			System.err.println("Argh!");
+			Log.logMessage("Argh!");
 		}
 	}
 
@@ -95,7 +97,7 @@ public class TGPoint2D {
 			y = newY > 0 ? Double.MAX_VALUE : Double.MIN_VALUE;
 		}
 		if (Double.isNaN(newY) || Double.isInfinite(newY) || newY == Double.NaN) {
-			System.err.println("Argh!");
+			Log.logMessage("Argh!");
 		}
 
 	}

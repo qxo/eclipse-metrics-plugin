@@ -50,7 +50,7 @@ public class AvgAvg extends Propagator {
 		if (source.getSize() == 0) {
 			source.setAverage(new Avg(getName(), per, 0, 0, 0));
 		}
-		List averages = source.getAveragesFromChildren(getName(), per);
+		List<Avg> averages = source.getAveragesFromChildren(getName(), per);
 		source.setAverage(Avg.createFromAverages(name, per, averages));
 	}
 

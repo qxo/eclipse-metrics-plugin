@@ -54,6 +54,8 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 
+import net.sourceforge.metrics.core.Log;
+
 import com.touchgraph.graphlayout.Edge;
 import com.touchgraph.graphlayout.Node;
 import com.touchgraph.graphlayout.TGException;
@@ -116,7 +118,7 @@ public class DragAddUI extends TGAbstractDragUI implements TGPaintListener {
 				n.drawy = tgPanel.getMousePos().y;
 				tgPanel.updatePosFromDraw(n);
 			} catch (TGException tge) {
-				System.err.println(tge.getMessage());
+				Log.logError(tge.getMessage(), tge);
 				tge.printStackTrace(System.err);
 			}
 		}

@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.Map.Entry;
 
 /**
  * A processor which extracts the strong components of a directed graph. A strong component is a maximal strongly connected subgraph of a directed graph. The implementation is based on Tarjan's algorithm.
@@ -119,10 +120,11 @@ public class StrongComponentProcessor extends GraphProcessor {
 			_graph[i].calculateAttributes();
 		}
 
-		Iterator keys = _vertexToComponents.keySet().iterator();
-		while (keys.hasNext()) {
-			AtomicVertex vertex = (AtomicVertex) keys.next();
-			StrongComponent tail = _vertexToComponents.get(vertex);
+		Iterator<Entry<AtomicVertex, StrongComponent>> iterEntry = _vertexToComponents.entrySet().iterator();
+		while (iterEntry.hasNext()) {
+			Entry<AtomicVertex, StrongComponent> entry = iterEntry.next(); 
+			AtomicVertex vertex = entry.getKey();
+			StrongComponent tail = entry.getValue();
 			for (int i = 0, n = vertex.getNumberOfOutgoingArcs(); i < n; i++) {
 				AtomicVertex h = (AtomicVertex) vertex.getHeadVertex(i);
 				if (h.isGraphVertex()) {

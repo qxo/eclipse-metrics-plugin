@@ -110,14 +110,14 @@ public class LayeredPackageTable extends TableTree implements Constants, Selecti
 		}
 	}
 
-	private void displayExternalPackages(Set external) {
+	private void displayExternalPackages(Set<PackageStats> external) {
 		TableTreeItem divider = createNewRow();
 		divider.setText(0, "EXTERNAL");
 		divider.setText(1, "");
 		divider.setText(2, "");
 
-		for (Iterator j = external.iterator(); j.hasNext();) {
-			String packageName = ((PackageStats) j.next()).getPackageName();
+		for (Iterator<PackageStats> j = external.iterator(); j.hasNext();) {
+			String packageName =  j.next().getPackageName();
 			TableTreeItem row = createNewRow();
 			row.setText(0, "0");
 			row.setText(1, packageName);
@@ -131,9 +131,9 @@ public class LayeredPackageTable extends TableTree implements Constants, Selecti
 	 */
 	private void displayInternalPackages(Map<String, Set<String>> deps, List<Set<PackageStats>> packages) {
 		for (int i = packages.size() - 1; i >= 0; i--) {
-			Set packageSet = packages.get(i);
-			for (Iterator j = packageSet.iterator(); j.hasNext();) {
-				PackageStats packageStats = (PackageStats) j.next();
+			Set<PackageStats> packageSet = packages.get(i);
+			for (Iterator<PackageStats> j = packageSet.iterator(); j.hasNext();) {
+				PackageStats packageStats = j.next();
 				TableTreeItem row = createNewRow();
 				if (packageStats.isTangle()) {
 					row.setForeground(getOutOfRangeForeground());
@@ -474,13 +474,13 @@ public class LayeredPackageTable extends TableTree implements Constants, Selecti
 				}
 			}
 		} catch (PartInitException x) {
-			System.err.println("Error selecting " + handle);
+			Log.logError("Error selecting " + handle,x);
 			x.printStackTrace();
 		} catch (JavaModelException x) {
-			System.err.println("Error selecting " + handle);
+			Log.logError("Error selecting " + handle,x);
 			x.printStackTrace();
 		} catch (Throwable t) {
-			System.err.println("Error selecting " + handle);
+			Log.logError("Error selecting " + handle,t);
 			t.printStackTrace();
 		}
 	}
@@ -541,7 +541,7 @@ public class LayeredPackageTable extends TableTree implements Constants, Selecti
 		}
 	}
 
-	public static List getLayers() {
+	public static List<Set<PackageStats>> getLayers() {
 		return layers;
 	}
 
@@ -558,18 +558,16 @@ public class LayeredPackageTable extends TableTree implements Constants, Selecti
 	}
 
 	private static PackageStats getStat(String packageName) {
-		for (Object element : layers) {
-			Set packageSet = (Set) element;
-			for (Iterator j = packageSet.iterator(); j.hasNext();) {
-				PackageStats stats = (PackageStats) j.next();
+		for (Set<PackageStats> packageSet : layers) {
+			for (Iterator<PackageStats> j = packageSet.iterator(); j.hasNext();) {
+				PackageStats stats = j.next();
 				if (stats.getPackageName().equals(packageName)) {
 					return stats;
 				}
 			}
 		}
 
-		for (Object element : external) {
-			PackageStats stats = (PackageStats) element;
+		for (PackageStats stats : external) {
 			if (stats.getPackageName().equals(packageName)) {
 				return stats;
 			}

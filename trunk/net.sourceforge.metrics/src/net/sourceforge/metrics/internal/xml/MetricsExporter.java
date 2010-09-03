@@ -112,7 +112,7 @@ public abstract class MetricsExporter implements Constants {
 		if (m != null) {
 			p.put("value", format(m.doubleValue()));
 		}
-		for (String per : pers) {
+		for (String per : PER_ARRAY) {
 			Avg avg = source.getAverage(name, per);
 			Max max = source.getMaximum(name, per);
 			if ((avg != null) || (max != null)) {
@@ -141,10 +141,10 @@ public abstract class MetricsExporter implements Constants {
 	 * @param elements
 	 * @param i
 	 */
-	protected void exportChildren(XMLPrintStream out, String handle, int level, Class filter, IProgressMonitor monitor) {
-		List children = XMLSourceTreeExporter.getChildren(handle, filter);
-		for (Iterator i = children.iterator(); i.hasNext();) {
-			AbstractMetricSource next = (AbstractMetricSource) i.next();
+	protected void exportChildren(XMLPrintStream out, String handle, int level, Class<? extends AbstractMetricSource> filter, IProgressMonitor monitor) {
+		List<AbstractMetricSource> children = XMLSourceTreeExporter.getChildren(handle, filter);
+		for (Iterator<AbstractMetricSource> i = children.iterator(); i.hasNext();) {
+			AbstractMetricSource next = i.next();
 			if (filter.isInstance(next)) {
 				IXMLExporter exporter = next.getExporter();
 				exporter.export(next, out, level, monitor);

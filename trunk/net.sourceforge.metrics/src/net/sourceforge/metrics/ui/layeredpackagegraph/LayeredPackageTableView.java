@@ -17,6 +17,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sourceforge.metrics.builder.IMetricsProgressListener;
 import net.sourceforge.metrics.builder.MetricsBuilder;
@@ -85,7 +86,7 @@ public class LayeredPackageTableView extends ViewPart implements ISelectionListe
 	private Label progressText;
 	// private List pending;
 	private static ArmListener armListener;
-	private static Map currentDependencies;
+	private static Map<String, Set<String>> currentDependencies;
 	private IMemento memento;
 	private LayeredPackageGraphActionGroup mActions;
 	private LayeredPackageTable table;
@@ -408,7 +409,7 @@ public class LayeredPackageTableView extends ViewPart implements ISelectionListe
 		displayDependencyGraphSWT(source.getEfferent());
 	}
 
-	private void displayDependencyGraphSWT(final Map graph) {
+	private void displayDependencyGraphSWT(final Map<String, Set<String>> graph) {
 		IWorkbenchWindow dw = PlatformUI.getWorkbench().getWorkbenchWindows()[0];
 		IWorkbenchPage page = dw.getActivePage();
 		if (page != null) {
@@ -438,7 +439,7 @@ public class LayeredPackageTableView extends ViewPart implements ISelectionListe
 		}
 	}
 
-	public static Map getDependencies() {
+	public static Map<String, Set<String>> getDependencies() {
 		return currentDependencies;
 	}
 
@@ -628,7 +629,7 @@ public class LayeredPackageTableView extends ViewPart implements ISelectionListe
 		setStatus("Paused. " + queued + " items in the queue.", false);
 	}
 
-	static List getLayers() {
+	static List<Set<PackageStats>> getLayers() {
 		return LayeredPackageTable.getLayers();
 	}
 

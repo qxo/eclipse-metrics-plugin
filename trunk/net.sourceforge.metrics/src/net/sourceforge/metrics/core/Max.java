@@ -41,11 +41,11 @@ public class Max extends Metric implements Serializable {
 	 */
 	private String handle;
 
-	public static Max createFromMetrics(String name, String per, List values) {
+	public static Max createFromMetrics(String name, String per, List<Metric> values) {
 		double max = 0; // will be initialized with first max (if any)
 		boolean found = false;
-		for (Iterator i = values.iterator(); i.hasNext();) {
-			Metric next = (Metric) i.next();
+		for (Iterator<Metric> i = values.iterator(); i.hasNext();) {
+			Metric next = i.next();
 			if (!found || (next.doubleValue() > max)) {
 				max = next.doubleValue();
 				found = true;
@@ -75,10 +75,10 @@ public class Max extends Metric implements Serializable {
 		return (element == null) ? null : new Max(name, per, max, element);
 	}
 
-	public static Max createFromMaxes(String name, String per, List values) {
+	public static Max createFromMaxes(String name, String per, List<Max> values) {
 		Max max = null;
-		for (Iterator i = values.iterator(); i.hasNext();) {
-			Max next = (Max) i.next();
+		for (Iterator<Max> i = values.iterator(); i.hasNext();) {
+			Max next = i.next();
 			if ((max == null) || (next.doubleValue() > max.doubleValue())) {
 				max = next;
 			}

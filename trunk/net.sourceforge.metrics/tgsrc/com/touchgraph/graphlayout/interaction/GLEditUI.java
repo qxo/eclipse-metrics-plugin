@@ -59,6 +59,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
+import net.sourceforge.metrics.core.Log;
+
 import com.touchgraph.graphlayout.Edge;
 import com.touchgraph.graphlayout.GLPanel;
 import com.touchgraph.graphlayout.Node;
@@ -342,7 +344,7 @@ public class GLEditUI extends TGUserInterface {
 				try {
 					tgPanel.addNode();
 				} catch (TGException tge) {
-					System.err.println(tge.getMessage());
+					Log.logError(tge.getMessage(), tge);
 					tge.printStackTrace(System.err);
 				}
 				tgPanel.fireResetEvent();

@@ -195,12 +195,13 @@ public class ProjectBuild extends Task {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void setDebugOptions(String str) {
 		if (str == null || str.equals("")) {
 			return;
 		}
 
-		Hashtable options = JavaCore.getOptions();
+		Hashtable<String, String> options = JavaCore.getOptions();
 		if (str.equalsIgnoreCase("true")) {
 			options.put("org.eclipse.jdt.core.compiler.debug.localVariable", "generate");
 			options.put("org.eclipse.jdt.core.compiler.debug.lineNumber", "generate");
