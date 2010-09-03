@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 
 import net.sourceforge.metrics.core.Log;
 
@@ -54,7 +55,7 @@ public class LayeredPackageGraphView extends ViewPart implements ArmListener {
 	private java.awt.Frame createAWTFrame(Composite parent) {
 		// try the final 3.0M7+ API
 		try {
-			Class clSWT_AWT = Class.forName("org.eclipse.swt.awt.SWT_AWT");
+			Class<?> clSWT_AWT = Class.forName("org.eclipse.swt.awt.SWT_AWT");
 			Method m = clSWT_AWT.getMethod("new_Frame", new Class[] { Composite.class });
 			java.awt.Frame f = (Frame) m.invoke(null, new Object[] { parent });
 			f.setLayout(new BorderLayout());
@@ -65,7 +66,7 @@ public class LayeredPackageGraphView extends ViewPart implements ArmListener {
 		}
 	}
 
-	public void setDependencies(final List layers) {
+	public void setDependencies(final List<Set<PackageStats>> layers) {
 		try {
 			glPanel.createDependencies(layers);
 		} catch (TGException e) {

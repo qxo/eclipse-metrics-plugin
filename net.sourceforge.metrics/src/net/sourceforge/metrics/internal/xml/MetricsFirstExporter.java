@@ -176,7 +176,7 @@ public class MetricsFirstExporter implements IExporter, Constants {
 	 * @param monitor
 	 */
 	private void maybePrintCycles(AbstractMetricSource root, XMLPrintStream pOut, IProgressMonitor monitor) {
-		Map dependencies = null;
+		Map<String, Set<String>> dependencies = null;
 		if (root.getLevel() == Constants.PACKAGEROOT) {
 			PackageFragmentRootMetrics pfr = (PackageFragmentRootMetrics) root;
 			dependencies = pfr.getEfferent();
@@ -226,20 +226,20 @@ public class MetricsFirstExporter implements IExporter, Constants {
 	}
 
 	// TODO refactor to common place between this and DependencyGraphPanel
-	private StrongComponent[] calculateCycles(Map efferent) {
+	private StrongComponent[] calculateCycles(Map<String, Set<String>> efferent) {
 		List<Vertex> graph = new ArrayList<Vertex>();
 		Map<String, Vertex> done = new HashMap<String, Vertex>();
-		for (Iterator i = efferent.keySet().iterator(); i.hasNext();) {
-			String key = (String) i.next();
+		for (Iterator<String> i = efferent.keySet().iterator(); i.hasNext();) {
+			String key = i.next();
 			Vertex from = done.get(key);
 			if (from == null) {
 				from = new AtomicVertex(new PackageAttributes(key));
 				done.put(key, from);
 				graph.add(from);
 			}
-			Set deps = (Set) efferent.get(key);
-			for (Iterator j = deps.iterator(); j.hasNext();) {
-				String dep = (String) j.next();
+			Set<String> deps = efferent.get(key);
+			for (Iterator<String> j = deps.iterator(); j.hasNext();) {
+				String dep = j.next();
 				Vertex to = done.get(dep);
 				if (to == null) {
 					to = new AtomicVertex(new PackageAttributes(dep));
@@ -256,19 +256,20 @@ public class MetricsFirstExporter implements IExporter, Constants {
 		return comps;
 	}
 
-	private Class[] filters = new Class[] { PackageFragmentMetrics.class, TypeMetrics.class, MethodMetrics.class };
+	@SuppressWarnings("unchecked")
+	private Class<? extends AbstractMetricSource>[] filters = new Class[] { PackageFragmentMetrics.class, TypeMetrics.class, MethodMetrics.class };
 
 	private boolean printValues(String id, AbstractMetricSource element, XMLPrintStream pOut, NumberFormat nf) {
 		boolean result = false;
-		for (int i = 0; i < pers.length; i++) {
+		for (int i = 0; i < PER_ARRAY.length; i++) {
 			Metric total = element.getValue(id);
 			MetricDescriptor md = plugin.getMetricDescriptor(id);
-			Avg avg = element.getAverage(id, pers[i]);
-			Max max = element.getMaximum(id, pers[i]);
+			Avg avg = element.getAverage(id, PER_ARRAY[i]);
+			Max max = element.getMaximum(id, PER_ARRAY[i]);
 			if ((avg != null) || (max != null)) {
 				pOut.indent(2);
 				pOut.print("<Values per = \"");
-				pOut.print(pers[i]);
+				pOut.print(PER_ARRAY[i]);
 				pOut.print("\"");
 				if (total != null) {
 					pOut.print(" total = \"");
@@ -309,11 +310,9 @@ public class MetricsFirstExporter implements IExporter, Constants {
 	 */
 	private void printValues(List<AbstractMetricSource> values, final String id, XMLPrintStream pOut, MetricDescriptor md, NumberFormat nf) {
 		// sort values first
-		Collections.sort(values, new Comparator<? super AbstractMetricSource>() {
+		Collections.sort(values, new Comparator<AbstractMetricSource>() {
 
-			public int compare(Object o1, Object o2) {
-				AbstractMetricSource left = (AbstractMetricSource) o1;
-				AbstractMetricSource right = (AbstractMetricSource) o2;
+			public int compare(AbstractMetricSource left, AbstractMetricSource right) {
 				Metric lm = left.getValue(id);
 				Metric rm = right.getValue(id);
 				int result;
@@ -360,7 +359,7 @@ public class MetricsFirstExporter implements IExporter, Constants {
 		}
 	}
 
-	protected List<AbstractMetricSource> getChildren(String handle, Class filter) {
+	protected List<AbstractMetricSource> getChildren(String handle, Class<? extends AbstractMetricSource> filter) {
 		List<String> handles = new ArrayList<String>(Cache.singleton.getKeysForHandle(handle));
 		List<AbstractMetricSource> result = new ArrayList<AbstractMetricSource>();
 		for (String next : handles) {

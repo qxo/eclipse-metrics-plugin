@@ -30,7 +30,7 @@ import net.sourceforge.metrics.core.sources.AbstractMetricSource;
  * 
  * @author Frank Sauer
  */
-public class Metric implements Constants, Serializable, Comparable {
+public class Metric implements Constants, Serializable, Comparable<Metric> {
 
 	private static final long serialVersionUID = -1310980061419852562L;
 
@@ -185,15 +185,14 @@ public class Metric implements Constants, Serializable, Comparable {
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-		if (o == null) {
+	public int compareTo(Metric other) {
+		if (other == null) {
 			return -1; // BUG #826997
 		}
-		Metric m = (Metric) o;
-		if (doubleValue() == m.doubleValue()) {
+		if (doubleValue() == other.doubleValue()) {
 			return 0;
 		}
-		if (doubleValue() < m.doubleValue()) {
+		if (doubleValue() < other.doubleValue()) {
 			return -1;
 		}
 		return 1;

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import net.sourceforge.metrics.core.Constants;
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 import net.sourceforge.metrics.core.sources.Cache;
@@ -61,6 +62,8 @@ import org.eclipse.jdt.core.JavaModelException;
  */
 public class MetricsBuilder extends IncrementalProjectBuilder {
 
+	public static final String BUILDER_ID = Constants.PLUGIN_ID + ".builder";
+	
 	private static Queue queue = new Queue();
 	private static CalculatorThread thread = null;
 	private static ProgressQueue notifier = new ProgressQueue(queue);
@@ -96,7 +99,7 @@ public class MetricsBuilder extends IncrementalProjectBuilder {
 	 * @see org.eclipse.core.internal.events.InternalBuilder#build(int, java.util.Map, org.eclipse.core.runtime.IProgressMonitor)
 	 */
 	@Override
-	protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
+	protected IProject[] build(int kind, @SuppressWarnings("rawtypes") Map args, IProgressMonitor monitor) throws CoreException {
 		try {
 			if (hasErrors(getProject())) {
 				return null;
@@ -636,8 +639,8 @@ public class MetricsBuilder extends IncrementalProjectBuilder {
 		private int findAncestorIndex(Command command) {
 			int ancestor = -1;
 			int index = 0;
-			for (Iterator i = iterator(); i.hasNext(); index++) {
-				Command next = (Command) i.next();
+			for (Iterator<Command> i = iterator(); i.hasNext(); index++) {
+				Command next = i.next();
 				if (command.getHandleIdentifier().startsWith(next.getHandleIdentifier())) {
 					ancestor = index;
 					break;
@@ -669,8 +672,8 @@ public class MetricsBuilder extends IncrementalProjectBuilder {
 		public int removeAll(String projectHandle) {
 			synchronized (this) {
 				int count = 0;
-				for (Iterator i = iterator(); i.hasNext();) {
-					Command next = (Command) i.next();
+				for (Iterator<Command> i = iterator(); i.hasNext();) {
+					Command next = i.next();
 					if (next.getHandleIdentifier().startsWith(projectHandle)) {
 						i.remove();
 						count++;

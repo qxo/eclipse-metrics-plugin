@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: metrics Plug-in
 Bundle-SymbolicName: net.sourceforge.metrics; singleton:=true
-Bundle-Version: 1.3.8.20091015-001
+Bundle-Version: 1.3.8.20100730-001
 Bundle-ClassPath: metrics.jar,
  jdbm.jar
 Bundle-Activator: net.sourceforge.metrics.core.MetricsPlugin

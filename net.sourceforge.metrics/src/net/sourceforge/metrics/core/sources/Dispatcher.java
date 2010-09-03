@@ -23,6 +23,7 @@ package net.sourceforge.metrics.core.sources;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sourceforge.metrics.core.Log;
 
@@ -33,6 +34,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 /**
  * Based on the current selection figure out what metric source to create and instruct to calculate metrics, or simply pick up from the cache and use it.
@@ -43,11 +45,11 @@ public class Dispatcher {
 
 	protected static Dispatcher singleton = new Dispatcher();
 
-	private Map<Class, Class> sourcemap = null;
+	private Map<Class<? extends IJavaElement >, Class<? extends AbstractMetricSource>> sourcemap = null;
 
-	protected Map getSourceMap() {
+	protected Map<Class<? extends IJavaElement >, Class<? extends AbstractMetricSource>> getSourceMap() {
 		if (sourcemap == null) {
-			sourcemap = new HashMap<Class, Class>();
+			sourcemap = new HashMap<Class<? extends IJavaElement >, Class<? extends AbstractMetricSource>>();
 			initMetrics();
 		}
 		return sourcemap;
@@ -72,13 +74,14 @@ public class Dispatcher {
 	 * @return AbstractMetricSource
 	 */
 	protected AbstractMetricSource createNewSource(IJavaElement input) {
-		Map metrics = getSourceMap();
-		for (Iterator i = metrics.keySet().iterator(); i.hasNext();) {
-			Class next = (Class) i.next();
-			if (next.isInstance(input)) {
+		Map<Class<? extends IJavaElement >, Class<? extends AbstractMetricSource>> metrics = getSourceMap();
+		for (Iterator<Entry<Class<? extends IJavaElement>, Class<? extends AbstractMetricSource>>> entryIterator = metrics.entrySet().iterator(); entryIterator.hasNext();) {
+			Entry<Class<? extends IJavaElement>, Class<? extends AbstractMetricSource>> entry = entryIterator.next();
+			Class<? extends IJavaElement> key = entry.getKey();
+			if (key.isInstance(input)) {
 				try {
-					Class msc = (Class) metrics.get(next);
-					AbstractMetricSource ms = (AbstractMetricSource) msc.newInstance();
+					Class<? extends AbstractMetricSource> msc = entry.getValue();
+					AbstractMetricSource ms = msc.newInstance();
 					return ms;
 				} catch (InstantiationException e) {
 					Log.logError("createNewSource for " + input.getHandleIdentifier(), e);
@@ -125,7 +128,7 @@ public class Dispatcher {
 	 * @return AbstractMetricSource
 	 * @see AbstractMetricSource#initializeNewInstance(AbstractMetricSource,IJavaElement,Map)
 	 */
-	public static AbstractMetricSource calculateAbstractMetricSource(IJavaElement input, AbstractMetricSource parent, Map data) {
+	public static AbstractMetricSource calculateAbstractMetricSource(IJavaElement input, AbstractMetricSource parent, Map<String, ? extends ASTNode> data) {
 		AbstractMetricSource m = getAbstractMetricSource(input);
 		if (m == null) {
 			m = singleton.createNewSource(input);

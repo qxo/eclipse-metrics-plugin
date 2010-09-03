@@ -193,9 +193,9 @@ public class Cache {
 	public void removeSubtree(String handle) {
 		HTree h = getHashtableForHandle(handle);
 		if (h != null) {
-			Set handles = getKeysForHandle(handle);
-			for (Iterator i = handles.iterator(); i.hasNext();) {
-				String next = (String) i.next();
+			Set<String> handles = getKeysForHandle(handle);
+			for (Iterator<String> i = handles.iterator(); i.hasNext();) {
+				String next = i.next();
 				if (next.startsWith(handle)) {
 					try {
 						h.remove(next);

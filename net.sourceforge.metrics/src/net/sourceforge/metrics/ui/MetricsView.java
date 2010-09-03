@@ -23,6 +23,7 @@ package net.sourceforge.metrics.ui;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
+import java.util.Set;
 
 import net.sourceforge.metrics.builder.IMetricsProgressListener;
 import net.sourceforge.metrics.builder.MetricsBuilder;
@@ -95,7 +96,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 	private ProgressBar progressBar;
 	private Label progressText;
 	private static ArmListener armListener;
-	private static Map currentDependencies;
+	private static Map<String, Set<String>> currentDependencies;
 	private IMemento memento;
 	private MetricsActionGroup mActions;
 	private MetricsTable table;
@@ -425,7 +426,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		displayDependencyGraphSWT(source.getEfferent());
 	}
 
-	private void displayDependencyGraphSWT(final Map graph) {
+	private void displayDependencyGraphSWT(final Map<String, Set<String>> graph) {
 		IWorkbenchWindow dw = PlatformUI.getWorkbench().getWorkbenchWindows()[0];
 		IWorkbenchPage page = dw.getActivePage();
 		if (page != null) {
@@ -457,7 +458,7 @@ public class MetricsView extends ViewPart implements ISelectionListener, IMetric
 		}
 	}
 
-	public static Map getDependencies() {
+	public static Map<String, Set<String>> getDependencies() {
 		return currentDependencies;
 	}
 

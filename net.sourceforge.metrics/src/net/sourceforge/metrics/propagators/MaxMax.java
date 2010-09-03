@@ -46,7 +46,7 @@ public class MaxMax extends Propagator {
 	 */
 	@Override
 	public void calculate(AbstractMetricSource source) {
-		List values = source.getMaximaFromChildren(name, per);
+		List<Max> values = source.getMaximaFromChildren(name, per);
 		Max max = Max.createFromMaxes(name, per, values);
 		if (max != null) {
 			source.setMaximum(max);

@@ -80,7 +80,7 @@ public class AbortMetrics implements IObjectActionDelegate, Constants {
 				IJavaElement elem = (IJavaElement) ((IStructuredSelection) selection).getFirstElement();
 				if (elem != null) {
 					project = (IProject) elem.getUnderlyingResource();
-					if (project.hasNature(pluginId + ".nature")) {
+					if (project.hasNature(PLUGIN_ID + ".nature")) {
 						IJavaProject p = JavaCore.create(project);
 						if (p != null) {
 							action.setEnabled(MetricsBuilder.isBuilding(p.getHandleIdentifier()));

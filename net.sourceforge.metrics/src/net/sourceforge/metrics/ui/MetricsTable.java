@@ -124,7 +124,7 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 					rowNeeded = true;
 					cols[1] = format(m.doubleValue());
 				}
-				for (String per : pers) {
+				for (String per : PER_ARRAY) {
 					Avg avg = ms.getAverage(name, per);
 					Max max = ms.getMaximum(name, per);
 					if ((avg != null) || (max != null)) {
@@ -417,13 +417,13 @@ public class MetricsTable extends Tree implements Constants, SelectionListener, 
 				}
 			}
 		} catch (PartInitException x) {
-			System.err.println("Error selecting " + handle);
+			Log.logError("Error selecting " + handle, x);
 			x.printStackTrace();
 		} catch (JavaModelException x) {
-			System.err.println("Error selecting " + handle);
+			Log.logError("Error selecting " + handle, x);
 			x.printStackTrace();
 		} catch (Throwable t) {
-			System.err.println("Error selecting " + handle);
+			Log.logError("Error selecting " + handle, t);
 			t.printStackTrace();
 		}
 	}

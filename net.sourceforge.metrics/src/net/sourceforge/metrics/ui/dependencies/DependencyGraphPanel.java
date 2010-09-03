@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.MetricsPlugin;
@@ -70,7 +71,7 @@ public class DependencyGraphPanel extends GLPanel {
 	/**
 	 * 
 	 */
-	public DependencyGraphPanel(Map dependencies) {
+	public DependencyGraphPanel(Map<String, Set<String>> dependencies) {
 		this();
 		try {
 			createDependencies(dependencies);
@@ -154,7 +155,7 @@ public class DependencyGraphPanel extends GLPanel {
 	 * @param dependencies
 	 * @param packages
 	 */
-	public void createDependencies(Map dependencies, Map packages) throws TGException {
+	public void createDependencies(Map<String, Set<String>> dependencies, Map<String, Set<String>> packages) throws TGException {
 		initTGPanel();
 		tangleMenu.removeAll();
 		topo.setEnabled(true);
@@ -162,30 +163,31 @@ public class DependencyGraphPanel extends GLPanel {
 		Node center = null;
 		showDetailMenu = (packages == null);
 		StrongComponent[] components = calculateCycles(dependencies);
-		for (Iterator i = dependencies.keySet().iterator(); i.hasNext();) {
-			String name = (String) i.next();
-			Set deps = (Set) dependencies.get(name);
+		for( Iterator<Entry<String, Set<String>>> iterEntry = dependencies.entrySet().iterator(); iterEntry.hasNext();){
+			Entry<String, Set<String>> entry= iterEntry.next();
+			String name = entry.getKey();
+			Set<String> deps = entry.getValue(); 
 			Node from = addNode(name);
 			if (deps.size() > max) {
 				max = deps.size();
 				center = from;
 			}
-			for (Iterator d = deps.iterator(); d.hasNext();) {
-				Node to = addNode((String) d.next());
+			for (Iterator<String> d = deps.iterator(); d.hasNext();) {
+				Node to = addNode(d.next());
 				addEdge(from, to, components);
 			}
-
 		}
 		if (packages != null) {
-			for (Iterator i = packages.keySet().iterator(); i.hasNext();) {
-				String name = (String) i.next();
-				Set deps = (Set) packages.get(name);
+			for( Iterator<Entry<String, Set<String>>> iterEntry = packages.entrySet().iterator(); iterEntry.hasNext();){
+				Entry<String, Set<String>> entry= iterEntry.next();
+				String name = entry.getKey();
+				Set<String> deps = entry.getValue();
 				Node from = addNode(name);
 				from.setBackColor(Color.green);
 				from.setTextColor(Color.black);
 				from.setNodeType(Node.TYPE_ROUNDRECT);
-				for (Iterator d = deps.iterator(); d.hasNext();) {
-					Node to = addNode((String) d.next());
+				for (Iterator<String> d = deps.iterator(); d.hasNext();) {
+					Node to = addNode(d.next());
 					addEdge(from, to);
 				}
 
@@ -203,7 +205,7 @@ public class DependencyGraphPanel extends GLPanel {
 	 * 
 	 * @see com.touchgraph.graphlayout.GLPanel#randomGraph()
 	 */
-	public void createDependencies(Map source) throws TGException {
+	public void createDependencies(Map<String, Set<String>> source) throws TGException {
 		createDependencies(source, null);
 	}
 
@@ -213,20 +215,21 @@ public class DependencyGraphPanel extends GLPanel {
 	 * @param efferent
 	 * @return
 	 */
-	private StrongComponent[] calculateCycles(Map efferent) {
+	private StrongComponent[] calculateCycles(Map<String, Set<String>> efferent) {
 		List<Vertex> graph = new ArrayList<Vertex>();
 		Map<String, Vertex> done = new HashMap<String, Vertex>();
-		for (Iterator i = efferent.keySet().iterator(); i.hasNext();) {
-			String key = (String) i.next();
+		for( Iterator<Entry<String, Set<String>>> iterEntry = efferent.entrySet().iterator(); iterEntry.hasNext();){
+			Entry<String, Set<String>> entry= iterEntry.next();
+			String key = entry.getKey();
 			Vertex from = done.get(key);
 			if (from == null) {
 				from = new AtomicVertex(new PackageAttributes(key));
 				done.put(key, from);
 				graph.add(from);
 			}
-			Set deps = (Set) efferent.get(key);
-			for (Iterator j = deps.iterator(); j.hasNext();) {
-				String dep = (String) j.next();
+			Set<String> deps = entry.getValue();
+			for (Iterator<String> j = deps.iterator(); j.hasNext();) {
+				String dep = j.next();
 				Vertex to = done.get(dep);
 				if (to == null) {
 					to = new AtomicVertex(new PackageAttributes(dep));

@@ -57,6 +57,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import net.sourceforge.metrics.core.Log;
+
 import com.touchgraph.graphlayout.Edge;
 import com.touchgraph.graphlayout.GLPanel;
 import com.touchgraph.graphlayout.Node;
@@ -140,7 +142,7 @@ public class GLNavigateUI extends TGUserInterface {
 					try {
 						tgPanel.setLocale(mouseOverN, localityScroll.getLocalityRadius());
 					} catch (TGException ex) {
-						System.out.println("Error setting locale");
+						Log.logWarrning("Error setting locale", ex);
 						ex.printStackTrace();
 					}
 				}

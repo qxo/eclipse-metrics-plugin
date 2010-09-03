@@ -3,7 +3,7 @@ package net.sourceforge.metrics.ui.layeredpackagegraph;
 /**
  * Holds layer statistics for a package
  */
-public class PackageStats implements Comparable {
+public class PackageStats implements Comparable<PackageStats> {
 	private final String packageName;
 	private int layer;
 	private boolean tangle;
@@ -37,13 +37,13 @@ public class PackageStats implements Comparable {
 		return packageName;
 	}
 
-	public int compareTo(Object other) {
-		int result = layer - ((PackageStats) other).layer;
+	public int compareTo(PackageStats other) {
+		int result = layer - other.layer;
 		if (result != 0) {
 			return result;
 		}
 
-		return packageName.compareTo(((PackageStats) other).packageName);
+		return packageName.compareTo(other.packageName);
 	}
 
 }

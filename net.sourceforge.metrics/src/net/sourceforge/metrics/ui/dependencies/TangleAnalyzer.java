@@ -267,7 +267,7 @@ public class TangleAnalyzer {
 	public class RefCollector extends SearchRequestor {
 
 		Set<String> store = null;
-		Set types = null;
+		Set<String> types = null;
 		IJavaElement from = null;
 		IJavaElement fromPackage = null;
 

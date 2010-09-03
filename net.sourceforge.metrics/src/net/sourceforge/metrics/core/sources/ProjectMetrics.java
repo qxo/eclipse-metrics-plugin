@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sourceforge.metrics.core.ICalculator;
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.MetricsPlugin;
 import net.sourceforge.metrics.internal.xml.IXMLExporter;
@@ -34,6 +35,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 /**
  * initialize package fragment root metrics (my children) and collect all results from the calculators for the project root level
@@ -83,7 +85,7 @@ public class ProjectMetrics extends AbstractMetricSource implements IGraphContri
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getCalculators()
 	 */
 	@Override
-	protected List getCalculators() {
+	protected List<ICalculator> getCalculators() {
 		return MetricsPlugin.getDefault().getCalculators("project");
 	}
 
@@ -153,6 +155,11 @@ public class ProjectMetrics extends AbstractMetricSource implements IGraphContri
 	 */
 	public Map<String, Set<String>> getEfferent() {
 		return efferent;
+	}
+
+	@Override
+	public ASTNode getASTNode() {
+		return null;
 	}
 
 }

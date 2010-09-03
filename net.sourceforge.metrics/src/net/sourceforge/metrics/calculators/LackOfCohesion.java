@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import net.sourceforge.metrics.core.Constants;
+import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.Metric;
 import net.sourceforge.metrics.core.sources.AbstractMetricSource;
 
@@ -132,9 +133,9 @@ public class LackOfCohesion extends Calculator implements Constants {
 					}
 				}
 			} catch (JavaModelException e) {
-				System.err.println("LCOM:Can't get source for method " + methodName);
+				Log.logError("LCOM:Can't get source for method " + methodName, e);
 			} catch (InvalidInputException e) {
-				System.err.println("LCOM:Invalid scanner input for method" + methodName);
+				Log.logError("LCOM:Invalid scanner input for method" + methodName, e);
 			}
 		}
 	}

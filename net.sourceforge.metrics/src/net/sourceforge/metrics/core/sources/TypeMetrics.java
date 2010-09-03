@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sourceforge.metrics.core.ICalculator;
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.Metric;
 import net.sourceforge.metrics.core.MetricsPlugin;
@@ -79,11 +80,11 @@ public class TypeMetrics extends AbstractMetricSource {
 	 * @seenet.sourceforge.metrics.core.sources.AbstractMetricSource# initializeNewInstance (net.sourceforge.metrics.core.sources.AbstractMetricSource, org.eclipse.jdt.core.IJavaElement)
 	 */
 	@Override
-	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map data) {
+	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map<String, ? extends ASTNode> data) {
 		if (newSource instanceof MethodMetrics) {
 			((MethodMetrics) newSource).setAstNode((MethodDeclaration) data.get("method"));
 		} else if (newSource instanceof TypeMetrics) {
-			((TypeMetrics) newSource).setAstNode((ASTNode) data.get("type"));
+			((TypeMetrics) newSource).setAstNode(data.get("type"));
 		}
 		super.initializeNewInstance(newSource, element, data);
 	}
@@ -202,16 +203,16 @@ public class TypeMetrics extends AbstractMetricSource {
 	}
 
 	private static MethodDeclaration[] getMethods(AnonymousClassDeclaration anonymousClassDeclaration) {
-		List bd = anonymousClassDeclaration.bodyDeclarations();
+		List<?> bd = anonymousClassDeclaration.bodyDeclarations();
 		int methodCount = 0;
-		for (Iterator it = bd.listIterator(); it.hasNext();) {
+		for (Iterator<?> it = bd.listIterator(); it.hasNext();) {
 			if (it.next() instanceof MethodDeclaration) {
 				methodCount++;
 			}
 		}
 		MethodDeclaration[] methods = new MethodDeclaration[methodCount];
 		int next = 0;
-		for (Iterator it = bd.listIterator(); it.hasNext();) {
+		for (Iterator<?> it = bd.listIterator(); it.hasNext();) {
 			Object decl = it.next();
 			if (decl instanceof MethodDeclaration) {
 				methods[next++] = (MethodDeclaration) decl;
@@ -221,16 +222,16 @@ public class TypeMetrics extends AbstractMetricSource {
 	}
 
 	private static MethodDeclaration[] getMethods(EnumDeclaration enumDeclaration) {
-		List bd = enumDeclaration.bodyDeclarations();
+		List<?> bd = enumDeclaration.bodyDeclarations();
 		int methodCount = 0;
-		for (Iterator it = bd.listIterator(); it.hasNext();) {
+		for (Iterator<?> it = bd.listIterator(); it.hasNext();) {
 			if (it.next() instanceof MethodDeclaration) {
 				methodCount++;
 			}
 		}
 		MethodDeclaration[] methods = new MethodDeclaration[methodCount];
 		int next = 0;
-		for (Iterator it = bd.listIterator(); it.hasNext();) {
+		for (Iterator<?> it = bd.listIterator(); it.hasNext();) {
 			Object decl = it.next();
 			if (decl instanceof MethodDeclaration) {
 				methods[next++] = (MethodDeclaration) decl;
@@ -244,10 +245,10 @@ public class TypeMetrics extends AbstractMetricSource {
 	}
 
 	private static IMethod findMethod(MethodDeclaration m, IType type) {
-		List parms = m.parameters();
+		List<?> parms = m.parameters();
 		String[] argtypes = new String[parms.size()];
 		int index = 0;
-		for (Iterator i = parms.iterator(); i.hasNext(); index++) {
+		for (Iterator<?> i = parms.iterator(); i.hasNext(); index++) {
 			SingleVariableDeclaration l_varDeclaration = (SingleVariableDeclaration) i.next();
 			String svd = l_varDeclaration.getType().toString();
 			argtypes[index] = Signature.createTypeSignature(svd, false);
@@ -296,7 +297,7 @@ public class TypeMetrics extends AbstractMetricSource {
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getCalculators()
 	 */
 	@Override
-	protected List getCalculators() {
+	protected List<ICalculator> getCalculators() {
 		return MetricsPlugin.getDefault().getCalculators("type");
 	}
 

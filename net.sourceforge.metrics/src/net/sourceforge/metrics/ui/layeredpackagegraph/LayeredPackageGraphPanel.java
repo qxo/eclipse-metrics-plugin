@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.MetricsPlugin;
@@ -140,7 +141,7 @@ public class LayeredPackageGraphPanel extends GLPanel {
 		}
 	}
 
-	public void createDependencies(List layers) throws TGException {
+	public void createDependencies(List<Set<PackageStats>> layers) throws TGException {
 		initTGPanel();
 		tangleMenu.removeAll();
 		topo.setEnabled(true);
@@ -149,19 +150,19 @@ public class LayeredPackageGraphPanel extends GLPanel {
 		// showDetailMenu = (packages == null);
 		StrongComponent[] components = calculateCycles(LayeredPackageTableView.getDependencies());
 		int layer = 0;
-		for (Iterator i = layers.iterator(); i.hasNext(); layer++) {
-			Set packageStats = (Set) i.next();
+		for (Iterator<Set<PackageStats>> i = layers.iterator(); i.hasNext(); layer++) {
+			Set<PackageStats> packageStats = i.next();
 			int[] layerWidth = new int[layers.size()];
-			for (Iterator d = packageStats.iterator(); d.hasNext();) {
-				PackageStats stats = (PackageStats) d.next();
+			for (Iterator<PackageStats> d = packageStats.iterator(); d.hasNext();) {
+				PackageStats stats = d.next();
 				Node from = addNode(stats.getPackageName(), stats.getLayer(), ++layerWidth[layer]);
 				if (stats.getLayer() > max) {
 					max = stats.getLayer();
 					center = from;
 				}
-				Set deps = (Set) LayeredPackageTableView.getDependencies().get(stats.getPackageName());
-				for (Iterator d2 = deps.iterator(); d2.hasNext();) {
-					String depPackageName = (String) d2.next();
+				Set<String> deps = LayeredPackageTableView.getDependencies().get(stats.getPackageName());
+				for (Iterator<String> d2 = deps.iterator(); d2.hasNext();) {
+					String depPackageName = d2.next();
 					int depLayer = LayeredPackageTableView.getLayer(depPackageName);
 					Node to = addNode(depPackageName, depLayer, ++layerWidth[depLayer]);
 					addEdge(from, to, components);
@@ -182,20 +183,21 @@ public class LayeredPackageGraphPanel extends GLPanel {
 	 * @param efferent
 	 * @return
 	 */
-	private StrongComponent[] calculateCycles(Map efferent) {
+	private StrongComponent[] calculateCycles(Map<String, Set<String>> efferent) {
 		List<Vertex> graph = new ArrayList<Vertex>();
 		Map<String, Vertex> done = new HashMap<String, Vertex>();
-		for (Iterator i = efferent.keySet().iterator(); i.hasNext();) {
-			String key = (String) i.next();
+		for (Iterator<Entry<String, Set<String>>> iterEntry = efferent.entrySet().iterator(); iterEntry.hasNext();) {
+			Entry<String, Set<String>> entry = iterEntry.next();
+			String key = entry.getKey();
 			Vertex from = done.get(key);
 			if (from == null) {
 				from = new AtomicVertex(new PackageAttributes(key));
 				done.put(key, from);
 				graph.add(from);
 			}
-			Set deps = (Set) efferent.get(key);
-			for (Iterator j = deps.iterator(); j.hasNext();) {
-				String dep = (String) j.next();
+			Set<String> deps = entry.getValue();
+			for (Iterator<String> j = deps.iterator(); j.hasNext();) {
+				String dep = j.next();
 				Vertex to = done.get(dep);
 				if (to == null) {
 					to = new AtomicVertex(new PackageAttributes(dep));

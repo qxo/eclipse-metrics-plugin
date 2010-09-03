@@ -64,6 +64,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Vector;
 
+import net.sourceforge.metrics.core.Log;
+
 import com.touchgraph.graphlayout.graphelements.GraphEltSet;
 import com.touchgraph.graphlayout.graphelements.ImmutableGraphEltSet;
 import com.touchgraph.graphlayout.graphelements.TGForEachEdge;
@@ -468,28 +470,30 @@ public class TGPanel extends Panel {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	void fireMovedEvent() {
-		Vector listeners;
+		Vector<GraphListener> listeners;
 
 		synchronized (this) {
-			listeners = (Vector) graphListeners.clone();
+			listeners = (Vector<GraphListener>) graphListeners.clone();
 		}
 
 		for (int i = 0; i < listeners.size(); i++) {
-			GraphListener gl = (GraphListener) listeners.elementAt(i);
+			GraphListener gl = listeners.elementAt(i);
 			gl.graphMoved();
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void fireResetEvent() {
-		Vector listeners;
+		Vector<GraphListener> listeners;
 
 		synchronized (this) {
-			listeners = (Vector) graphListeners.clone();
+			listeners =  (Vector<GraphListener>) graphListeners.clone();
 		}
 
 		for (int i = 0; i < listeners.size(); i++) {
-			GraphListener gl = (GraphListener) listeners.elementAt(i);
+			GraphListener gl = listeners.elementAt(i);
 			gl.graphReset();
 		}
 	}
@@ -889,6 +893,7 @@ public class TGPanel extends Panel {
 		update(g);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public synchronized void update(Graphics g) {
 		Dimension d = getSize();
@@ -983,7 +988,7 @@ public class TGPanel extends Panel {
 		try {
 			tgPanel.addNode(); // Add a starting node.
 		} catch (TGException tge) {
-			System.err.println(tge.getMessage());
+			Log.logWarrning(tge.getMessage(), tge);
 		}
 		tgPanel.setVisible(true);
 		new GLEditUI(tgPanel).activate();

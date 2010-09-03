@@ -2,17 +2,26 @@
 <feature
       id="net.sourceforge.metrics"
       label="Metrics plugin for Eclipse"
-      version="1.3.8.20091015-001"
-      provider-name="Frank Sauer">
+      version="1.3.8.20100730-001"
+      provider-name="Frank Sauer &amp; Guillaume Boissier">
 
-   <description url="http://metrics.sourceforge.net">
-      This metrics plugin calculates various code and design metrics for Java projects.
-In addition to metrics such as McCabe cyclomatic complexity and the dependency metrics of Robert Martin and many others, it also includes a graphical dependency analysis tool based on the dynamic hyperbolic graphing package TouchGraph.
+   <description url="http://metrics2.sourceforge.net">
+      This metrics plugin calculates various code and design metrics
+for Java projects.
+In addition to metrics such as McCabe cyclomatic complexity and
+the dependency metrics of Robert Martin and many others, it also
+includes a graphical dependency analysis tool based on the dynamic
+hyperbolic graphing package TouchGraph.
    </description>
 
    <copyright>
       (c) 2003 Frank Sauer
+(c) 2009 Guillaume Boissier
    </copyright>
+
+   <url>
+      <update label="Metrics2" url="http://metrics2.sourceforge.net/update/"/>
+   </url>
 
    <requires>
       <import plugin="org.eclipse.jdt.ui"/>
@@ -31,6 +40,7 @@ In addition to metrics such as McCabe cyclomatic complexity and the dependency m
          id="net.sourceforge.metrics"
          download-size="0"
          install-size="0"
-         version="0.0.0"/>
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

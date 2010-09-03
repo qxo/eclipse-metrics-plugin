@@ -23,6 +23,7 @@ package net.sourceforge.metrics.core.sources;
 import java.util.List;
 import java.util.Set;
 
+import net.sourceforge.metrics.core.ICalculator;
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.MetricsPlugin;
 import net.sourceforge.metrics.internal.xml.IXMLExporter;
@@ -31,6 +32,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 /**
  * initialize package fragment metrics (my children) and collect all results from the calculators for the package level
@@ -87,7 +89,7 @@ public class PackageFragmentMetrics extends AbstractMetricSource {
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getCalculators()
 	 */
 	@Override
-	protected List getCalculators() {
+	protected List<ICalculator> getCalculators() {
 		return MetricsPlugin.getDefault().getCalculators("packageFragment");
 	}
 
@@ -113,6 +115,11 @@ public class PackageFragmentMetrics extends AbstractMetricSource {
 	 */
 	public Set<String> getEfferentDependencies() {
 		return efferent;
+	}
+
+	@Override
+	public ASTNode getASTNode() {
+		return null;
 	}
 
 }

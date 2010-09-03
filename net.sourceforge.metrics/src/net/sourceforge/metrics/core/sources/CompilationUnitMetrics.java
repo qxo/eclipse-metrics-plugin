@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sourceforge.metrics.core.ICalculator;
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.Metric;
 import net.sourceforge.metrics.core.MetricsPlugin;
@@ -63,8 +64,8 @@ public class CompilationUnitMetrics extends AbstractMetricSource {
 	 * @seenet.sourceforge.metrics.core.sources.AbstractMetricSource# initializeNewInstance (net.sourceforge.metrics.core.sources.AbstractMetricSource, org.eclipse.jdt.core.IJavaElement)
 	 */
 	@Override
-	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map data) {
-		((TypeMetrics) newSource).setAstNode((ASTNode) data.get("type"));
+	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map<String, ? extends ASTNode> data) {
+		((TypeMetrics) newSource).setAstNode(data.get("type"));
 		super.initializeNewInstance(newSource, element, data);
 	}
 
@@ -80,9 +81,9 @@ public class CompilationUnitMetrics extends AbstractMetricSource {
 		if (metricsInterruptus()) {
 			return;
 		}
-		List types = astNode.types();
+		List<?> types = astNode.types();
 		int interfaces = 0;
-		for (Iterator i = types.iterator(); i.hasNext();) {
+		for (Iterator<?> i = types.iterator(); i.hasNext();) {
 			if (metricsInterruptus()) {
 				return;
 			}
@@ -158,7 +159,7 @@ public class CompilationUnitMetrics extends AbstractMetricSource {
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getCalculators()
 	 */
 	@Override
-	protected List getCalculators() {
+	protected List<ICalculator> getCalculators() {
 		return MetricsPlugin.getDefault().getCalculators("compilationUnit");
 	}
 

@@ -94,9 +94,9 @@ public class XMLSourceTreeExporter implements IExporter {
 
 	private int calculateTotalWork(String handle) {
 		int result = 0;
-		Set handles = Cache.singleton.getKeysForHandle(handle);
-		for (Iterator i = handles.iterator(); i.hasNext();) {
-			String next = (String) i.next();
+		Set<String> handles = Cache.singleton.getKeysForHandle(handle);
+		for (Iterator<String> i = handles.iterator(); i.hasNext();) {
+			String next = i.next();
 			if (next.startsWith(handle)) {
 				result++;
 			}
@@ -105,11 +105,11 @@ public class XMLSourceTreeExporter implements IExporter {
 		return result + plugin.getMetricIds().length;
 	}
 
-	protected static List<AbstractMetricSource> getChildren(String handle, Class filter) {
-		Set handles = Cache.singleton.getKeysForHandle(handle);
+	protected static List<AbstractMetricSource> getChildren(String handle, Class<? extends AbstractMetricSource> filter) {
+		Set<String> handles = Cache.singleton.getKeysForHandle(handle);
 		List<AbstractMetricSource> result = new ArrayList<AbstractMetricSource>();
-		for (Iterator i = handles.iterator(); i.hasNext();) {
-			String next = (String) i.next();
+		for (Iterator<String> i = handles.iterator(); i.hasNext();) {
+			String next = i.next();
 			if (next.startsWith(handle) && (!next.equals(handle))) {
 				AbstractMetricSource p = Cache.singleton.get(next);
 				if (filter.isInstance(p)) {

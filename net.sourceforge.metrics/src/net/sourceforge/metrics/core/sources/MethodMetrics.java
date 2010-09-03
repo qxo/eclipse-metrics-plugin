@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sourceforge.metrics.core.ICalculator;
 import net.sourceforge.metrics.core.Log;
 import net.sourceforge.metrics.core.MetricsPlugin;
 import net.sourceforge.metrics.internal.xml.IXMLExporter;
@@ -57,8 +58,8 @@ public class MethodMetrics extends AbstractMetricSource {
 	}
 
 	@Override
-	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map data) {
-		((TypeMetrics) newSource).setAstNode((ASTNode) data.get("type"));
+	public void initializeNewInstance(AbstractMetricSource newSource, IJavaElement element, Map<String, ? extends ASTNode> data) {
+		((TypeMetrics) newSource).setAstNode(data.get("type"));
 		super.initializeNewInstance(newSource, element, data);
 	}
 
@@ -134,7 +135,6 @@ public class MethodMetrics extends AbstractMetricSource {
 	public MethodMetrics(MethodDeclaration methodDeclaration) {
 		astNode = methodDeclaration;
 		if (astNode == null) {
-			System.err.println("MethodMetrics: Must provide legal MethodDeclaration!");
 			throw new IllegalArgumentException("MethodMetrics: Must provide legal MethodDeclaration!");
 		}
 	}
@@ -163,7 +163,7 @@ public class MethodMetrics extends AbstractMetricSource {
 	 * @see net.sourceforge.metrics.core.sources.AbstractMetricSource#getCalculators()
 	 */
 	@Override
-	protected List getCalculators() {
+	protected List<ICalculator> getCalculators() {
 		return MetricsPlugin.getDefault().getCalculators("method");
 	}
 

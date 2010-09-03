@@ -103,10 +103,10 @@ public interface Constants {
 	/** "packageFragment" */
 	public final static String PER_PACKAGE = "packageFragment";
 
-	public static final String[] pers = new String[] { PER_PACKAGE, PER_CLASS, PER_METHOD };
+	public static final String[] PER_ARRAY = new String[] { PER_PACKAGE, PER_CLASS, PER_METHOD };
 
 	// namespaces for persistent storage and in-memory caching
-	public final static String pluginId = "net.sourceforge.metrics";
+	public final static String PLUGIN_ID = "net.sourceforge.metrics";
 
 	public final static int FRACTION_DIGITS = 3;
 

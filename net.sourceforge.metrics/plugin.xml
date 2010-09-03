@@ -420,11 +420,14 @@
    <extension
          point="org.eclipse.ui.propertyPages">
       <page
-            objectClass="org.eclipse.jdt.core.IJavaProject"
             name="Metrics"
             class="net.sourceforge.metrics.properties.MetricsPropertyPage"
             nameFilter="*"
             id="net.sourceforge.metrics.properties.MetricsPropertyPage">
+            <enabledWhen>
+            <instanceof
+                  value="org.eclipse.jdt.core.IJavaProject"/>
+            </enabledWhen>
       </page>
    </extension>
    <extension
