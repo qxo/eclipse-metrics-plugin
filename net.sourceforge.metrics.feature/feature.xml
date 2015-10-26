@@ -2,8 +2,8 @@
 <feature
       id="net.sourceforge.metrics"
       label="Metrics plugin for Eclipse"
-      version="1.3.8.20100730-001"
-      provider-name="Frank Sauer &amp; Guillaume Boissier">
+      version="1.3.9"
+      provider-name="Frank Sauer &amp; Guillaume Boissier &amp; Leonardo Jr.">
 
    <description url="http://metrics2.sourceforge.net">
       This metrics plugin calculates various code and design metrics
@@ -20,7 +20,7 @@ hyperbolic graphing package TouchGraph.
    </copyright>
 
    <url>
-      <update label="Metrics2" url="http://metrics2.sourceforge.net/update/"/>
+      <update label="Metrics3" url="https://github.com/leonardobsjr/metrics3"/>
    </url>
 
    <requires>

@@ -265,6 +265,12 @@
             level="type">
       </metric>
       <metric
+            id="NONM"
+            level="type"
+            name="Number of Normal Methods"
+            newAvgMaxAt="packageFragmentRoot">
+      </metric>
+      <metric
             name="Number of Static Methods"
             id="NSM"
             level="type">
@@ -377,6 +383,206 @@
             name="Method Lines of Code"
             id="MLOC"
             allowDisable="true"/>
+      <!-- QMOOD -->
+      <metric
+            id="DSC"
+            level="compilationUnit"
+            name="Design Size in Classes"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="true"
+            allowDisable="false"
+            >
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.AverageNumberOfAncestors"
+            level="project"
+            name="Average Number of Ancestors">
+      </calculator>
+      <metric
+            id="ANA"
+            level="project"
+            name="Average Number of Ancestors"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="false"
+            requires="DIT">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.MeasureOfFunctionalAbstraction"
+            level="type"
+            name="Measure Of Functional Abstraction">
+      </calculator>
+      <metric
+            id="MFA"
+            level="type"
+            name="Measure of Functional Abstraction"
+            newAvgMaxAt="packageFragmentRoot">
+      </metric>
+      <metric
+            allowDisable="false"
+            id="CIS"
+            level="type"
+            name="Class Interface Size"
+            newAvgMaxAt="packageFragmentRoot"
+            requires="NOM">
+      </metric>
+      <metric
+            allowDisable="false"
+            id="MOA"
+            level="type"
+            name="Measure of Aggregation"
+            newAvgMaxAt="packageFragmentRoot"
+            requires="NOF">
+      </metric>
+      <metric
+            allowDisable="false"
+            id="DAM"
+            level="type"
+            name="Data Access Metric"
+            newAvgMaxAt="packageFragmentRoot"
+            requires="NOF">
+      </metric>
+      <metric
+            id="NOPM"
+            level="type"
+            name="Number of Polymorphic Methods"
+            newAvgMaxAt="packageFragmentRoot"
+            propagateAvg="true"
+            propagateMax="true"
+            propagateSum="true"
+            requires="NOM">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.CohesionAmongMethodsOfClass"
+            level="type"
+            name="Cohesion Among Methods of Class">
+      </calculator>
+      <metric
+            allowDisable="false"
+            id="CAM"
+            level="type"
+            name="Cohesion Among Methods of Class"
+            propagateAvg="true"
+            propagateMax="true"
+            propagateSum="true">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.DirectClassCoupling"
+            level="type"
+            name="Direct Class Coupling">
+      </calculator>
+      <metric
+            allowDisable="false"
+            id="DCC"
+            level="type"
+            name="Direct Class Coupling"
+            newAvgMaxAt="packageFragmentRoot"
+            propagateAvg="true"
+            propagateMax="true"
+            propagateSum="true">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.Reusability"
+            level="project"
+            name="Reusability">
+      </calculator>
+      <metric
+            allowDisable="false"
+            id="REU"
+            level="project"
+            name="Reusability"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="false"
+            requires="DCC, CAM, CIS, DSC">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.Flexibility"
+            level="project"
+            name="Flexibility">
+      </calculator>
+      <metric
+            id="FLE"
+            level="project"
+            name="Flexibility"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="false"
+            allowDisable="false"
+            requires="DAM, DCC, MOA, NOPM">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.Effectiveness"
+            level="project"
+            name="Effectiveness">
+      </calculator>
+      <metric
+            id="EFE"
+            level="project"
+            name="Effectiveness"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="false"
+            requires="ANA,DAM,MOA,MFA,NOPM">
+      </metric>      
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.Extendibility"
+            level="project"
+            name="Extendibility">
+      </calculator>
+      <metric
+            id="EXT"
+            level="project"
+            name="Extendibility"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="false"
+            requires="ANA, DCC, MFA, NOPM">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.Functionality"
+            level="project"
+            name="Functionality">
+      </calculator>
+      <metric
+            id="FUN"
+            level="project"
+            name="Functionality"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="false"
+            requires="CAM, NOPM, CIS, DSC, NOH">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.Understandability"
+            level="project"
+            name="Understandability">
+      </calculator>
+      <metric
+            allowDisable="false"
+            id="ENT"
+            level="project"
+            name="Understandability"
+            propagateAvg="false"
+            propagateMax="false"
+            propagateSum="false"
+            requires="ANA, DAM, DCC, CAM, NOPM, NONM, DSC">
+      </metric>
+      <calculator
+            calculatorClass="net.sourceforge.metrics.calculators.qmood.NumberOfHierarchies"
+            level="type"
+            name="Number of Hierarchies">
+      </calculator>
+      <metric
+            allowDisable="false"
+            id="NOH"
+            level="type"
+            name="Number of Hierarchies"
+            propagateAvg="false"
+            propagateMax="false"
+            >
+      </metric>
    </extension>
    <extension
          point="net.sourceforge.metrics.exporters">

@@ -50,6 +50,8 @@ public interface Constants {
 	public final static String MCCABE = "VG";
 	/** "NOM" */
 	public final static String NUM_METHODS = "NOM";
+	/** "NONM" - 'Normal Methods - excludes getters and setters'**/
+	public final static String NUM_NORMAL_METHODS = "NONM";
 	/** "NSM" */
 	public final static String NUM_STAT_METHODS = "NSM";
 	/** "NSF" */
@@ -94,6 +96,47 @@ public interface Constants {
 	public final static String MLOC = "MLOC";
 	/** "TLOC" */
 	public final static String TLOC = "TLOC";
+	
+	
+	/**QMOOD Metrics*/
+	/** "CIS" - Class Interface Size */
+	public final static String CIS = "CIS";
+	/** "MOA" - Measure of Aggregation - Implemented in NumberOfAttributes Calc */
+	public final static String MOA = "MOA";
+	/** "DAM"  - Data Access Metric */
+	public final static String DAM = "DAM";
+	/** "ANA"  - Average Number of Ancestors */
+	public final static String ANA = "ANA";
+	/** "NOPM" - Number of Polymorhic Methods - Originally NOP on the QMOOD Paper  */
+	public final static String NOPM = "NOPM";
+	/** "CAM" - Cohesion Among Methods of Class */
+	public final static String CAM = "CAM";
+	/** "MFA" - Measure of Functional Abstraction */
+	public final static String MFA = "MFA";
+	/** "DCC" - Direct Class Coupling */
+	public final static String DCC = "DCC";
+	/** "NOH" - Number of Hierarchies */
+	public final static String NOH = "NOH";
+	/** "DSC" - Design Size in Classes - Equivalent to the NUM_TYPES metric. */
+	public final static String DSC = "DSC";
+	
+	public final static String[] QMOODMetrics = {CIS, MOA, DAM, ANA, NOPM, CAM, MFA, DCC, NOH, DSC};
+	
+	/** QMOOD Evaluation Functions */
+	/** Flexibility */
+	public final static String FLE = "FLE";
+	/** Reusability */
+	public final static String REU = "REU";
+	/** Understandability */
+	public final static String UND = "ENT";
+	/** Effectiveness */
+	public final static String EFE = "EFE";
+	/** Functionality */
+	public final static String FUN = "FUN";
+	/** Extendibility */
+	public final static String EXT = "EXT";
+	
+	public final static String[] QMOODEvaluationFunctions = {FLE, REU, UND, EFE, FUN, EXT};
 
 	// scopes for averages and maxima
 	/** "method" */

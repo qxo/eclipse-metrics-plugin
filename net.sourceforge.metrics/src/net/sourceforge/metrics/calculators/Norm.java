@@ -75,6 +75,7 @@ public class Norm extends Calculator implements Constants {
 				}
 			}
 			source.setValue(new Metric(NORM, overridden));
+			source.setValue(new Metric(NOPM, overridden)); //NOPM is just the QMOOD name for it. I've dediced to duplicate just to make the metric readings easier.
 		} catch (JavaModelException e) {
 		}
 	}

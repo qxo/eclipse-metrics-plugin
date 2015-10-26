@@ -115,13 +115,16 @@ public class CompilationUnitMetrics extends AbstractMetricSource {
 	@Override
 	public void calculate() {
 		setValue(new Metric(NUM_TYPES, getSize()));
+		//DSC is just the QMOOD name for it. I've dediced to duplicate just to make the metric readings easier.
+		setValue(new Metric(DSC, getSize()));
 		super.calculate();
 	}
 
 	private CompilationUnit getAST() {
 		try {
-			ASTParser parser = ASTParser.newParser(AST.JLS3);
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			parser.setSource((ICompilationUnit) getJavaElement());
+			parser.setResolveBindings(true);
 			return (CompilationUnit) parser.createAST(null);
 			// return
 			// AST.parseCompilationUnit((ICompilationUnit)getJavaElement(),

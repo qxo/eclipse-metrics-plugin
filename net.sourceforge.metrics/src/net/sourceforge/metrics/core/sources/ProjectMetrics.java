@@ -62,7 +62,7 @@ public class ProjectMetrics extends AbstractMetricSource implements IGraphContri
 					if (!((IPackageFragmentRoot) children[i]).isArchive()) {
 						AbstractMetricSource next = Dispatcher.getAbstractMetricSource(children[i]);
 						if (next != null) {
-							addChild(next);
+							addChild(next);							
 						} else {
 							Log.logMessage("Package " + children[i].getHandleIdentifier() + " not found.");
 						}
