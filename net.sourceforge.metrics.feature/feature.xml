@@ -3,9 +3,9 @@
       id="net.sourceforge.metrics"
       label="Metrics plugin for Eclipse"
       version="1.3.9"
-      provider-name="Frank Sauer &amp; Guillaume Boissier &amp; Leonardo Jr.">
+      provider-name="Frank Sauer &amp; Guillaume Boissier &amp; Leonardo Jr. &amp; qxo">
 
-   <description url="http://metrics2.sourceforge.net">
+   <description url="https://github.com/leonardobsjr/metrics3">
       This metrics plugin calculates various code and design metrics
 for Java projects.
 In addition to metrics such as McCabe cyclomatic complexity and
@@ -20,7 +20,7 @@ hyperbolic graphing package TouchGraph.
    </copyright>
 
    <url>
-      <update label="Metrics3" url="https://github.com/leonardobsjr/metrics3"/>
+      <update label="Eclipse Metrics Plugin" url="https://github.com/qxo/eclipse-metrics-plugin/raw/master/updatesite/"/>
    </url>
 
    <requires>
@@ -40,7 +40,7 @@ hyperbolic graphing package TouchGraph.
          id="net.sourceforge.metrics"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="1.3.9"
          unpack="false"/>
 
 </feature>
