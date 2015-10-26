@@ -1,10 +1,17 @@
 Metrics 3 - Eclipse Metrics Plugin Continued 'Again' 
 =======
-https://github.com/leonardobsjr/metrics3
+The origin code from svn://svn.code.sf.net/p/metrics2/code/trunk
+And The Master code from: https://github.com/leonardobsjr/metrics3
 
 This is a continuation of the Eclipse Metrics Plugin 2, which was first created by [Frank Sauer](http://sourceforge.net/users/sauerf) and then continued by Keith Cassell and [Guillaume Boissier](http://sourceforge.net/users/gboissier).
 
-Check http://metrics2.sourceforge.net/ to see the 
+Check http://metrics2.sourceforge.net/ to see 
+
+#Compile Guide
+*. import projects (net.sourceforge.metrics,net.sourceforge.metrics.feature) to eclipse workspace
+*. change some code if you need
+*. export updatesite archive zip: select project==> export ==> Plugin-in Development==> Deployable feature => select feature "net.sourceforge.metrics"  and Archive file loation  ==> Finish 
+
 
 
 #Metrics Included
