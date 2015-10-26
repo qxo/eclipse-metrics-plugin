@@ -1,5 +1,6 @@
-Metrics 3 - Eclipse Metrics Plugin Continued 'Again'
+Metrics 3 - Eclipse Metrics Plugin Continued 'Again' 
 =======
+https://github.com/leonardobsjr/metrics3
 
 This is a continuation of the Eclipse Metrics Plugin 2, which was first created by [Frank Sauer](http://sourceforge.net/users/sauerf) and then continued by Keith Cassell and [Guillaume Boissier](http://sourceforge.net/users/gboissier).
 
