@@ -74,6 +74,7 @@ public class Norm extends Calculator implements Constants {
 					overridden = countMethods(supers, overridden, counted, myMethod);
 				}
 			}
+			
 			source.setValue(new Metric(NORM, overridden));
 			source.setValue(new Metric(NOPM, overridden)); //NOPM is just the QMOOD name for it. I've dediced to duplicate just to make the metric readings easier.
 		} catch (JavaModelException e) {
@@ -98,6 +99,9 @@ public class Norm extends Calculator implements Constants {
 				if ((inheritedFlags & Flags.AccPrivate) != 0) {
 					continue;
 				}
+//				if (inherited.isConstructor()){
+//					continue;
+//				}
 				// don't count abstract methods unless preferences dictate it
 				if ((!getPrefs().countAbstract()) && ((inheritedFlags & Flags.AccAbstract) != 0)) {
 					continue;

@@ -42,6 +42,9 @@ public interface Constants {
 
 	// basic metric ids
 
+	/** "NMI" */
+	public final static String NUM_INHERITED_METHODS = "NMI";
+	
 	/** "NBD" */
 	public final static String NESTEDBLOCKDEPTH = "NBD";
 	/** "PAR" */
@@ -74,6 +77,8 @@ public interface Constants {
 	public final static String REUSE_RATIO = "U";
 	/** "SIX" */
 	public final static String SPECIALIZATION_IN = "SIX";
+	/** "SIX2" */
+	public final static String SPECIALIZATION_IN2 = "SIX2";
 	/** "NORM" */
 	public final static String NORM = "NORM";
 	/** "WMC" */

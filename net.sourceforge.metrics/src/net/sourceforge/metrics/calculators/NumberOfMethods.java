@@ -82,7 +82,10 @@ public class NumberOfMethods extends Calculator implements Constants {
 			}	
 			
 			for (IMethod method : methods) {
-				//ASTNodeSearchUtil.getMethodDeclarationNode(method, source.getCompilationUnit());
+				// exclude constructors
+				if (method.isConstructor()){
+					continue;
+				}
 				if ((method.getFlags() & Flags.AccStatic) != 0) 
 					stats++;
 				else {
