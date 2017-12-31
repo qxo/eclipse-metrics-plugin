@@ -7,15 +7,14 @@ This is a continuation of the Eclipse Metrics Plugin 2, which was first created 
 
 Check http://metrics2.sourceforge.net/ to see 
 
-#Compile Guide
+## update site:
+* https://github.com/qxo/eclipse-metrics-plugin/raw/master/updatesite/
+
+## Compile Guide
 *. import projects (net.sourceforge.metrics,net.sourceforge.metrics.feature) to eclipse workspace
 *. change some code if you need
 *. export updatesite archive zip: select project==> export ==> Plugin-in Development==> Deployable feature => select feature "net.sourceforge.metrics"  and Archive file loation  ==> Finish 
-
-# update site:
-* https://github.com/qxo/eclipse-metrics-plugin/raw/master/updatesite/
-
-#Metrics Included
+## Metrics Included
 
 * Number of Classes (NOC)
 	*  Total number of classes in the selected scope.
@@ -49,7 +48,7 @@ Check http://metrics2.sourceforge.net/ to see
 * Lack of Cohesion of Methods (LCOM*)
 	* A measure for the Cohesiveness of a class. Calculated with the Henderson-Sellers method (LCOM*, see page 147). If (m(A) is the number of methods accessing an attribute A, calculate the average of m(A) for all attributes, subtract the number of methods m and divide the result by (1-m). A low value indicates a cohesive class and a value close to 1 indicates a lack of cohesion and suggests the class might better be split into a number of (sub)classes.
 
-####Robert C. Martin Suite
+#### Robert C. Martin Suite
 
 The following are the coupling metrics as defined by Robert Martin in ["OO Design Quality Metrics, An Analysis of Dependencies"](http://www.objectmentor.com/resources/articles/oodmetrc.pdf), and more recently in his book named "Agile Software Development, Principles, Patterns and Practices".
 
@@ -64,12 +63,12 @@ The following are the coupling metrics as defined by Robert Martin in ["OO Desig
 * Normalized Distance from Main Sequence (RMD)
 	*  | A + I - 1 |, this number should be small, close to zero for good packaging design.
 
-####Quality Model for Object-Oriented Design (QMOOD)
+#### Quality Model for Object-Oriented Design (QMOOD)
 The QMOOD model was design by Jagdish Bansiya and Carl G. Davis as a new way to access the software quality by making usage of certain *design properties*, represented by a single metric each, that can be used to calculate certain *quality atributes*. The paper [A hierarchical model for object-oriented design quality assessment](http://dx.doi.org/10.1109/32.979986) paper details the model. 
 
 The original metrics were implemented in C++, so some implementation details needed to be adjusted for the Java language. Those details were taken from the Mark O'Keeffe &Mel Ó Cinnéide [Search-based refactoring for software maintenance](http://dx.doi.org/10.1016/j.jss.2007.06.003).
 
-#####Design Properties
+##### Design Properties
 * Design Size | Design Size in Class (DSC)
 	* Total number of source classes.
 * Hierarchies | Number of Hierarchies (NOH)
@@ -93,7 +92,7 @@ The original metrics were implemented in C++, so some implementation details nee
 * Complexity | Number of Methods (NOM)
 	*  A count of all the methods defined in a class. Interpreted as the average across all classes in a design.
 	
-#####Quality Attributes
+##### Quality Attributes
 
 * Reusability
 * Flexibility
