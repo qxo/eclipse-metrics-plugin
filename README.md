@@ -26,6 +26,8 @@ Check http://metrics2.sourceforge.net/ to see
 	* Distance from class Object in the inheritance hierarchy. 
 * Number of Overidden Methods (NORM)
 	* Total number of methods in the selected scope that are overridden from an ancestor class.
+* Number of Methods Inherited (NMI)
+	* Total number of methods in the selected scope that are inherited from all ancestor classes.
 * Number of Methods (NOM)
 	* Total number of methods defined in the selected scope.
 * Number of Fields (NOF)
@@ -37,6 +39,8 @@ Check http://metrics2.sourceforge.net/ to see
 	  * Method lines of code will counts and sum non-blank and non-comment lines inside method bodies.
 * Specialization Index (SIX)
 	*  Average of the specialization index, defined as NORM * DIT / NOM. This is a class level metric.
+* Specialization Index 2 (SIX2)
+	*  Average of the specialization index, defined as NORM * DIT / (NOM + NMI) as defined in "M. Lorenz, J. Kidd, Object-Oriented Software Metrics, Prentice Hall, 1994". This is a class level metric.
 * McCabe Cyclomatic Complextity
 	*  Counts the number of flows through a piece of code. Each time a branch occurs (if, for, while, do, case, catch and the ?: ternary operator, as well as the && and || conditional logic operators in expressions) this metric is incremented by one. Calculated for methods only. For a full treatment of this metric see [McCabe](http://www.mccabe.com/nist/nist_pub.php).
 * Weighted Methods per Class (WMC)

@@ -271,6 +271,12 @@
             newAvgMaxAt="packageFragmentRoot">
       </metric>
       <metric
+            id="NMI"
+            level="type"
+            name="Number of Inherited Methods"
+            newAvgMaxAt="packageFragmentRoot">
+      </metric>
+      <metric
             name="Number of Static Methods"
             id="NSM"
             level="type">
@@ -280,6 +286,13 @@
             name="Specialization Index"
             requires="NOM,NORM,DIT"
             id="SIX"
+            level="type">
+      </metric>
+      <metric
+            propagateSum="false"
+            name="Specialization Index 2"
+            requires="NOM,NIM,NORM,DIT"
+            id="SIX2"
             level="type">
       </metric>
       <metric
@@ -355,8 +368,18 @@
             level="type">
       </calculator>
       <calculator
+            name="Number of Inherited Methods"
+            calculatorClass="net.sourceforge.metrics.calculators.NumberOfInheritedMethods"
+            level="type">
+      </calculator>
+      <calculator
             name="SpecializationIndex"
             calculatorClass="net.sourceforge.metrics.calculators.SpecializationIndex"
+            level="type">
+      </calculator>
+      <calculator
+            name="SpecializationIndex2"
+            calculatorClass="net.sourceforge.metrics.calculators.SpecializationIndex2"
             level="type">
       </calculator>
       <calculator
