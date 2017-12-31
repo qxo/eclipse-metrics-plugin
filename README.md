@@ -12,7 +12,8 @@ Check http://metrics2.sourceforge.net/ to see
 *. change some code if you need
 *. export updatesite archive zip: select project==> export ==> Plugin-in Development==> Deployable feature => select feature "net.sourceforge.metrics"  and Archive file loation  ==> Finish 
 
-
+# update site:
+* https://github.com/qxo/eclipse-metrics-plugin/raw/master/updatesite/
 
 #Metrics Included
 
