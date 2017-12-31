@@ -195,7 +195,6 @@ public class ProjectBuild extends Task {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void setDebugOptions(String str) {
 		if (str == null || str.equals("")) {
 			return;

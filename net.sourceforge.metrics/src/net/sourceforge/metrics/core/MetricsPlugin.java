@@ -69,6 +69,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	private Map<String, List<ICalculator>> calculators = new HashMap<String, List<ICalculator>>();
 	private Map<String, MetricDescriptor> metrics = new LinkedHashMap<String, MetricDescriptor>();
 	private Map<String, ExportDescriptor> exporters = new HashMap<String, ExportDescriptor>();
+	@SuppressWarnings("rawtypes")
 	private ListenerList listeners = new ListenerList(ListenerList.IDENTITY);
 
 	public static ImageDescriptor createImage(String name) {
@@ -433,6 +434,7 @@ public class MetricsPlugin extends AbstractUIPlugin implements IPropertyChangeLi
 	/**
 	 * @param listener
 	 */
+	@SuppressWarnings("unchecked")
 	public void addPropertyChangeListener(IPropertyChangeListener listener) {
 		listeners.add(listener);
 	}

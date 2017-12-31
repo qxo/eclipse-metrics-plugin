@@ -317,10 +317,10 @@ public class LayeredPackageGraphPanel extends GLPanel {
 			int count = 0;
 			for (int j = 0; j < comps[i].getNumberOfVertices(); j++) {
 				Vertex v = comps[i].getVertex(j);
-				if (v.getAttributes().equals(from.getID())) {
+				if (v.isAttributesEquals(from.getID())) {
 					count++;
 				}
-				if (v.getAttributes().equals(to.getID())) {
+				if (v.isAttributesEquals(to.getID())) {
 					count++;
 				}
 			}

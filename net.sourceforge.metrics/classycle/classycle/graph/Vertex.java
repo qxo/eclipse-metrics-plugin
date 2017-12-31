@@ -54,6 +54,9 @@ public class Vertex {
 		return _attributes;
 	}
 
+	public boolean isAttributesEquals(final Object v) {
+		return _attributes.equals(v);
+	}
 	/**
 	 * Returns the number of outgoing arcs. This is equivalent to the number of head vertices.
 	 */

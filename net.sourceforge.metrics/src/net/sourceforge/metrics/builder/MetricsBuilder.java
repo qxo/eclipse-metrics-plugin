@@ -309,6 +309,7 @@ public class MetricsBuilder extends IncrementalProjectBuilder {
 		 * @param res
 		 * @return FilterResult
 		 */
+		@SuppressWarnings("unlikely-arg-type")
 		private FilterResult filter(IResource resource) {
 			FilterResult result = new FilterResult();
 			result.processChildren = false;
@@ -671,12 +672,12 @@ public class MetricsBuilder extends IncrementalProjectBuilder {
 		 */
 		public int removeAll(String projectHandle) {
 			synchronized (this) {
-				int count = 0;
+				//int count = 0;
 				for (Iterator<Command> i = iterator(); i.hasNext();) {
 					Command next = i.next();
 					if (next.getHandleIdentifier().startsWith(projectHandle)) {
 						i.remove();
-						count++;
+						//count++;
 					}
 				}
 				int leftOver = size();
