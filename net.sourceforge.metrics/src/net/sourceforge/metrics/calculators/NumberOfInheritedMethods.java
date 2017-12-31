@@ -159,7 +159,7 @@ public class NumberOfInheritedMethods extends Calculator implements Constants {
 					gettersAndSetters.add(setter);
 			}
 
-			List<IMethod> normalMethods = new ArrayList<>();
+			List<IMethod> normalMethods = new ArrayList<IMethod>();
 
 			// collect normal methods of the analyzed class
 			for (IMethod method : methods) {
@@ -177,8 +177,8 @@ public class NumberOfInheritedMethods extends Calculator implements Constants {
 			IType[] superclasses = getSuperClasses(source);
 
 			// initialize 
-			List<IMethod> inheritedMethods = new ArrayList<>(normalMethods);
-			List<IType> visitedHierarchy = new ArrayList<>();
+			List<IMethod> inheritedMethods = new ArrayList<IMethod>(normalMethods);
+			List<IType> visitedHierarchy = new ArrayList<IType>();
 			visitedHierarchy.add(analyzedType);
 
 			/*
